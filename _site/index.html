@@ -1,235 +1,217 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<head>
+	<meta charset="utf-8">
+	<title>My personal blog - Adam Neilson</title>
+	<meta name="description" content="">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<meta property="og:image" content="">
+	<link rel="shortcut icon" href="/adam-blog/assets/img/favicon/favicon.ico" type="image/x-icon">
+	<link rel="apple-touch-icon" href="/adam-blog/assets/img/favicon/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="/adam-blog/assets/img/favicon/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="/adam-blog/assets/img/favicon/apple-touch-icon-114x114.png">
+	<!-- Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#311e3e">
+	<!-- Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#311e3e">
+	<!-- iOS Safari -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="#311e3e">
+	<!-- Google Fonts -->
+	<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="/adam-blog/assets/fonts/font-awesome/css/font-awesome.min.css">
+	<!-- Styles -->
+	<link rel="stylesheet" href="/adam-blog/assets/css/main.css">
+</head>
 
-    <title>Hello World!</title>
-    
-    <meta name="author" content="Name Lastname">
-
-    <!-- Enable responsive viewport -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap styles -->
-    <link href="/assets/themes/bootstrap-3/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Optional theme -->
-    <link href="/assets/themes/bootstrap-3/bootstrap/css/bootstrap-theme.min.css" rel="stylesheet">
-    <!-- Sticky Footer -->
-    <link href="/assets/themes/bootstrap-3/bootstrap/css/bs-sticky-footer.css" rel="stylesheet">
-    
-    <!-- Custom styles -->
-    <link href="/assets/themes/bootstrap-3/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-    <![endif]-->
-
-    <!-- Fav and touch icons -->
-    <!-- Update these with your own images
-      <link rel="shortcut icon" href="images/favicon.ico">
-      <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-      <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
-      <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-    -->
-
-    <!-- atom & rss feed -->
-    <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="Sitewide ATOM Feed">
-    <link href="/rss.xml" type="application/rss+xml" rel="alternate" title="Sitewide RSS Feed">
-
-  </head>
-
-  <body>
-    <div id="wrap">
-      <nav class="navbar navbar-default" role="navigation">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#jb-navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="/">Jekyll Bootstrap</a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="jb-navbar-collapse">
-          <ul class="nav navbar-nav">
-            
-            
-            
-
-
-  
-    
-      
-      	
-      	<li><a href="/archive">Archive</a></li>
-      	
-      
-    
-  
-    
-      
-    
-  
-    
-      
-      	
-      	<li><a href="/categories">Categories</a></li>
-      	
-      
-    
-  
-    
-      
-    
-  
-    
-      
-      	
-      	<li><a href="/pages">Pages</a></li>
-      	
-      
-    
-  
-    
-      
-    
-  
-    
-      
-      	
-      	<li><a href="/tags">Tags</a></li>
-      	
-      
-    
-  
-    
-  
-    
-      
-    
-  
-    
-  
-    
-  
-
-
-
-          </ul>
-          <form class="navbar-form navbar-right" role="search">
-            <div class="form-group">
-              <input type="text" class="form-control" placeholder="Search">
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-          </form>
-        </div><!-- /.navbar-collapse -->
+<body>
+  <div class="flex-container">
+  <header class="main-header">
+  <div class="wrapper">
+    <div class="header-flex">
+      <div class="menu-icon-container">
+        <span class="menu-icon"><i class="fa fa-bars" aria-hidden="true"></i></span>
+      </div>
+      <nav class="main-nav">
+        <span class="menu-icon-close"><i class="fa fa-times" aria-hidden="true"></i></span>
+        <ul>
+          <li><a href="/adam-blog/">Blog</a></li>
+          <li><a href="/adam-blog/about">About</a></li>
+        </ul>
       </nav>
+      <p class="logo"><a href="/adam-blog/">Adam Neilson</a></p>
+      <div class="search-icon-container">
+        <span class="search-icon"><a><i class="fa fa-search" aria-hidden="true"></i></a></span>
+      </div>
+    </div>
+  </div>
+</header> <!-- End Header -->
 
-      <div class="container">
+  <div class="content wrapper">
+    <ol class="post-card-box clearfix">
+  
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/i-conquer-the-himalayas/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-1.jpg )">
+      </a>
+
+      <div class="post-card-body">
         
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Mountains" class="tag">|&#32;Mountains</a>
+        
+        <a href="/adam-blog/i-conquer-the-himalayas/" class="post-card-link"><h3 class="post-card-title">I conquer the Himalayas</h3></a>
+      </div>
 
-<div class="page-header">
-  <h1>Hello World!  <small>Supporting tagline</small></h1>
-</div>
-
-<div class="row">
-  <div class="col-xs-12">
-    
-<p>Read <a href="http://jekyllbootstrap.com/usage/jekyll-quick-start.html">Jekyll Quick Start</a></p>
-
-<p>Complete usage and documentation available at: <a href="http://jekyllbootstrap.com">Jekyll Bootstrap</a></p>
-
-<h2 id="update-author-attributes">Update Author Attributes</h2>
-
-<p>In <code class="highlighter-rouge">_config.yml</code> remember to specify your own data:</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>title : My Blog =)
-
-author :
-  name : Name Lastname
-  email : blah@email.test
-  github : username
-  twitter : username
-</code></pre>
-</div>
-
-<p>The theme should reference these variables whenever needed.</p>
-
-<h2 id="sample-posts">Sample Posts</h2>
-
-<p>This blog contains sample posts which help stage pages and blog data.
-When you don’t need the samples anymore just delete the <code class="highlighter-rouge">_posts/core-samples</code> folder.</p>
-
-<div class="highlighter-rouge"><pre class="highlight"><code>$ rm -rf _posts/core-samples
-</code></pre>
-</div>
-
-<p>Here’s a sample “posts list”.</p>
-
-<ul class="posts">
+    </div>
+  </li>
   
-    <li><span>29 Dec 2011</span> &raquo; <a href="/lessons/2011/12/29/jekyll-introduction">Jekyll Introduction</a></li>
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/i-meet-the-sunset/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-2.jpg )">
+      </a>
+
+      <div class="post-card-body">
+        
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Sunset" class="tag">|&#32;Sunset</a>
+        
+        <a href="/adam-blog/i-meet-the-sunset/" class="post-card-link"><h3 class="post-card-title">I meet the sunset</h3></a>
+      </div>
+
+    </div>
+  </li>
   
-</ul>
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/meeting-with-adventures/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-3.jpg )">
+      </a>
 
-<h2 id="to-do">To-Do</h2>
+      <div class="post-card-body">
+        
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Sunset" class="tag">|&#32;Sunset</a>
+        
+        <a href="/adam-blog/meeting-with-adventures/" class="post-card-link"><h3 class="post-card-title">On a meeting with adventures</h3></a>
+      </div>
 
-<p>This theme is still unfinished. If you’d like to be added as a contributor, <a href="http://github.com/plusjade/jekyll-bootstrap">please fork</a>!
-We need to clean up the themes, make theme usage guides with theme-specific markup examples.</p>
+    </div>
+  </li>
+  
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/snowboarding-and-my-life/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-4.jpg )">
+      </a>
 
+      <div class="post-card-body">
+        
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Mountains" class="tag">|&#32;Mountains</a>
+        
+        <a href="/adam-blog/tags#Sport" class="tag">|&#32;Sport</a>
+        
+        <a href="/adam-blog/snowboarding-and-my-life/" class="post-card-link"><h3 class="post-card-title">Snowboarding and my life</h3></a>
+      </div>
 
+    </div>
+  </li>
+  
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/time-to-think/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-5.jpg )">
+      </a>
+
+      <div class="post-card-body">
+        
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Meditation" class="tag">|&#32;Meditation</a>
+        
+        <a href="/adam-blog/time-to-think/" class="post-card-link"><h3 class="post-card-title">Time to think</h3></a>
+      </div>
+
+    </div>
+  </li>
+  
+  <li>
+    <div class="post-card">
+      <a href="/adam-blog/the-forest-in-the-fog/" class="post-card-image" style="background-image: url( /adam-blog/assets/img/post-6.jpg )">
+      </a>
+
+      <div class="post-card-body">
+        
+        <a href="/adam-blog/tags#Blog" class="tag">|&#32;Blog</a>
+        
+        <a href="/adam-blog/tags#Meditation" class="tag">|&#32;Meditation</a>
+        
+        <a href="/adam-blog/the-forest-in-the-fog/" class="post-card-link"><h3 class="post-card-title">The forest in the fog</h3></a>
+      </div>
+
+    </div>
+  </li>
+  
+</ol>
+
+  <div class="search-box">
+  <div class="wrapper">
+    <div class="search-grid">
+      <form class="search-form">
+        <div id="search-container">
+          <input type="text" id="search-input" class="search" placeholder="Search">
+        </div>
+      </form>
+      <ul id="results-container" class="results-search"></ul>
+      <div class="icon-close-container">
+        <span class="search-icon-close"><i class="fa fa-times" aria-hidden="true"></i></span>
+      </div>
+    </div>
   </div>
 </div>
 
+  <div class="pagination clearfix">
+  
+  
+</div>
 
-      </div>
+  </div> <!-- End Wrapper -->
+  <footer class="main-footer">
+  <div class="copyright">
+    <p>2017 &copy; Adam Neilson</p>
+  </div>
+</footer> <!-- End Footer -->
 
-    </div>
+</div>
 
-    <div id="footer">
-      <div class="container">
-        <p>&copy; 2017 Name Lastname
-          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>
-          and <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>
-        </p>
-      </div>
-    </div>
-
-    
-
-
-
-
-  <script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-123-12']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+  <!-- JS -->
+<script src="/adam-blog/assets/js/jquery-3.2.1.min.js"></script>
+<script src="/adam-blog/assets/js/jekyll-search.js"></script>
+<script>
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search-input'),
+    resultsContainer: document.getElementById('results-container'),
+    json: '/adam-blog/search.json',
+    searchResultTemplate: '<li><a href="{url}" title="{desc}">{title}</a></li>',
+    noResultsText: 'No results found',
+    fuzzy: false,
+    exclude: ['Welcome']
+  });
 </script>
+<script src="/adam-blog/assets/js/main.js"></script>
 
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', '', 'auto');
+  ga('send', 'pageview');
+</script> <!-- End Analytics -->
 
-
-
-
-
-    <!-- Latest compiled and minified JavaScript, requires jQuery 1.x (2.x not supported in IE8) -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="/assets/themes/bootstrap-3/bootstrap/js/bootstrap.min.js"></script>
-  </body>
+</body>
 </html>
-
