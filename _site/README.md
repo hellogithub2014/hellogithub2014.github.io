@@ -1,27 +1,29 @@
-# Adam Blog is a minimal clear theme for Jekyll
+# Bef is a responsive jekyll theme
 
-![Adam Blog - Imac](https://github.com/artemsheludko/adam-blog/blob/master/assets/img/adam-blog-imac.jpg?raw=true)
+Bef - Blog Enjoy Freedom is a responsive jekyll theme which created to be simple and freedom.
 
 ## Demo
 
-Check the theme in action [Demo](https://artemsheludko.github.io/adam-blog/)
+Check the theme in action [Demo](https://artemsheludko.github.io/bef/)
 
 The main page would look like this:
 
-![Main page preview](https://github.com/artemsheludko/adam-blog/blob/master/assets/img/adam-home-page.jpg?raw=true)
+![Main page preview](https://github.com/artemsheludko/bef/blob/master/assets/img/bef_main_page.jpg?raw=true)
 
 The post page would look like this:
 
-![Post page preview](https://github.com/artemsheludko/adam-blog/blob/master/assets/img/adam-post-example.jpg?raw=true)
+![Post page preview](https://github.com/artemsheludko/bef/blob/master/assets/img/bef_post.jpg?raw=true)
 
 ## Features
 
 - [Google Fonts](https://fonts.google.com/)
 - [Font Awesome](http://fontawesome.io/)
+- [Vide](http://vodkabears.github.io/vide/)
 - [Disqus](https://disqus.com/)
 - [MailChimp](https://mailchimp.com/)
+- [Formspree!](https://formspree.io/)
 - [Analytics](https://analytics.google.com/analytics/web/)
-- [Search](https://github.com/christian-fei/Simple-Jekyll-Search)
+- Share Buttons, Recent Post, Section Author, Contact and more...
 
 ## Installation:
 
