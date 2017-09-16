@@ -1,4 +1,4 @@
-logo: # add logo name
+logo: Liu Bin # add logo name
 title: Winner Winner, Chicken Dinner
 description: > # this means to ignore newlines until "baseurl:"
   Write an awesome description for your new site here. You can edit this
@@ -30,7 +30,7 @@ dribbble_url:  # add url link
 facebook_url:  # add url link
 
 # Disqus
-discus_identifier: mr-brown # add your discus identifier
+discus_identifier: Liu Bin # add your discus identifier
 
 # Newsletter
 mailchimp: # add your MailChimp form identifier. For example - blogenjoyfreedom.us16.list-manage.com/subscribe/post?u=cd56155d76ddeeb4c0bc4d080&amp;id=7a526cd13e
@@ -44,7 +44,7 @@ paginate_path: /page:num/
 
 # Build settings
 markdown: kramdown
-gems:
+plugins:
   - jekyll-paginate
   - jekyll-sitemap
 
