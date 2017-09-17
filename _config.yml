@@ -16,6 +16,7 @@ banner-desc: # add banner description
 # Author settings
 author-pic: face_liubin.jpg # your photo
 author-name: Liu Bin # your name
+author-slogon: 道阻且长，十年一刻。 # 用于个人介绍时的标语
 about-author: FE developer # about author
 email: 1197128237@qq.com # your email
 website: https://hellogithub2014.github.io/ # you website
