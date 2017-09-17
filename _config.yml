@@ -14,11 +14,10 @@ banner-title: # add banner title
 banner-desc: # add banner description
 
 # Author settings
-author-pic: face.jpg # your photo
-author-name: # your name
-about-author: # about author
+author-pic: face_liubin.jpg # your photo
+author-name: Liu Bin # your name
+about-author: FE developer # about author
 email: 1197128237@qq.com # your email
-phone: (496)-169-6557 # your pnone number
 website: https://hellogithub2014.github.io/ # you website
 
 # Social link
@@ -39,14 +38,31 @@ mailchimp: # add your MailChimp form identifier. For example - blogenjoyfreedom.
 analytics:
 
 # Paginate
-paginate: 12
+paginate: 6
 paginate_path: /page:num/
 
 # Build settings
 markdown: kramdown
+kramdown:
+  input: GFM
+# markdown: redcarpet2
+# redcarpet:
+#  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "strikethrough", "superscript"]
+# # pygments: true
+
+
 plugins:
   - jekyll-paginate
   - jekyll-sitemap
 
 include: [_pages]
 exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock"]
+
+defaults:
+  -
+    scope:
+      path: "" # an empty string here means all files in the project
+      type: "posts" # previously `post` in Jekyll 2.2.
+    values:
+      layout: "post"
+      author: "Liu Bin"
