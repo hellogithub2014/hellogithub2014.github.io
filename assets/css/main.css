@@ -265,6 +265,7 @@ audio:not([controls]) {
 
 img {
     border-style: none;
+    width: 100%
 }
 
 
@@ -4771,6 +4772,15 @@ cite {
     padding: 0;
     margin-bottom: 3rem;
     list-style: none;
+}
+
+ol li,
+ul li {
+    font-size: 1.1rem;
+    line-height: 1.75rem;
+    margin: 0 0 1.75rem;
+    color: #525c65;
+    font-weight: 400;
 }
 
 #tags .tags li {
