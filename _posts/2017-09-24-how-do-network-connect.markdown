@@ -8,7 +8,7 @@ tag: [NetWork]
 
 前言
 ===
-之前看到有个很火的面试题，大概是说从浏览器输入url按回车后发生了什么，恰好这段时间在读《网络是怎样连接的》，就边看书边试着回答这个问题。
+之前看到有个很火的面试题，大概是说从浏览器输入url按回车到页面显示内容期间发生了什么，恰好这段时间在读《网络是怎样连接的》，就边看书边试着回答这个问题。
 
 ## 一、生成HTTP请求消息
 1. 解析url，用来确定访问的目标
@@ -103,6 +103,13 @@ DNS服务器有一个缓存功能，可以记住之前查询过的域名；如�
 
 利用TCP控制位： TCP在执行连接操作时需要收发3个包，第一个包中的SYN=1、ACK=0。 如果我们想要限制从web服务器往互联网的通信，那么通过判断TCP头部是否为SYN=1、ACK=0，以及发送方IP是否为web服务器的地址，就可以知道是否是服务器往外部的连接操作了。 如果是web服务器响应互联网的请求，那么SYN和ACK不会同时满足要求，所以不会被过滤掉。
 
+### 如果服务器端设置了负载均衡服务器
+负载均衡服务器的目的是将请求平均分配给多台web服务器来平衡负载。
+
+使用负载均衡，首先要用负载均衡服务器的ip地址代替web服务器的实际地址注册到DNS服务器上。于是客户端就会认为负载均衡服务器是真正的web服务器，并向其发送请求，然后由负载均衡器来判断将请求转发给哪台web服务器。
+
+![MAC头部]({{ site.url }}/assets/img/how-network-works/load-balance-server.png)
+
 ### web服务器前面如果有缓存服务器，会拦截通过防火墙的包。如果用户请求的页面已经缓存在服务器上，则代替服务器向用户返回页面数据。
 #### 如何设置缓存服务器
 缓存服务器需要代替Web服务器被注册到DNS服务器中，然后客户端会向缓存服务器发送HTTP请求消息。缓存服务器需要判断应该将请求消息转发给哪台Web服务器，比较有代表性的是根据请求消息的URI中的目录名来进行判断，**其实也就是相当于反向代理**。
@@ -117,9 +124,9 @@ DNS服务器有一个缓存功能，可以记住之前查询过的域名；如�
 3. HTTP消息被恢复成原始形态，然后通过socket库转交给web服务器
 4. web服务器分析HTTP消息的内容，并根据请求内容将交给对应的服务器端程序，程序内部路由到对应的代码，将处理的数据返回给客户端。
 
-## 七、浏览器解析DOM过程
+## 七、浏览器渲染页面过程
 WebKit渲染的过程,图片来源[webkit渲染](http://mp.weixin.qq.com/s/7eY3XIhLXeCMqBYIQh6WwA)：
-![WebKit渲染的过程](http://mmbiz.qpic.cn/mmbiz_png/NVvB3l3e9aGS2KZjibulcKSx4K7gmiaDR3SUQMnyXUg9ISVAnw7jnibHicUC8dHdtj0iazohaJKc1NfIbrGk8d58oIg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1)
+![WebKit渲染的过程](http://mmbiz.qpic.cn/mmbiz_jpg/zPh0erYjkib2bsVdjOuFlloia1GkjzgwkcwZNU3ncVFK6UTzJvoDJdZdyQqmfo3kPaJWHG5Phy8g28l5rtwKR9Eg/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1)
 
 具体解析过程请参考[这篇文章](http://mp.weixin.qq.com/s/I9IgzC_NvKLP2-TmuDTSKQ)
 
@@ -129,6 +136,19 @@ WebKit渲染的过程,图片来源[webkit渲染](http://mp.weixin.qq.com/s/7eY3X
 3. Create/Update Render Tree：所有CSS文件下载完成，CSSOM构建结束后，和 DOM 一起生成 Render Tree。
 4. Layout：有了Render Tree，浏览器已经能知道网页中有哪些节点、各个节点的CSS定义以及他们的从属关系。下一步操作称之为Layout，顾名思义就是计算出每个节点在屏幕中的位置。
 5. Painting：Layout后，浏览器已经知道了哪些节点要显示（which nodes are visible）、每个节点的CSS属性是什么（their computed styles）、每个节点在屏幕中的位置是哪里（geometry）。就进入了最后一步：Painting，按照算出来的规则，通过显卡，把内容画到屏幕上。
+
+### 图片资源的加载与渲染时机
+在上面的过程中，并没有明确图片在什么时候加载和渲染。 [这篇文章](http://mp.weixin.qq.com/s/1neKv_knMnnzb1hyRx789Q)
+详细的描述了具体细节。大致来说，关于图片的时机点有：
+
+* 解析HTML**遇到`<img>`标签加载图片** —> 构建DOM树
+* 加载样式 —> 解析样式 **遇到背景图片链接不加载** —> 构建样式规则树
+* 加载javascript —> 执行javascript代码
+* 把DOM树和样式规则树匹配构建渲染树 **加载渲染树上的背景图片**
+* 计算元素位置进行布局
+* 绘制 **开始渲染图片**
+
+还有几种特殊情况，具体请阅读上面的文章。
 
 ## 八、三次握手、4次挥手
 TCP连接、断开的流程如下：
