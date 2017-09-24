@@ -1,7 +1,7 @@
 ---
 title: "从浏览器输入url按回车后发生了什么"
 img: nevada.jpg # Add image post (optional)
-date: 2017-09-18 22:41:00 +0800
+date: 2017-09-24 10:08:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [NetWork]
 ---
@@ -97,20 +97,65 @@ DNS服务器有一个缓存功能，可以记住之前查询过的域名；如�
 
 ## 五、服务器端网络对包的操作
 ### 服务器端的局域网中有防火墙，对进入的包进行检查，判断是否允许通过
-**TODO 包过滤方式机制**
+防火墙的基本思路是只允许发往特定服务器中的特定应用程序的包通过，然后屏蔽其他的包。
+
+包过滤的方式是利用网络包中的`接收方IP地址`、`发送方IP地址`、`发送方端口号`、`接收方端口号`、`TCP控制位`，可以判断出通信的起点和终点、应用程序种类以及访问的方向。
+
+利用TCP控制位： TCP在执行连接操作时需要收发3个包，第一个包中的SYN=1、ACK=0。 如果我们想要限制从web服务器往互联网的通信，那么通过判断TCP头部是否为SYN=1、ACK=0，以及发送方IP是否为web服务器的地址，就可以知道是否是服务器往外部的连接操作了。 如果是web服务器响应互联网的请求，那么SYN和ACK不会同时满足要求，所以不会被过滤掉。
 
 ### web服务器前面如果有缓存服务器，会拦截通过防火墙的包。如果用户请求的页面已经缓存在服务器上，则代替服务器向用户返回页面数据。
-**TODO 如何设置缓存服务器**
+#### 如何设置缓存服务器
+缓存服务器需要代替Web服务器被注册到DNS服务器中，然后客户端会向缓存服务器发送HTTP请求消息。缓存服务器需要判断应该将请求消息转发给哪台Web服务器，比较有代表性的是根据请求消息的URI中的目录名来进行判断，**其实也就是相当于反向代理**。
 
 ### 如果请求没有被缓存，缓存服务器会将请求转发给web服务器
 
+![MAC头部]({{ site.url }}/assets/img/how-network-works/cache-server.png)
+
 ## 六、服务器内部对网络包处理
-1. web服务器收到包后，网卡和网卡驱动会接收这个包并转交给协议栈
+1. web服务器收到包后，网卡和网卡驱动会接收这个包,将其转为数字信息，校验MAC地址是否发给自己的，一切无误后转交给协议栈
 2. 协议栈依次检查IP头部和TCP头部，如果没有问题则取出HTTP消息的数据块并进行组装
 3. HTTP消息被恢复成原始形态，然后通过socket库转交给web服务器
-4. web服务器分析HTTP消息的内容，并根据请求内容将处理的数据返回给客户端
+4. web服务器分析HTTP消息的内容，并根据请求内容将交给对应的服务器端程序，程序内部路由到对应的代码，将处理的数据返回给客户端。
 
+## 七、浏览器解析DOM过程
+WebKit渲染的过程,图片来源[webkit渲染](http://mp.weixin.qq.com/s/7eY3XIhLXeCMqBYIQh6WwA)：
+![WebKit渲染的过程](http://mmbiz.qpic.cn/mmbiz_png/NVvB3l3e9aGS2KZjibulcKSx4K7gmiaDR3SUQMnyXUg9ISVAnw7jnibHicUC8dHdtj0iazohaJKc1NfIbrGk8d58oIg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1)
 
-## 七、TODO浏览器解析DOM过程
+具体解析过程请参考[这篇文章](http://mp.weixin.qq.com/s/I9IgzC_NvKLP2-TmuDTSKQ)
 
-## 三次握手、4次挥手， 为什么要4次
+1. Create/Update DOM And request css/image/js：浏览器请求到HTML代码后，在生成DOM的最开始阶段（应该是 Bytes → characters 后），并行发起css、图片、js的请求，无论他们是否在HEAD里。
+注意：发起 js 文件的下载 request 并不需要 DOM 处理到那个 script 节点，比如：简单的正则匹配就能做到这一点，虽然实际上并不一定是通过正则：）。这是很多人在理解渲染机制的时候存在的误区。
+2. Create/Update Render CSSOM：CSS文件下载完成，开始构建CSSOM
+3. Create/Update Render Tree：所有CSS文件下载完成，CSSOM构建结束后，和 DOM 一起生成 Render Tree。
+4. Layout：有了Render Tree，浏览器已经能知道网页中有哪些节点、各个节点的CSS定义以及他们的从属关系。下一步操作称之为Layout，顾名思义就是计算出每个节点在屏幕中的位置。
+5. Painting：Layout后，浏览器已经知道了哪些节点要显示（which nodes are visible）、每个节点的CSS属性是什么（their computed styles）、每个节点在屏幕中的位置是哪里（geometry）。就进入了最后一步：Painting，按照算出来的规则，通过显卡，把内容画到屏幕上。
+
+## 八、三次握手、4次挥手
+TCP连接、断开的流程如下：
+![MAC头部]({{ site.url }}/assets/img/how-network-works/tcp-connection-close.png)
+
+### 断开连接操作的注意点：
+**断开连接时为什么需要两边都发送FIN信号，亦关闭连接是四次挥手呢？**
+
+参考[一篇博客](http://www.cnblogs.com/Jessy/p/3535612.html)的说法:
+
+>由于TCP连接是全双工的，因此每个方向都必须单独进行关闭。这原则是当一方完成它的数据发送任务后就能发送一个FIN来终止这个方向的连接。收到一个 FIN只意味着这一方向上没有数据流动，一个TCP连接在收到一个FIN后仍能发送数据。首先进行关闭的一方将执行主动关闭，而另一方执行被动关闭。
+
+>关闭行为是在发起方数据发送完毕之后，给对方发出一个FIN（finish）数据段。直到接收到对方发送的FIN，且对方收到了接收确认ACK之后，双方的数据通信完全结束，过程中每次接收都需要返回确认数据段ACK。
+
+**为什需要三次握手？**
+
+参考[微信文章](http://mp.weixin.qq.com/s/7eY3XIhLXeCMqBYIQh6WwA):
+
+>《计算机网络》第四版中讲“三次握手”的目的是“为了防止已失效的连接请求报文段突然又传送到了服务端，因而产生错误”
+
+> 书中的例子是这样的，“已失效的连接请求报文段”的产生在这样一种情况下：client发出的第一个连接请求报文段并没有丢失，而是在某个网络结点长时间的滞留了，以致延误到连接释放以后的某个时间才到达server。本来这是一个早已失效的报文段。但server收到此失效的连接请求报文段后，就误认为是client再次发出的一个新的连接请求。于是就向client发出确认报文段，同意建立连接
+
+> 假设不采用“三次握手”，那么只要server发出确认，新的连接就建立了。由于现在client并没有发出建立连接的请求，因此不会理睬server的确认，也不会向server发送数据。但server却以为新的运输连接已经建立，并一直等待client发来数据。这样，server的很多资源就白白浪费掉了。采用“三次握手”的办法可以防止上述现象发生。例如刚才那种情况，client不会向server的确认发出确认。server由于收不到确认，就知道client并没有要求建立连接。”。主要目的防止server端一直等待，浪费资源。
+
+## 最后
+还有两篇收藏的文章讲的更详细，这里就不搬运了。请参考
+
+[从输入 URL 到页面加载完成的过程中都发生了什么事情？（上）](http://mp.weixin.qq.com/s/KHkFc7A5AZ4K7LAnMMpxqQ)
+
+[从输入 URL 到页面加载完成的过程中都发生了什么事情？（下）](http://mp.weixin.qq.com/s/wbzeB8SFW3xAnt74ElpU9A)
