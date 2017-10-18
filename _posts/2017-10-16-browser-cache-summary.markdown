@@ -151,7 +151,10 @@ http1.0字段, 通常设置为`Pragma:no-cache`, 作用同`Cache-Control:no-cach
 
 1. 文件添加版本号
 2. `CDN`清除缓存，见参考【7】
-3. 利用`Cache-Control`中的指令，比如`no-cache`、`no-store`
+3. 利用`Cache-Control`中的指令，比如
+	```
+	 Cache-Control:no-store,max-age=0
+	```
 
 # 参考
 1. [浅谈 Web 缓存](http://mp.weixin.qq.com/s/MLmxeIlX6Zy7Uy98SEWbFw)
