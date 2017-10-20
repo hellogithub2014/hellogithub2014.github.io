@@ -9,8 +9,6 @@ tag: [TOOL,FIDDLER]
 # 前言
 老早之前学习了使用`Fiddler`来抓包，来帮助调试我们公司的移动web app。其实当时也总结了如何搭建，不过是使用`Word`来记录然后存放在本地的。既然有了博客站点，那就索性迁移到线上来。`Fiddler`的功能很强大，我只使用了它最基本的功能，之后有机会再仔细研究一番。
 
-**此搭建教程适用于windows电脑，对于mac，需要额外购买一个转接头用于连接网线才行**，因为mac只有一个无线网卡，通常用它来连接wifi，这样就没有办法用它来再向外提供wifi了。windows的个人电脑通常也只有一个网卡，如果拿它来连接wifi也会遇到跟mac一样的难题，所以会利用软件来利用虚拟网卡向外提供wifi。蛋疼的是mac上没有这样的软件，所以得额外花钱买转接头了😶。。。
-
 # `Fiddler`介绍
 >`Fiddler`是一个web调试代理。它能够记录所有客户端和服务器间的http请求，允许你监视，设置断点，甚至修改输入输出数据。	
 
@@ -34,11 +32,6 @@ tag: [TOOL,FIDDLER]
 
 下载完傻瓜式安装就好。
 
-### 下载并安装猎豹wifi
-
-这个就是上面说的用于提供虚拟网卡的软件，可以利用它来向外发送wifi。 [下载链接](http://wifi.liebao.cn/)
-
-
 ## 配置
 
 1. 安装好之后，可以看到界面如下。把鼠标放在界面右上角的“Online”上，会出现一个小弹框，最下面那串数字就是当前电脑的ip地址，一般是192开头的。
@@ -54,9 +47,7 @@ tag: [TOOL,FIDDLER]
 	![]({{ site.url }}/assets/img/fiddler/fiddler-option-1.png)
 ![]({{ site.url }}/assets/img/fiddler/fiddler-option-2.png)
 
-3. 首先电脑连接一个网络A，比如一个名叫`test`的wifi,然后使用猎豹wifi生成一个另外的wifi热点B，并用手机连接上这个wifi(B),比如：
-
-	![]({{ site.url }}/assets/img/fiddler/liebao-wifi.png)
+3. 使电脑和手机连上同一个网络，例如同个wifi,比如我这里的LieBaoWifi703
 
 4. 在手机上配置连接上的这个wifi的代理，各个手机可能方法不一定，我的华为手机是长按那个wifi的名字。
 	![]({{ site.url }}/assets/img/fiddler/huawei-wifi.png)
@@ -67,7 +58,7 @@ tag: [TOOL,FIDDLER]
 
 	![]({{ site.url }}/assets/img/fiddler/liebao-wifi-set-iphone.png)
 
-**注意：电脑上连接的那个网络A决定了手机能访问哪些网站**，比如电脑连接上内网wifi，手机就能浏览公司的内部网页；电脑连接上外网，手机就能上百度。
+**注意：电脑和手机共同连接的那个wifi决定了手机能访问哪些网站**，如果是内网wifi，手机就能浏览公司的内部网页；外网wifi，手机就能上百度。
 
 ## `iphone`证书安装
 
