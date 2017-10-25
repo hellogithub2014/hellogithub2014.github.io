@@ -291,7 +291,7 @@ func('1');// 调用第二个函数
 6. ***`class-name`*** - 强制使用帕斯卡命名法(PascalCased,亦即大写驼峰法)给类和接口命名 - ***`true`***
 7. ***`comment-format`*** - 强制格式化单行注释 - ***`options: ["check-space"/* 要求所有单行注释必须以一个空格开头， 例如 // commment */]`***
 10. ***`import-spacing`*** - 保证在导入语句中留有合适的空格 - ***`true`***
-11. ***`interface-name`*** - 要求给接口名前加上I,但与[TypeScript官方指导原则](https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines)相悖 - ***`options: ["always-prefix"]`*** --- _[true,"never-prefix"]_
+11. ***`interface-name`*** - 要求给接口名前加上I,但与[TypeScript官方指导原则](https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines)相悖 - ***`options: ["always-prefix"]`***
 
 12. ***`interface-over-type-literal`*** - 倾向使用接口声明代替类型字面量 (`type T = { ... }`),`type`关键字参阅 [ts高级类型](https://www.tslang.cn/docs/handbook/advanced-types.html) -  ***`true`***
 
