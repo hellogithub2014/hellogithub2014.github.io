@@ -182,6 +182,7 @@ samp {
     /* 1 */
     font-size: 1em;
     /* 2 */
+    white-space: pre-line;
 }
 
 
@@ -3752,7 +3753,7 @@ template {
 }
 
 
-/* 
+/*
 .highlight .hll {
     background-color: #ffc;
 }
