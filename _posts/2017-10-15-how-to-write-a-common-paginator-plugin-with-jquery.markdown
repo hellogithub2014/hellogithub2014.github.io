@@ -16,7 +16,7 @@ tag: [JQUERY,PAGINATOR,JAVASCRIPT]
 # 抽象
 一般来说一个带搜索的分页列表页面布局类似如下：
 
-![Image text](https://github.com/hellogithub2014/jquery-common-paginator.js/raw/master/images/paginator-for-present.png)
+![Image text](https://github.com/hellogithub2014/jquery-common-paginator.js/raw/master/common-paginator-images/paginator-for-present.png)
 
 其中：
 
@@ -62,7 +62,7 @@ var paginator = new JqueryCommonPaginator();
 
 ```js
 function JqueryCommonPaginator(options) {
-   // 作用域安全的构造函数，防止用户手滑使用了 
+   // 作用域安全的构造函数，防止用户手滑使用了
    // var paginator = JqueryCommonPaginator();  来初始化，那样就会报错
    if (this instanceof JqueryCommonPaginator) {
        this.options = Object.assign({}, defaultOptions, options);
@@ -102,7 +102,7 @@ function JqueryCommonPaginator(options) {
 ```js
 {
  		"TARSVR": "",
-		"PRCCOD": "", // 用于控制后台路由的编码 
+		"PRCCOD": "", // 用于控制后台路由的编码
  		"WEBCOD": "",
 		"ISUDAT": "",
 	   "ISUTIM": "",
@@ -121,8 +121,8 @@ function JqueryCommonPaginator(options) {
 defaultOptions.backendParamGenerator = function(userParam, paginatorParam) {
    var backendInterfaceParam = {};
    var infoBodyData = {};
-   if (userParam.asistParam && 
-        userParam.asistParam.prcCode && 
+   if (userParam.asistParam &&
+        userParam.asistParam.prcCode &&
         typeof userParam.asistParam.prcCode === "string"
    ) {
        var prcCodeSuffix = userParam.asistParam.prcCode.substring(4); //去掉前4位
@@ -141,7 +141,7 @@ defaultOptions.backendParamGenerator = function(userParam, paginatorParam) {
            "INFBDY": infoBodyData,
        };
    } else {
-       console.error("请在userParam.asistParam对象中放置 PRCCode和path两个属性", 
+       console.error("请在userParam.asistParam对象中放置 PRCCode和path两个属性",
                     userParam);
    }
    return JSON.stringify(backendInterfaceParam);
@@ -150,7 +150,7 @@ defaultOptions.backendParamGenerator = function(userParam, paginatorParam) {
 
 ### 获取后台数据接口
 
-请求的url是一个由`userParam.asistParam.path`决定的反向代理路径。 
+请求的url是一个由`userParam.asistParam.path`决定的反向代理路径。
 
 ```js
 /**
@@ -163,7 +163,7 @@ defaultOptions.backendParamGenerator = function(userParam, paginatorParam) {
 defaultOptions.fetchData = function(backendInterfaceParam) {
    var _this = this;
    var userParam = this.options.userParam;
-   
+
    // 校验
 
    $.ajax({
@@ -281,7 +281,7 @@ defaultOptions.renderPaginatorArea = function(dataListLength, totalCount) {
    // 渲染分页提示区域、每页大小下拉框
    var curStartIndex = this.curPaginatorParam.startIndex;
    var paginatorHintHtml = '当前<a>' + (curStartIndex + 1) +
-       '-' + (curStartIndex + dataListLength) + 
+       '-' + (curStartIndex + dataListLength) +
        '</a>,共<b>' + totalCount + '</b>条信息';
     // 分页提示
    $(this.options.DOM_SELECTORS.PAGE_HINT_SELECTOR).html(paginatorHintHtml);
@@ -289,7 +289,7 @@ defaultOptions.renderPaginatorArea = function(dataListLength, totalCount) {
    // 渲染每页大小下拉框
    var pageSizeSelectorHtml = '每页显示<select>';
    this.options.PAGE_SIZE_LIST.forEach(function(pageSize) {
-       pageSizeSelectorHtml += '<option value="' + pageSize 
+       pageSizeSelectorHtml += '<option value="' + pageSize
                                 + '">' + pageSize + '</option>';
    });
    pageSizeSelectorHtml += '</select>';
@@ -302,7 +302,7 @@ defaultOptions.renderPaginatorArea = function(dataListLength, totalCount) {
 
 注意这里的`$("").createPage`方法，这是部门另一位同事写的一个`jquery`插件。它可以帮助我们渲染页码条，同时提供一个选项来让我们注册页码点击事件。具体源码可以参见`github`源码中的`jquery.page.js`。
 
-	
+
 # 覆盖默认配置
 
 可以看到`defaultOptions`中的默认配置还是挺多的，如果需要覆盖每一个配置，那么比较好的做法就是提供一一对应的`set`方法，例如：
@@ -316,7 +316,7 @@ JqueryCommonPaginator.prototype.setItemRenderFunc = function(newItemRenderFunc) 
 }
 // 其他set方法。。。。
 ```
-  
+
 它们的逻辑基本是相同的，即使用函数中提供的参数来替换`defaultOptions`的对应属性成员，同时校验参数类型。为此我们可以提供一个帮助函数，所有`set`方法均调用此函数：
 
 ```js
@@ -329,7 +329,7 @@ JqueryCommonPaginator.prototype.setItemRenderFunc = function(newItemRenderFunc) 
 * @returns this
 */
 function _setterHelper(tagetOptionName, newOptionValue, typeToCheck) {
-   if (!newOptionValue || 
+   if (!newOptionValue ||
      Object.prototype.toString.call(newOptionValue).slice(8, -1) !== typeToCheck) {
        console.error("tagetOptionName 需要是一个" + typeToCheck,
                  "你设置的值是: ", newOptionValue);
@@ -358,7 +358,7 @@ JqueryCommonPaginator.prototype.setDomSelectors = function(newSelectors) {
 };
 
 JqueryCommonPaginator.prototype.setBackendParamGenerator = function(newGenerator) {
-   return _setterHelper.call(this, "backendParamGenerator", 
+   return _setterHelper.call(this, "backendParamGenerator",
                 newGenerator, "Function");
 };
 
@@ -382,7 +382,7 @@ paginator
 
 ```js
 function _successFunc(response) {
-   var dataList = this.options.getListFromResponse.call(this, response);   
+   var dataList = this.options.getListFromResponse.call(this, response);
    var totalCount = this.options.getTotalCountFromResponse.call(this, response);
    this.currentList = dataList; // 缓存当前页的列表数据
    if (dataList.length > 0) { // 有数据时
@@ -446,14 +446,14 @@ function _bindPageSizeChangeHandler() {
 }
 ```
 
-此方法会在`_successFunc`渲染完分页区域后被调用。 
- 
+此方法会在`_successFunc`渲染完分页区域后被调用。
+
 `_refresh`也是一个帮助方法，用于根据当前的参数获取数据并刷新列表。
 
 ```js
 function _refresh() {
    // 生成真正的后台接口入参
-   var backendInterfaceParam = this.options.backendParamGenerator.call(this, 
+   var backendInterfaceParam = this.options.backendParamGenerator.call(this,
             this.options.userParam, this.curPaginatorParam);
    this.options.fetchData.call(this, backendInterfaceParam);
 }
@@ -530,7 +530,7 @@ JqueryCommonPaginator.prototype.deletePage = function() {
 *
 * 为此提供goFirstPageAfterUpdate参数，让用户来决定
 */
-JqueryCommonPaginator.prototype.updateItem = function(index, newItemModel, 
+JqueryCommonPaginator.prototype.updateItem = function(index, newItemModel,
                 goFirstPageAfterUpdate) {
    var goFirst = goFirstPageAfterUpdate || false; // 默认为false
 
@@ -555,7 +555,7 @@ JqueryCommonPaginator.prototype.updateItem = function(index, newItemModel,
 *
 * 为此提供goFirstPageAfterUpdate参数，让用户来决定
 */
-JqueryCommonPaginator.prototype.updatePage = function(newDataList, 
+JqueryCommonPaginator.prototype.updatePage = function(newDataList,
             goFirstPageAfterUpdate) {
    var goFirst = goFirstPageAfterUpdate || false; // 默认为false
 
