@@ -590,12 +590,88 @@ Promise.race([p1, p3]).then(console.log); // 1
 ```
 
 # 使用 Promises 而非回调 (callbacks) 优缺点是什么？
-# 使用一种可以编译成 JavaScript 的语言来写 JavaScript 代码有哪些优缺点？
-# 你使用哪些工具和技术来调试 JavaScript 代码？
+Promise可以解决回调地狱问题，转而使用链式操作。
+
 # 你会使用怎样的语言结构来遍历对象属性 (object properties) 和数组内容？
+
+遍历对象:
+
+```js
+// 使用for-in
+for(let key in o){
+	if(o.hasOwnProperty(key)){
+		// code here
+	}
+}
+
+// 使用Object.keys
+for(let key of Object.keys(o)){
+	console.log(o[key]);
+}
+```
+
+遍历数组：
+
+```js
+for(let item of arr){
+	console.log(item);
+}
+```
+
 # 请解释可变 (mutable) 和不变 (immutable) 对象的区别。
+可变对象： 可以直接修改对象的属性值
+不变对象：不能修改对象的属性值，或者每次尝试修改都会得到一个新对象。
+
 ## 举出 JavaScript 中一个不变性对象 (immutable object) 的例子？
+字符串
+
 ## 不变性 (immutability) 有哪些优缺点？
+
+1. 减少了潜在的BUG，开发者可以相信此变量不会意外的被修改，变量是只读的，或者得到一个新的复本
+2. 提升了变更检测效率，在例如angular这样的框架中，变更检测如果只用检查对象引用是否相等就能确定是否重新渲染，那么效率就会大大提升。不可变对象就可以帮助我们做到这一点。
+
+参考stackoverflow的[讨论](https://stackoverflow.com/questions/34385243/why-is-immutability-so-importantor-needed-in-javascript)
+
 ## 如何用你自己的代码来实现不变性 (immutability)？
+
+1. [利用Object.freeze](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze)
+
+```js
+// To do so, we use this function.
+function deepFreeze(obj) {
+
+  // Retrieve the property names defined on obj
+  var propNames = Object.getOwnPropertyNames(obj);
+
+  // Freeze properties before freezing self
+  propNames.forEach(function(name) {
+    var prop = obj[name];
+
+    // Freeze prop if it is an object
+    if (typeof prop == 'object' && prop !== null)
+      deepFreeze(prop);
+  });
+
+  // Freeze self (no-op if already frozen)
+  return Object.freeze(obj);
+}
+
+obj2 = {
+  internal: {}
+};
+
+deepFreeze(obj2);
+obj2.internal.a = 'anotherValue';
+obj2.internal.a; // undefined
+```
+
+2. [Immutable.js](https://github.com/facebook/immutable-js/)
+
+# 什么是事件循环 (event loop)？
+参考[博客](https://hellogithub2014.github.io/javascript-event-loop-summary/)
+
+## 请问调用栈 (call stack) 和任务队列 (task queue) 的区别是什么？
+1. 每次事件循坏，JavaScript线程会从任务队列中取出任务放到调用栈中执行。
+2. 调用栈是一个堆栈结构，先进后出；任务队列是一个队列，先进先出
 
 
