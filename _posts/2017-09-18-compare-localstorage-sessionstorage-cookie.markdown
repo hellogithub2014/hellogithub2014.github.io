@@ -42,11 +42,11 @@ tag: [JavaScript]
 	```
 	是可见的。
 	或者将`path`设为`/`，那么该`cookie`对于任何
-	
+
 	```html
 	http://www.example.com
 	```
-	下面的页面都是可见的。	
+	下面的页面都是可见的。
 3. 有些大型网站想要在子域间共享`cookie`，可以通过设置子域`cookie`的`domain`来达到目的。例如如果将
 	```
 	catalog.example.com
@@ -60,6 +60,8 @@ tag: [JavaScript]
 	均可见。
 4. secure
 	一个布尔值，一旦`cookie`被标识为“安全的”，那么只能当浏览器和服务器通过`HTTPS`或者其他的安全协议链接时才能传递它。
+5. httpOnly
+	只有在服务器端才能操作cookie，浏览器端无法修改
 
 ## storage事件
  无论什么时候存储在`localStorage`、`sessionStorage`中的数据发生改变，浏览器都会在其他对此`storage`可见的窗口对象上出发`storage`事件（类似广播）。**注意**只有当数据真正发生改变时才会出发此事件，如果设置的值和已存在的值一样，或者删除一个本来就不存在的数据项都不会触发该事项。
