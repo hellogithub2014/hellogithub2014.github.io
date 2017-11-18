@@ -1,7 +1,7 @@
 ---
 title: "css面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2017-11-11 20:30:00 +0800
+date: 2017-11-15 20:30:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [CSS,INTERVIEW]
 ---
@@ -85,15 +85,15 @@ span{
 # 列举不同的清除浮动的技巧，并指出它们各自适用的使用场景。
 
 1. 添加空 div 标签
-	
+
 	```html
 	<div style="clear: both;"></div>
 	```
-	
+
 	缺点是添加太多无意义的空标签
 
 2. 使用伪元素
-	
+
 	```html
 	<div class="clearfix">
     <div class="child">this is a float element</div>
@@ -104,11 +104,11 @@ span{
 	```css
 	.clearfix::after {
 	  content: "";
-	  display: block; 
+	  display: block;
 	  clear: both;
 	}
-	```	
-	
+	```
+
 	**clearfix是加在浮动元素的父容器上**
 
 # 请解释 CSS sprites，以及你要如何在页面或网站中实现它。
@@ -189,7 +189,7 @@ Image Replacement 是说用图片把文字替换掉的技术，常用在标题�
 
 * 从右向左匹配
 * ID最快，Universal最慢 - 有四种类型的key selector，解析速度由快到慢依次是：ID、class、tag和universal
-	
+
 	```css
 	#main-navigation {   }      /* ID（最快） */
 	body.home #page-wrap {   }  /* ID */
@@ -200,19 +200,19 @@ Image Replacement 是说用图片把文字替换掉的技术，常用在标题�
 	* {   }                     /* Universal（慢） */
 	#content [title='home']     /* Universal */
 	```
-	
+
 * 不要tag-qualify，永远不要这样做
-	
+
 	```css
 	ul#main-navigation {  }
 	```
-	
+
 * 后代选择器最糟糕
-	
+
 	```css
 	html body ul li a {  }
 	```
-	
+
 # 使用 CSS 预处理器的优缺点有哪些？
 ## 请描述你曾经使用过的 CSS 预处理器的优缺点。
 
@@ -235,7 +235,7 @@ sass预处理器
 **[@font-face](http://www.w3school.com.cn/css3/css3_font.asp)**
 
 ```html
-<style> 
+<style>
 @font-face
 {
 		font-family: myFirstFont;
@@ -300,7 +300,7 @@ selector:pseudo-element {
 .banner_title::before {
     margin-right: 10px;
  }
-  
+
  .banner_title::after {
     margin-left: 10px;
  }
@@ -386,7 +386,7 @@ box-sizing: content-box|border-box|inherit;
 	-webkit-box-sizing: content-box;
 	-o-box-sizing: content-box;
 	-ms-box-sizing: content-box;
-	box-sizing: content-box; 
+	box-sizing: content-box;
 }
 
 #borderBox img{
@@ -438,7 +438,7 @@ box-sizing: content-box|border-box|inherit;
 
 >Turns off the display of an element so that it has no effect on layout (the document is rendered as though the element did not exist). All descendant elements also have their display turned off.
 To have an element take up the space that it would normally take, but without actually rendering anything, use the visibility property instead.
-	
+
 # 请解释 inline 和 inline-block 的区别？
 
 **[stackoverflow](https://stackoverflow.com/questions/8969381/what-is-the-difference-between-display-inline-and-display-inline-block/14033814#14033814)**
@@ -550,7 +550,7 @@ CSS 优先级法则：
 	```html
 	<meta name=”viewport” content=”width=device-width, initial-scale=1.0, 			maximum-scale=1.0, user-scalable=0”/>
 	```
-	
+
 	* 视窗宽度width=device-width为设备宽度
 	* 视窗缩放initial-scale=1  不可缩放状态   
 	* maximum-scale=1  不可放大
@@ -558,14 +558,14 @@ CSS 优先级法则：
 
 2. media query
 	1. 通过link标签
-	
+
 		```html
 		<!--当前屏幕宽度小于600px的时候，加载style1.css文件来渲染页面-->
 		<link rel=”stylesheet” type=”text/css” media=”screen and(max-width: 600px)” 				href=”style1.css”/>
 		```
-		
+
 	2. CSS中直接设置
-		
+
 		```css
 		@media screen and(max-width: 600px){
 				/* 具体的CSS属性设置 */
