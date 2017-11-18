@@ -128,13 +128,13 @@ HTTP2的多路复用允许同时通过单一的 HTTP/2 连接发起多重的请�
 
 HTTP/1.1
 
-![](https://pic1.zhimg.com/50/da14f0743605dfd3162b709adbb601b4_hd.jpg)
+![]({{site.url}}/assets/img/general-interview-questions/http1.1.png)
 
 HTTP/2
 
-![](https://pic3.zhimg.com/50/cf8b9bbee7dc03970829ef722be61492_hd.jpg)
+![]({{site.url}}/assets/img/general-interview-questions/http2.png)
 
-![](https://pic2.zhimg.com/50/b1e608ddb7493608efea3e76912aabe1_hd.jpg)
+![]({{site.url}}/assets/img/general-interview-questions/compare-http1-http2.png)
 
 # 请说出三种减少页面加载时间的方法。(加载时间指感知的时间或者实际加载时间)
 
