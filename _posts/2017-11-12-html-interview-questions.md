@@ -177,3 +177,59 @@ $('#content').data('userList');//读
 jade、angular模板
 
 
+# `input`和`textarea`区别
+
+```html
+<textarea name="textarea" rows="10" cols="50">
+    Write something here
+</textarea>
+
+<input type="range" name="range" value="2" min="0" max="100" step="10">
+<input type="file" name="file" accept="image/*">
+<input type="month" name="month" value="2017-11">
+```
+
+1.	<textarea>标签是成对的，有结束标签进行闭合，标签的内容写在标签对中间；<input>是单个标签，标签的内容通过 value 属性设置；
+2.	<textarea>的值是纯文本；<input>的值根据类型不同而不同；
+3.	<textarea>没有type属性；<input>有多种type来满足表单与用户的数据交互；
+4.	<textarea>的值可以是多行的，并且有rows和cols来控制多行结构；<input>的值是单行的；
+
+# 用一个div模拟textarea的实现
+
+[segmentfault](https://segmentfault.com/a/1190000011837105)
+[张鑫旭](http://www.zhangxinxu.com/wordpress/2010/12/div-textarea-height-auto/)
+
+1.	给 div 添加一个HTML全局属性：contenteditable="true"，使 div 元素变成用户可编辑的;
+2.	给 div 添加样式 resize: vertical;，使 div 可以被用户调整尺寸，注意：别忘了设置 overflow: auto; 样式，因为resize样式不适用于overflow: visible;的块，不然 resize 不起效哦；
+3.	增加一个属性：placeholder="I am placeholder"；
+4.	通过 CSS 选择器获取并显示 placeholder 的值；
+
+```html
+<div class="test_box" contenteditable="true" placeholder="This is placeholder"></div>
+```
+
+```css
+.test_box {
+   width: 300px;
+   min-height: 200px; /* 可使高度自适应 */ 
+   padding: 4px;
+   border: 1px solid red;
+   /* resize: vertical; */ /* 可调节高度 */ 
+   /* overflow: auto; */
+}
+
+/* 设置placeholder */
+.test_box:empty::before { /* 这里的before使用两个冒号，不然不起作用。。 */
+   content: attr(placeholder);
+   color: #bbb;
+}
+```
+
+* **`contenteditable`** - HTML5全局属性,规定是否可编辑元素的内容。
+* **`:empty`** - 选择每个没有任何子级的元素（包括文本节点）。
+* **`::before`** - 在被选元素的内容前面插入内容,使用 **content 属性**来指定要插入的内容。
+* **`content`** - :before 及 :after 伪元素配合使用，来插入生成内容
+* **`attr()`** - 获取选择到的元素的某一HTML属性值，并用于其样式.它也可以用于伪元素，属性值采用伪元素所依附的元素。[MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/attr)
+
+**TODO div模拟select**
+

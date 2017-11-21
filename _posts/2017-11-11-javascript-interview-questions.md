@@ -345,7 +345,38 @@ var curry = function(fn) {
 **[参见博客](https://hellogithub2014.github.io/javascript-bind/)**
 
 # 请指出浏览器特性检测，特性推断和浏览器 UA 字符串嗅探的区别？
-**TODO看书回答**
+
+**特性检测**
+
+目标不是识别特定的浏览器，而是识别浏览器的能力。采用这种方式不必顾及特定的浏览器如何如何，只要确定浏览器支持特定的能力，就可以给出解决方案
+
+```js
+if(object.propertyInQuestion){
+	// 使用object.propertyInQuestion
+}
+```
+
+**怪癖检测**
+
+目标是识别浏览器的特殊行为，但与能力检测确认浏览器支持什么能力不同，怪癖检测是想要知道浏览器存在什么缺陷。通常需要运行一小段代码，以确定某一特性不能正常工作。
+
+例如IE8及更早版本中存在一个bug，即如果某个实例属性与[[Enumerable]]标记为false的某个原型属性同名，那么该实例属性将不会出现在for-in循环中，可以使用如下代码：
+
+```js
+var hasDontEnumQuirk=function(){
+	var o={toString:function(){}};
+	for(var prop in o){
+		if(prop == "toString"){
+			return false;
+		}
+	}
+	return true;
+}
+```
+
+**用户代理检测**
+
+通过检测用户代理字符串来确定实际使用过的浏览器。`userAgent`请求头有关。
 
 # 请尽可能详尽的解释 Ajax 的工作原理。
 ## 工作原理
@@ -471,7 +502,44 @@ Array.prototype.concat=function(arr){
 ```
 
 # 请指出 document load 和 document DOMContentLoaded 两个事件的区别。
-**TODO查资料**
+
+参考[知乎文章](https://zhuanlan.zhihu.com/p/25876048)
+
+**当一个 HTML 文档被加载和解析完成后，DOMContentLoaded 事件便会被触发。**
+
+浏览器向服务器请求到了 HTML 文档后便开始解析，产物是 DOM（文档对象模型），到这里 HTML 文档就被加载和解析完成了。
+
+**同步脚本**
+
+JavaScript 可以阻塞 DOM 的生成，也就是说当浏览器在解析 HTML 文档时，如果遇到 `<script>`，便会停下对 HTML 文档的解析，转而去处理脚本。如果脚本是内联的，浏览器会先去执行这段内联的脚本，如果是外链的，那么先会去加载脚本，然后执行。在处理完脚本之后，浏览器便继续解析 HTML 文档。
+
+另外，因为 JavaScript 可以查询任意对象的样式，所以意味着在 CSS 解析完成，也就是 CSSOM 生成之后，JavaScript 才可以被执行。
+
+在任何情况下，DOMContentLoaded 的触发不需要等待图片等其他资源加载完成。
+
+所以，**当文档中没有脚本时，浏览器解析完文档便能触发 DOMContentLoaded 事件；如果文档中包含脚本，则脚本会阻塞文档的解析，而脚本需要等 CSSOM 构建完成才能执行。**
+
+**defer 与 DOMContentLoaded**
+
+如果 script 标签中包含 defer，那么这一块脚本将不会影响 HTML 文档的解析，而是等到 HTML 解析完成后才会执行。而 DOMContentLoaded 只有在 defer 脚本执行结束后才会被触发。 所以这意味着什么呢？HTML 文档解析不受影响，等 DOM 构建完成之后 defer 脚本执行，但脚本执行之前需要等待 CSSOM 构建完成。在 DOM、CSSOM 构建完毕，defer 脚本执行完成之后，DOMContentLoaded 事件触发。
+
+即 DOM+CSSOM ------>   defer script  ------> DOMContentLoaded
+
+**async 与 DOMContentLoaded**
+
+如果 script 标签中包含 async，则 HTML 文档构建不受影响，解析完毕后，DOMContentLoaded 触发，而不需要等待 async 脚本执行、样式表加载等等。
+
+即    DOM  ------>  DOMContentLoaded；  
+或者	DOM+CSSOM ------>   async script ----->  DOM ------> DOMContentLoaded
+
+取决于 async的加载速度。
+
+**DOMContentLoaded 与 load**
+
+当 HTML 文档解析完成就会触发 DOMContentLoaded，而所有资源加载完成之后，load 事件才会被触发。
+
+`$(document).ready(function(){}` 监听的是DOMContentLoaded事件；
+`$(document).load(function(){}` 监听的是load事件；
 
 # `==` 和 `===` 有什么不同？
 
@@ -674,4 +742,325 @@ obj2.internal.a; // undefined
 1. 每次事件循坏，JavaScript线程会从任务队列中取出任务放到调用栈中执行。
 2. 调用栈是一个堆栈结构，先进后出；任务队列是一个队列，先进先出
 
+
+## 描述浏览器重绘和回流，哪些方法能够改善由于dom操作产生的回流
+**TODO**
+## 图片预览
+
+```html
+<input type="file" name="file" onchange="showPreview(this)" />
+<img id="portrait" src="" width="70" height="75">
+```
+
+```js
+function showPreview(source) {
+  var file = source.files[0];
+  if(window.FileReader) {
+      var fr = new FileReader();
+      fr.onloadend = function(e) {
+        document.getElementById("portrait").src = e.target.result;
+      };
+      fr.readAsDataURL(file);
+  }
+}
+```
+
+## 算法
+
+[常见算法面试题](https://mp.weixin.qq.com/s/lracv6RudV1DHY7cYXRG-w)
+
+
+## 实现页面进度条
+
+阅读[公众号文章](https://mp.weixin.qq.com/s/1sNFQz1-R4ZLyv5wAuz4Ag)
+
+## jQuery extend函数源码
+
+此题应当考察的是深拷贝、浅拷贝的知识。
+
+**深拷贝**
+
+1. 利用JSON
+
+	```js
+	var copy = JSON.parse(JSON.stringify(target));
+	```
+	
+	它的缺点是依赖JSON的解析，如果某个属性值不能被JSON解析（如函数），那么这个属性值不会被拷贝过去。
+
+2. 查看jQuery.extend源码[公众号文章](https://mp.weixin.qq.com/s/S2T52-yyK3isO0zVABli0g)
+	
+	```js
+	jQuery.extend = jQuery.fn.extend = function() {
+    var options, name, src, copy, copyIsArray, clone,
+        target = arguments[ 0 ] || {},
+        i = 1,
+        length = arguments.length,
+        deep = false;
+    // Handle a deep copy situation
+    if ( typeof target === "boolean" ) {
+        deep = target;
+        // Skip the boolean and the target
+        target = arguments[ i ] || {};
+        i++;
+    }
+    // Handle case when target is a string or something (possible in deep copy)
+    if ( typeof target !== "object" && !jQuery.isFunction( target ) ) {
+        target = {};
+    }
+    // Extend jQuery itself if only one argument is passed
+    if ( i === length ) {
+        target = this;
+        i--;
+    }
+    for ( ; i < length; i++ ) {
+        // Only deal with non-null/undefined values
+        if ( ( options = arguments[ i ] ) != null ) {
+            // Extend the base object
+            for ( name in options ) {
+                src = target[ name ];
+                copy = options[ name ];
+                // Prevent never-ending loop
+                if ( target === copy ) {
+                    continue;
+                }
+                // Recurse if we're merging plain objects or arrays
+                if ( deep && copy && ( jQuery.isPlainObject( copy ) || ( copyIsArray = Array.isArray( copy ) ) ) ) {
+                    if ( copyIsArray ) {
+                        copyIsArray = false;
+                        clone = src && Array.isArray( src ) ? src : [];
+                    } else {
+                        clone = src && jQuery.isPlainObject( src ) ? src : {};
+                    }
+                    // Never move original objects, clone them
+                    target[ name ] = jQuery.extend( deep, clone, copy );
+                // Don't bring in undefined values
+                } else if ( copy !== undefined ) {
+                    target[ name ] = copy;
+                }
+            }
+        }
+    }
+    // Return the modified object
+    return target;
+};
+	```
+	
+**浅拷贝**
+
+实际jQuery.extend就能实现浅拷贝了。这里给一个简单版的：
+
+```js
+function assign(target, ...origins) {
+    target = target || {};
+    for (let origin of origins) {
+        for (let key in origin) {
+            if (origin.hasOwnProperty(key) && !target.hasOwnProperty(key)) {
+                target[key] = origin[key];
+            }
+        }
+    }
+    return target;
+}
+
+var a = { a: 1, b: 2, c: { x: 1 } };
+
+var b = { a: 1, b: 2, c: { x: 2 }, d: 4 };
+
+console.log(assign(a, b)); // { a: 1, b: 2, c: { x: 1 }, d: 4 }
+```
+
+## 实现拖拽功能，比如把5个兄弟节点中的最后一个节点拖拽到节点1和节点2之间
+**TODO**
+
+## 实现parseInt
+
+```js
+function myParseInt(str) {
+    if (!str) { // 空值
+        return NaN;
+    }
+
+    if (Object.prototype.toString.call(str) !== '[object String]') { // 非字符串
+        return str;
+    }
+
+    if (str.trim() === "") { // 空串
+        return NaN;
+    }
+
+    str = str.trim(); // 去除多余空格
+
+    let isMinus = false; // 是否负数
+    if (str[0] === "-") {
+        isMinus = true;
+        str = str.slice(1);
+    }
+
+    // 如果以非数字开头，返回NaN；
+    const firstCharCode = str[0].charCodeAt();
+    if (firstCharCode <= '0'.charCodeAt() || firstCharCode >= '9'.charCodeAt()) {
+        return NaN;
+    }
+
+    var temp = doParse(str);
+    return isMinus ? -1 * temp : temp;
+
+}
+
+function doParse(str) {
+    var result = 0;
+    const charCode0 = '0'.charCodeAt();
+    const charCode9 = '9'.charCodeAt();
+
+    for (let i = 0; i < str.length; i++) {
+        const curCharCode = str[i].charCodeAt();
+        if (curCharCode >= charCode0 && curCharCode <= charCode9) {
+            result = result * 10 + curCharCode - charCode0; // 默认10进制
+        } else { // 如果中间出现了非数字，则截断
+            break;
+        }
+    }
+    return result;
+}
+
+console.log(myParseInt("")); // NaN
+console.log(parseInt("")); // NaN
+console.log(myParseInt("123a")); // 123
+console.log(parseInt("123a")); // 123
+console.log(myParseInt("-123a")); // -123
+console.log(parseInt("-123a")); // -123
+console.log(myParseInt("a123")); // NaN
+console.log(parseInt("a123")); // NaN
+
+```
+
+
+## promise的实现原理，进一步会问async、await是否使用过
+**promise原理**
+
+没有看明白，附上[参考](https://segmentfault.com/a/1190000009478377)
+
+**async、await**
+
+```js
+async function testAsync() {
+    return new Promise((resolve, reject) =>
+        setTimeout(resolve(100), 2000)
+    );
+}
+
+(async function() {
+    const res = await testAsync();
+    console.log(res);
+})();
+```
+
+**async/await 与promise/generator对比**
+
+使用promise+generator：
+
+```js
+function foo(x,y) { 
+	return request( "http://some.url.1/?x=" + x + "&y=" + y );  // 一个promise
+} 
+
+function *main() { 
+	try { 
+		var text = yield foo( 11, 31 ); 
+		console.log( text ); 
+	} 
+	catch (err) { 
+		console.error( err ); 
+	} 
+} 
+
+var it = main(); 
+var p = it.next().value; 
+// wait for the `p` promise to resolve 
+p.then( 
+	function(text){ 
+		it.next( text ); 
+	}, 
+	function(err){ 
+		it.throw( err ); 
+	}
+);
+```
+
+使用async+await
+
+```js
+function foo(x,y) { 
+	return request( "http://some.url.1/?x=" + x + "&y=" + y );  // 一个promise
+} 
+
+async function main(){
+	try { 
+		var text = await foo( 11, 31 ); 
+		console.log( text ); 
+	} 
+	catch (err) { 
+		console.error( err ); 
+	} 
+}
+
+main();
+```
+
+## vue双向数据绑定的实现
+
+**[公众号文章](https://mp.weixin.qq.com/s?__biz=MjM5MTA1MjAxMQ==&mid=2651226470&idx=2&sn=001eb263b242cb43c47a1889d69c6de2&chksm=bd4958e28a3ed1f45698d903a6ff9bc8c4867f2c94a2070c2fb32c5db09002c116171bacce03&scene=38#wechat_redirect)**
+
+
+## 图片懒加载
+
+[参考1](http://www.jianshu.com/p/4f6ea540516a)
+[参考2](https://www.cnblogs.com/flyromance/p/5042187.html)
+
+**原理**： 页面中的img元素，如果没有src属性，浏览器就不会发出请求去下载图片，一旦通过javascript设置了图片路径src，浏览器才会送请求。 
+
+生产环境推荐使用**[jquery-lazyload](https://github.com/tuupola/jquery_lazyload)**
+
+**步骤**
+
+1. 每个img初始时不设置src，而是将值存在一个自定义属性如data-url中
+
+	```html
+	<img data-url="www.test.com/1.png">
+	```
+
+2. 在滚动事件中，判断图片是否出现在了视口中，如果出现了则将img的src设置为data-url存储的值。
+	1. 判断元素是否出现在视口中，可以使用元素的文档坐标，与视口的高度+滚动条高度作对比
+	
+		```js
+		// 获取元素距离文档顶部的距离，即文档坐标的“高”
+		function getTop(obj){
+		    var h = 0;
+		    while(obj){
+		        h += obj.offsetTop; // offsetTop距离父元素顶部的距离
+		        obj = obj.offsetParent;
+		    }
+		    return h;
+		}
+		
+		// 视口区高度+滚动条高度
+		var t = document.documentElement.clientHeight
+			 + (document.body.scrollTop || document.documentElement.scrollTop);
+		``` 
+		
+	2. 滚动事件处理	
+	
+		```js
+		var imgs = document.getElementsByTagName('img');
+		window.onscroll = function(){
+		    for(var i=0;i<imgs.length;i++){
+		        if(getTop(imgs[i]) < t){  
+		        		imgs[i].src = imgs[i].getAttribute('data-url'); 
+		        }
+		    } 
+		}
+		``` 
+		
+		
 

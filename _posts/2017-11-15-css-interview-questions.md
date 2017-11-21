@@ -621,3 +621,9 @@ CSS 优先级法则：
 
 * [cnblogs](https://www.cnblogs.com/accordion/p/4593576.html)
 
+# 一像素边框问题
+
+[参考1](http://blog.csdn.net/bbnbf/article/details/51580569)
+[参考2](https://segmentfault.com/a/1190000007604842)
+[参考3](http://www.html-js.com/article/Mobile-terminal-H5-mobile-terminal-HD-multi-screen-adaptation-scheme%203041)
+
