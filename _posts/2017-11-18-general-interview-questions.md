@@ -63,7 +63,7 @@ TODO复制pdf文档，**添加通过学习nodejs、vscode的调试工具来加�
 
 ## SEO
 
-我们做的应用是给自己的客户经理使用，不怎么关注SEO，但了解过angular universal的服务端渲染。**TODOSEO原理**
+我们做的应用是给自己的客户经理使用，不怎么关注SEO，但了解过angular universal的服务端渲染。
 
 ## 高性能
 
@@ -73,15 +73,7 @@ TODO复制pdf文档，**添加通过学习nodejs、vscode的调试工具来加�
 
 **前端**
 
-1. 减少资源请求数，合并多个css/js文件
-2. css文件放置在head，js放置在文档尾部；并酌情使用async、defer、pre-load。
-2. gzip压缩
-3. 利用HTTP缓存 [浏览器缓存博客](https://hellogithub2014.github.io/browser-cache-summary/)
-4. 图片使用雪碧图，或合并到字体文件中
-5. 使用骨架屏优化用户体验（以pc端评论为例）
-6. **TODO 前端性能优化**
-7. cdn托管
-8. 静态资源放在多个域名下，规避浏览器的最大同时请求数目
+参照前端性能优化回答
 
 ## 技术因素
 
@@ -197,5 +189,16 @@ Flash Of Unstyled Content
 
 # 什么是跨域资源共享 (CORS)？它用于解决什么问题？
 **参考跨域博客[](https://hellogithub2014.github.io/front-end-cross-origin-summary/)**
+
+# 前端性能优化
+
+1. 减少资源请求数，合并多个css/js文件
+2. css文件放置在head，js放置在文档尾部；并酌情使用async、defer、pre-load。
+2. gzip压缩
+3. 利用HTTP缓存 [浏览器缓存博客](https://hellogithub2014.github.io/browser-cache-summary/)
+4. 图片使用雪碧图，或合并到字体文件中
+5. 使用骨架屏优化用户体验（以pc端评论为例）
+6. cdn托管
+7. 静态资源放在多个域名下，规避浏览器的最大同时请求数目
 
 

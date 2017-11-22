@@ -231,5 +231,11 @@ jade、angular模板
 * **`content`** - :before 及 :after 伪元素配合使用，来插入生成内容
 * **`attr()`** - 获取选择到的元素的某一HTML属性值，并用于其样式.它也可以用于伪元素，属性值采用伪元素所依附的元素。[MDN](https://developer.mozilla.org/zh-CN/docs/Web/CSS/attr)
 
-**TODO div模拟select**
+# div模拟select
+
+见自己封装的git**[crm-selector](https://github.com/hellogithub2014/crm-selector)**
+
+原理是使用一个div模拟选中的项（即header），点击header展开所有选项（利用ul封装的列表body），然后监听各种事件，改变header的值以及body的显示隐藏。
+
+展开body时，为了随意点击页面其他地方均可收起，用一个类似back-drop的div元素充当背景，点击背景收起body。
 
