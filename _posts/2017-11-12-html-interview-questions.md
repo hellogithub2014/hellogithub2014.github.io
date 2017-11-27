@@ -1,7 +1,7 @@
 ---
 title: "html面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2017-11-12 17:20:00 +0800
+date: 2077-11-12 17:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [HTML,INTERVIEW]
 ---
@@ -211,10 +211,10 @@ jade、angular模板
 ```css
 .test_box {
    width: 300px;
-   min-height: 200px; /* 可使高度自适应 */ 
+   min-height: 200px; /* 可使高度自适应 */
    padding: 4px;
    border: 1px solid red;
-   /* resize: vertical; */ /* 可调节高度 */ 
+   /* resize: vertical; */ /* 可调节高度 */
    /* overflow: auto; */
 }
 

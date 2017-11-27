@@ -1,7 +1,7 @@
 ---
 title: "javascript面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2017-11-11 17:20:00 +0800
+date: 2077-11-11 17:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JAVASCRIPT,INTERVIEW]
 ---
@@ -411,20 +411,20 @@ var xhr=new XMLHttpRequest()
 ### api
 
 1. **open**
-	
+
 	使用XHR第一个要调用的方法就是`open`
-	
+
 	```js
 	open(method:string,url:string,async:boolean)
 	```
-	
+
 	例如：
-	
+
 	```
 	xhr.open("get","www.test.com/test.do",false);
 	```
 2. send - 发送响应，可以在其中传入请求体数据。**如果不需要数据，则必须传入null**
-	
+
 2. 响应属性 - 收到响应后，xhr对象中就有几个相关的属性
 	1. responseText - 作为响应主体返回的文本字符串
 	2. responseXML - 没用过
@@ -434,7 +434,7 @@ var xhr=new XMLHttpRequest()
 3. readyState - 在异步请求中，可以检测xhr对象的readyState属性，表示请求过程的当前活动阶段。他有几个特殊值，我们一般关心的是**4，即完成请求，以收到全部响应数据，而且可以在客户端使用了**。
 
 4.  onreadystatechane - 每次readyState变化时，都会触发此事件。 **必须在open之前指定此事件的处理函数才能保证浏览器兼容性**。 例如：
-	
+
 	```js
 	var xhr = new XMLHttpRequest();
 	xhr.onreadystatechange = function() {
@@ -450,14 +450,14 @@ var xhr=new XMLHttpRequest()
 	xhr.setRequestHeader("MyHeader","123");
 	xhr.send();
 	```
-	
-5. setRequestHeader - 设置请求头，**必须在调用open方法之后且调用send方法之前设置请求头**		
+
+5. setRequestHeader - 设置请求头，**必须在调用open方法之后且调用send方法之前设置请求头**
 6. getRequestHeader - 获取响应头信息
 7. getAllRequestHeader - 获取到所有响应头信息的长字符串
 8. abort - 终止请求
 
-## XHR 2级	
-	
+## XHR 2级
+
 ### FormData
 为序列化表单以及创建与表单格式相同的数据提供了便利。例如上传文件：
 
@@ -643,7 +643,7 @@ JavaScript 可以阻塞 DOM 的生成，也就是说当浏览器在解析 HTML �
 
 如果 script 标签中包含 async，则 HTML 文档构建不受影响，解析完毕后，DOMContentLoaded 触发，而不需要等待 async 脚本执行、样式表加载等等。
 
-即    DOM  ------>  DOMContentLoaded；  
+即    DOM  ------>  DOMContentLoaded；
 或者	DOM+CSSOM ------>   async script ----->  DOM ------> DOMContentLoaded
 
 取决于 async的加载速度。
@@ -941,11 +941,11 @@ function showPreview(source) {
 	```js
 	var copy = JSON.parse(JSON.stringify(target));
 	```
-	
+
 	它的缺点是依赖JSON的解析，如果某个属性值不能被JSON解析（如函数），那么这个属性值不会被拷贝过去。
 
 2. 查看jQuery.extend源码[公众号文章](https://mp.weixin.qq.com/s/S2T52-yyK3isO0zVABli0g)
-	
+
 	```js
 	jQuery.extend = jQuery.fn.extend = function() {
     var options, name, src, copy, copyIsArray, clone,
@@ -1001,7 +1001,7 @@ function showPreview(source) {
     return target;
 };
 	```
-	
+
 **浅拷贝**
 
 实际jQuery.extend就能实现浅拷贝了。这里给一个简单版的：
@@ -1067,11 +1067,11 @@ $(document).ready(function() {
         }
         e.dataTransfer.effectAllowed = "move"; // 改变光标样式
         // 存储拖拽源的列表索引
-        e.dataTransfer.setData("text", $("#test li").index(e.target));     
+        e.dataTransfer.setData("text", $("#test li").index(e.target));
    };
-   
+
 	 // 为了把`li`变为有效的放置目标，需要重写dragenter和dragover事件的默认行为
-	 
+
 	 // 被拖动元素进入放置目标上时
     ul.ondragenter = function(e) {
         if (e.target.nodeName !== "LI") {
@@ -1093,7 +1093,7 @@ $(document).ready(function() {
             return;
         }
         e.preventDefault();
-        
+
 		  // 获取拖拽源的索引
         var sourceIndex = parseInt(e.dataTransfer.getData("text"));
         $(e.target).before($("#test li").get(sourceIndex)); // 将源插入目标前面
@@ -1192,29 +1192,29 @@ async function testAsync() {
 使用promise+generator：
 
 ```js
-function foo(x,y) { 
+function foo(x,y) {
 	return request( "http://some.url.1/?x=" + x + "&y=" + y );  // 一个promise
-} 
+}
 
-function *main() { 
-	try { 
-		var text = yield foo( 11, 31 ); 
-		console.log( text ); 
-	} 
-	catch (err) { 
-		console.error( err ); 
-	} 
-} 
+function *main() {
+	try {
+		var text = yield foo( 11, 31 );
+		console.log( text );
+	}
+	catch (err) {
+		console.error( err );
+	}
+}
 
-var it = main(); 
-var p = it.next().value; 
-// wait for the `p` promise to resolve 
-p.then( 
-	function(text){ 
-		it.next( text ); 
-	}, 
-	function(err){ 
-		it.throw( err ); 
+var it = main();
+var p = it.next().value;
+// wait for the `p` promise to resolve
+p.then(
+	function(text){
+		it.next( text );
+	},
+	function(err){
+		it.throw( err );
 	}
 );
 ```
@@ -1222,18 +1222,18 @@ p.then(
 使用async+await
 
 ```js
-function foo(x,y) { 
+function foo(x,y) {
 	return request( "http://some.url.1/?x=" + x + "&y=" + y );  // 一个promise
-} 
+}
 
 async function main(){
-	try { 
-		var text = await foo( 11, 31 ); 
-		console.log( text ); 
-	} 
-	catch (err) { 
-		console.error( err ); 
-	} 
+	try {
+		var text = await foo( 11, 31 );
+		console.log( text );
+	}
+	catch (err) {
+		console.error( err );
+	}
 }
 
 main();
@@ -1249,7 +1249,7 @@ main();
 [参考1](http://www.jianshu.com/p/4f6ea540516a)
 [参考2](https://www.cnblogs.com/flyromance/p/5042187.html)
 
-**原理**： 页面中的img元素，如果没有src属性，浏览器就不会发出请求去下载图片，一旦通过javascript设置了图片路径src，浏览器才会送请求。 
+**原理**： 页面中的img元素，如果没有src属性，浏览器就不会发出请求去下载图片，一旦通过javascript设置了图片路径src，浏览器才会送请求。
 
 生产环境推荐使用**[jquery-lazyload](https://github.com/tuupola/jquery_lazyload)**
 
@@ -1263,7 +1263,7 @@ main();
 
 2. 在滚动事件中，判断图片是否出现在了视口中，如果出现了则将img的src设置为data-url存储的值。
 	1. 判断元素是否出现在视口中，可以使用元素的文档坐标，与视口的高度+滚动条高度作对比
-	
+
 		```js
 		// 获取元素距离文档顶部的距离，即文档坐标的“高”
 		function getTop(obj){
@@ -1274,24 +1274,24 @@ main();
 		    }
 		    return h;
 		}
-		
+
 		// 视口区高度+滚动条高度
 		var t = document.documentElement.clientHeight
 			 + (document.body.scrollTop || document.documentElement.scrollTop);
-		``` 
-		
-	2. 滚动事件处理	
-	
+		```
+
+	2. 滚动事件处理
+
 		```js
 		var imgs = document.getElementsByTagName('img');
 		window.onscroll = function(){
 		    for(var i=0;i<imgs.length;i++){
-		        if(getTop(imgs[i]) < t){  
-		        		imgs[i].src = imgs[i].getAttribute('data-url'); 
+		        if(getTop(imgs[i]) < t){
+		        		imgs[i].src = imgs[i].getAttribute('data-url');
 		        }
-		    } 
+		    }
 		}
-		``` 
-		
-		
+		```
+
+
 

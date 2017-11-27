@@ -1,7 +1,7 @@
 ---
 title: "前端常见一般面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2017-11-18 11:25:00 +0800
+date: 2077-11-18 11:25:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [INTERVIEW]
 ---

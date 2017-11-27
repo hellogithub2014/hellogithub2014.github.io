@@ -1,7 +1,7 @@
 ---
 title: "前端效率与网络相关面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2017-11-18 11:25:00 +0800
+date: 2077-11-18 11:25:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [INTERVIEW,NETWORK,PERFORMANCE]
 ---
@@ -123,7 +123,7 @@ SSE和websocket不同的是，ws是全双工的，本质上是一个额外的tcp
 
 ### Do Not Track
 
-请求头，意思是拒绝个人信息被收集，是表示拒绝被精准广告追踪的一种方式。 
+请求头，意思是拒绝个人信息被收集，是表示拒绝被精准广告追踪的一种方式。
 
 * 0 - 同意被追踪
 * 1 - 拒绝被追踪
