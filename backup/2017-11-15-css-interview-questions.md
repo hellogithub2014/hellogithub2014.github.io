@@ -627,3 +627,593 @@ CSS 优先级法则：
 [参考2](https://segmentfault.com/a/1190000007604842)
 [参考3](http://www.html-js.com/article/Mobile-terminal-H5-mobile-terminal-HD-multi-screen-adaptation-scheme%203041)
 
+# 两列布局
+
+布局问题参考文章：
+* [CSS 布局经典问题初步整理](http://brianway.github.io/2017/05/18/css-layout-classical-problems/)
+* [CSS 布局说——可能是最全的](http://mp.weixin.qq.com/s/iQ8mSr4oEAC8Ve6IdiN9jQ)
+
+左边定宽，右边自适应
+
+```html
+<div class="left">定宽</div>
+<div class="right">自适应</div>
+```
+
+1. 使用浮动+margin
+
+	```css
+	.left{
+	  width: 200px;
+	  height: 200px;
+	  background: red;
+	  float: left;
+	  display: table;
+	  text-align: center;
+	  line-height: 200px;
+	  color: #fff;
+	}
+	 
+	.right{
+	  margin-left: 210px;
+	  height: 500px;
+	  background: yellow;
+	  text-align: center;
+	  line-height: 600px;
+	}
+	```
+
+2. 
+
+# 三列布局
+
+两边定宽，然后中间的width是auto的，可以自适应内容。
+
+1. 左右两栏使用float属性，中间栏使用margin属性进行撑开
+
+	```html
+	<div class="left">左栏</div>
+	<div class="right">右栏</div>
+	<div class="middle">中间栏</div>
+	```
+
+	```css
+	.left{
+	  width: 200px;
+	  height: 300px; 
+	  background: yellow; 
+	  float: left;    
+	}
+	.right{
+	  width: 150px; 
+	  height: 300px; 
+	  background: green; 
+	  float: right;
+	}
+	.middle{
+	  height:300px; 
+	  background: red; 
+	  margin-left: 220px;
+	  margin-right: 160px;
+	}
+	```
+	
+	**缺点**是当宽度小于左右两边宽度之和时，右侧栏会被挤下去。
+
+2. 使用position定位实现，即左右两栏使用position进行定位，中间栏使用margin进行定位
+
+	```html
+	<div class="left">左栏</div>
+	<div class="right">右栏</div>
+	<div class="middle">中间栏</div>
+	```
+
+	```css
+	.left{
+    background: yellow;
+    width: 100px;
+    height: 300px;
+    position: absolute;
+    top: 0;
+    left: 0;
+	}
+	.middle{
+	    height: 300px;
+	    margin: 0 120px;
+	    background: red;
+	}
+	.right{
+	    height: 300px;
+	    width: 100px;
+	    position: absolute;
+	    top: 0;
+	    right: 0;
+	    background: green;
+	}
+	```
+	
+	**缺点**是当父元素有内外边距时，会导致中间栏的位置出现偏差。
+
+3. **双飞翼布局**,关键是 浮动 + 负margin的使用。
+
+	```html
+	<div class="middle"><!--注意中间一栏先写，因为是主题内容，优先渲染-->
+        <div class="main">中间</div>
+    </div>
+    <div class="left">
+        左栏
+    </div>
+    <div class="right">
+        右栏
+    </div>
+	```
+
+	```css
+	.wrapper{
+    overflow: hidden;  //清除浮动
+	}
+	.middle{
+	    width: 100%;
+	    float: left;
+	}
+	.middle .main{
+	    margin: 0 120px;
+	    background: red;
+	}
+	.left{
+	    width: 100px;
+	    height: 100px;
+	    float: left;
+	    background: green;
+	    margin-left: -100%;
+	}
+	.right{
+	    width: 100px;
+	    height: 100px;
+	    float: left;
+	    background: yellow;
+	    margin-left: -100px;
+	}
+	```
+
+4. **圣杯布局**, 关键思想与双飞翼布局相同，都是先利用float+负margin使三列处于同一行。之后因为圣杯的html结构原因，需要通过设置padding+relative定位的方式使得三列的内容不重叠。可以参见[简书](http://www.jianshu.com/p/f9bcddb0e8b4)来理解详细细节。
+
+	```html
+	<div class="wrapper">
+	    <div class="middle">中间 </div><!--同样中间一栏放前面优先渲染-->
+	    <div class="left">左栏</div>
+	    <div class="right">右栏</div>
+	</div>	
+	```
+
+	```css
+	.wrapper{
+	    overflow: hidden; 
+	    padding:0 120px;
+	}
+	.middle{
+	    width:100%;
+	    float: left;
+	    background: rgba(255,0,0,0.8);
+	}
+	
+	.left{
+	    width: 100px;
+	    height: 100px;
+	    float: left;
+	    position:relative;
+	    left:-120px;
+	    background: rgba(0,255,0,0.2);
+	    margin-left: -100%;
+	}
+	.right{
+	    width: 100px;
+	    height: 100px;
+	    float: left;
+	    position:relative;
+	    left:120px;
+	    background: rgba(255,255,0,0.5);
+	    margin-left: -100px;
+	}
+	```
+
+5. **flex布局**
+
+	[图解CSS3 Flexbox属性](https://www.w3cplus.com/css3/a-visual-guide-to-css3-flexbox-properties.html)
+
+	```html
+	<div class="wrapper">
+	    <div class="left">左栏</div>
+	    <div class="middle">中间 </div>
+	    <div class="right">右栏</div>
+	</div>	
+	```
+
+	```css
+	.wrapper{
+	    display: flex;
+	}
+	.left{
+	    width: 100px;
+	    height: 200px;
+	    background: green;
+	}
+	.middle{
+	    width: 100%;
+	    background: red;
+	}
+	.right{
+	    width: 100px;
+	    height: 100px;
+	    background: yellow;
+	}
+	```
+
+	**缺点**是老版本浏览器不兼容，如ie9
+
+
+# 居中
+
+[参考文档](https://css-tricks.com/centering-css-complete-guide/)
+
+## 水平居中
+
+**行内元素inline/inline-`*`** - `text-align: center;`
+
+```html
+<span  class="center-inline">woshiccc</span>
+```
+
+```css
+.center-inline{
+  text-align:center;
+  border:1px solid red;
+  width:100%;
+  display:inline-block;
+}
+```
+
+**块级元素** - `margin:0 auto;`
+
+```html
+<div class="center">test-center</div>
+```
+
+```css
+.center{
+  width:100px;
+  margin:0 auto;
+  border:1px solid green;
+}
+```
+
+**多个块级元素** - 对父元素设置 `text-align: center;`，对子元素设置 `display: inline-block;`
+
+```html
+<div class="wrapper">
+   <div class="left">左栏</div>
+   <div class="middle">中间</div>
+   <div class="right">右栏</div>
+</div>
+```
+
+```css
+.wrapper{
+  text-align:center;
+}
+
+.wrapper div{
+  display:inline-block;
+}
+
+.left{
+    width: 200px;
+    height: 200px;
+    background: green;
+}
+.middle{
+    width: 220px;
+    background: red;
+}
+.right{
+    width:200px;
+    height: 100px;
+    background: yellow;
+}
+```
+
+## 垂直居中
+
+### 行内元素 inline/inline-*
+
+**单行**
+
+* 设置上下 padding 相等
+* 设置 line-height 和 height 相等
+
+```html
+<main>
+  <a href="#0">We're</a>
+  <a href="#0">Centered</a>
+  <a href="#0">Bits of</a>
+  <a href="#0">Text</a>
+</main>
+```
+
+```css
+main a {
+  background: black;
+  color: white;
+  padding: 10px 10px;
+  text-decoration: none;
+}
+
+// 或者
+main a {
+  background: black;
+  color: white;
+  line-height:50px;
+  height:50px;
+  display:inline-block;
+  text-decoration: none;
+}
+```
+
+**多行**
+
+1. 设置 `display: table-cell;` 和 `vertical-align: middle;`
+
+```html
+<div class="center-table">
+  <p>I'm vertically centered multiple lines of text in a CSS-created table layout.</p>
+</div>
+```
+
+```css
+.center-table {
+  display: table;
+  height: 250px;
+  background: white;
+  width: 240px;
+  margin: 20px;
+}
+.center-table p {
+  display: table-cell;
+  margin: 0;
+  background: black;
+  color: white;
+  padding: 20px;
+  border: 10px solid white;
+  vertical-align: middle;
+}
+```
+
+2. 使用`flex`布局
+
+```html
+<div class="flex-center">
+  <p>I'm vertically centered multiple lines of text in a flexbox container.</p>
+</div>
+```
+
+```css
+.flex-center {
+  background: black;
+  color: white;
+  border: 10px solid white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 200px; // 需要父元素有一个固定的高度
+  resize: vertical;
+  overflow: auto;
+}
+```
+
+3. 使用伪元素
+
+```html
+<div class="ghost-center">
+  <p>I'm vertically centered multiple lines of text in a container. Centered with a ghost pseudo element</p>
+</div>
+```
+
+```css
+
+div {
+  background: white;
+  width: 240px;
+  height: 200px;
+  margin: 20px;
+  color: white;
+  resize: vertical;
+  overflow: auto;
+  padding: 20px;
+}
+
+.ghost-center::before {
+  content: " ";
+  display: inline-block;
+  height: 100%;
+  width: 1%;
+  vertical-align: middle;
+}
+
+.ghost-center p {
+  display: inline-block;
+  vertical-align: middle;
+  width: 190px;
+  margin: 0;
+  padding: 20px;
+  background: black;
+}
+```
+
+### 块级元素
+
+**高度已知** - 父元素需使用相对布局,子元素使用绝对布局, `top: 50%;`，再用负的 `margin-top` 把子元素往上拉一半的高度.
+
+```html
+<div>
+	<p>inner</p>
+</div>
+```
+
+```css
+div{
+  height:200px;
+  width:200px;
+  border:1px solid red;
+  position:relative;
+}
+
+p{
+  margin-top:-10px;
+  height:20px; // 需要知道子元素高度，否则无法确定margin-top的值
+  border:1px solid green;
+  position:absolute;
+  top:50%;
+}
+```
+
+**高度未知** - 父元素需使用相对布局,子元素使用绝对布局 `position: absolute; top: 50%; transform: translateY(-50%);`
+
+```html
+<div>
+	<p>inner</p>
+</div>
+```
+
+```css
+div{
+  height:200px;
+  width:200px;
+  border:1px solid red;
+  position:relative;
+}
+
+p{
+  /* height:20px; */
+  border:1px solid green;
+  position:absolute;
+  top:50%;
+  transform:translateY( -50% );
+  /* margin-top:-10px; */
+}
+```
+
+**使用flex布局** - 选择方向，`justify-content: center;`
+
+```html
+<main>
+  <div>
+     I'm a block-level element with an unknown height, centered vertically within my parent.
+  </div>
+</main>
+```
+
+```css
+main {
+  background: white;
+  height: 300px;
+  width: 200px;
+  padding: 20px;
+  margin: 20px;
+  display: flex; // 关键的3句
+  flex-direction: column;
+  justify-content: center;
+  resize: vertical;
+  overflow: auto;
+}
+
+main div {
+  background: black;
+  color: white;
+  padding: 20px;
+  resize: vertical;
+  overflow: auto;
+}
+```
+
+## 水平垂直居中
+
+html结构：
+
+```html
+<main>
+  <div>
+     I'm block
+  </div>
+</main>
+```
+
+**定高定宽** - 先用绝对布局 `top: 50%; left: 50%;`，再用和宽高的一半相等的负 margin 把子元素回拉.
+
+```css
+main {
+  background: white;
+  height: 300px;
+  width: 300px;
+  position:relative;
+}
+
+main div {
+  width:100px;
+  height:30px;
+  background: black;
+  color: white;
+  position:absolute;
+  top:50%;
+  left:50%;
+  margin-top:-15px;
+  margin-left:-50px;
+}
+```
+
+**高度和宽度未知** - 与上面的类似，不同之处在于不使用负margin来调整位置，而是使用`transform`
+
+```css
+main div {
+  background: black;
+  color: white;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+```
+
+**flex** - `justify-content: center; align-items: center;`
+
+```css
+main {
+  background: white;
+  height: 200px;
+  width: 60%;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  resize: both; // 需要设置overflow才能调整大小
+  overflow: auto;
+}
+
+main div {
+  background: black;
+  color: white;
+  width: 50%;
+  padding: 20px;
+  resize: both;
+  overflow: auto;
+}
+```
+
+# css grid布局
+
+* [CSS Grid Layout: A Quick Start Guide](https://webdesign.tutsplus.com/tutorials/css-grid-layout-quick-start-guide--cms-27238)
+* [CSS Grid Layout: Fluid Columns and Better Gutters](https://webdesign.tutsplus.com/tutorials/css-grid-layout-units-of-measurement-and-basic-keywords--cms-27259)
+* [CSS Grid Layout: Using Grid Areas](https://webdesign.tutsplus.com/tutorials/css-grid-layout-using-grid-areas--cms-27264)
+* [CSS Grid Layout: Going Responsive](https://webdesign.tutsplus.com/tutorials/css-grid-layout-going-responsive--cms-27270)
+* [Understanding the CSS Grid “Auto-Placement Algorithm”](https://webdesign.tutsplus.com/tutorials/understanding-the-css-grid-auto-placement-algorithm--cms-27563)
+
