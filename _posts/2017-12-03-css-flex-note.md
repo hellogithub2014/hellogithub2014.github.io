@@ -8,7 +8,7 @@ tag: [CSS]
 
 # 前言
 
-前端时间学习了flex布局，是[这篇博客](https://www.w3cplus.com/css3/a-visual-guide-to-css3-flexbox-properties.html)， 觉得很神奇。 正好在很多例如两列布局、三列布局中flex可以很轻松的完成任务。 于是写这篇博客记录一下flex在布局中的应用。 
+前端时间学习了flex布局，是[这篇博客](https://www.w3cplus.com/css3/a-visual-guide-to-css3-flexbox-properties.html)， 觉得很神奇。 正好在很多例如两列布局、三列布局中flex可以很轻松的完成任务。 于是写这篇博客记录一下flex在布局中的应用。
 
 # 两列布局
 
@@ -18,7 +18,7 @@ tag: [CSS]
 <div class="wrapper">
     <div class="left">左栏</div>
     <div class="middle">中间中间中间中间中间中间中间中间中间中间中间中间中间 </div>
-</div>	
+</div>
 ```
 
 ```css
@@ -29,7 +29,7 @@ tag: [CSS]
 .left {
     height: 200px;
     /* shrink是关键，用于表示在空间不够时保持原有大小 */
-    flex-shrink: 0; 
+    flex-shrink: 0;
     flex-basis: 100px;
     /* 或者使用简写属性 */
     /* flex:0 0 100px; */
@@ -37,7 +37,6 @@ tag: [CSS]
 }
 
 .middle {
-    width: 100%;
     background: red;
 }
 ```
@@ -48,12 +47,12 @@ tag: [CSS]
 <div>
    <em>张三：</em>
    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempora laborum minus voluptatem quis tempore, expedita, fugit aliquid ipsum totam atque eos asperiores. Odio repellat sit molestiae consequuntur, ex quo perferendis.</p>
-   <em>2017-09-09 09:09</em>	
+   <em>2017-09-09 09:09</em>
 </div>
 <div>
-   <em>张三回复李四：</em>
+   <em class="indent">张三回复李四：</em>
    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Tempora laborum minus voluptatem quis tempore, expedita, fugit aliquid ipsum totam atque eos asperiores. Odio repellat sit molestiae consequuntur, ex quo perferendis.</p>
-   <em>2017-09-09 09:09</em>	
+   <em>2017-09-09 09:09</em>
 </div>
 ```
 
@@ -69,6 +68,9 @@ div{
 em{
   white-space:nowrap;
 }
+.indent{
+  text-indent:40px;
+}
 ```
 
 # 三列布局
@@ -79,7 +81,7 @@ em{
 <div class="wrapper">
 	    <div class="left">左栏</div>
 	    <div class="middle">中间中间中间中间中间中间中间中间中间中间中间中间中间111 </div>
-        <div class="right">右栏</div>	
+        <div class="right">右栏</div>
   </div>
 ```
 
@@ -91,7 +93,7 @@ em{
 .left {
     height: 200px;
     /* shrink是关键，用于表示在空间不够时保持原有大小 */
-    flex-shrink: 0; 
+    flex-shrink: 0;
     flex-basis: 100px;
     /* 或者使用简写属性 */
     flex:0 0 100px;
@@ -99,7 +101,6 @@ em{
 }
 
 .middle {
-    width: 100%;
     background: red;
 }
 

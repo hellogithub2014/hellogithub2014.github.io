@@ -414,9 +414,9 @@ grid-auto-flow: row dense; // 默认是sparse稀疏
 4.	grid-auto-flow accepts a keyword to describe the “packing” approach. By default this value is sparse, but we can alter this to dense which attempts to fill in all available gaps.
 
 # bootstrap的网格系统
-##实现原理
+## 实现原理
 通过定义容器大小，平分12份(也有平分成24份或32份，但12份是最常见的)，再调整内外边距，最后结合媒体查询，就制作出了强大的响应式网格系统。Bootstrap框架中的网格系统就是将容器平分成**12份**。
-##工作原理
+## 工作原理
 1. 原理
 	1. 数据行(.row)必须包含在容器（.container）中，以便为其赋予合适的对齐方式和内距(padding)。如：
 
