@@ -1,7 +1,7 @@
 ---
 title: "移动端点击元素重复跳转同一页面BUG解决方案"
 img: sweden.jpg # Add image post (optional)
-date: 2017-10-08 21:30:00 +0800
+date: 2017-12-11 21:00:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JavaScript]
 ---
