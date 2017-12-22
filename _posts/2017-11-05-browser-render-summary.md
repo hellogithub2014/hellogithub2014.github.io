@@ -116,6 +116,26 @@ async 属性表示异步执行引入的 JavaScript，与 defer 的区别在于�
 
 从上一段也能推出，**多个 async-script 的执行顺序是不确定的**。值得注意的是，向 document 动态添加 script 标签时，async 属性默认是 true
 
+## 试验验证
+
+```html
+<body>
+    <script src="./lodash.js" defer></script>
+    <!-- <script src="./lodash.js" async></script> -->
+</body>
+```
+
+在chrome -> network中，将网速调成`slow 3G`，然后测试`lodash`是在`DOMContentLoaded`之前还是之后加载完成.
+
+`defer` - 始终在`DOMContentLoaded`之前完成，最差情况下也是一起完成
+
+![]({{site.url}}/assets/img/browser-render/defer-domcontentloaded.png)
+
+`async` - 网速快时会在`DOMContentLoaded`之前加载完成，网速慢时会在它之后完成
+
+![]({{site.url}}/assets/img/browser-render/async-domcontentload.png)
+
+
 # 重绘 Repaint
 
 当页面元素样式的改变不影响元素在文档流中的位置时（例如background-color, border-color,visibility）,浏览器只会将新样式赋予元素并进行重绘操作。
