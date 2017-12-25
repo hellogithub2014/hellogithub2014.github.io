@@ -63,6 +63,8 @@ tag: [JavaScript]
 5. httpOnly
 	只有在服务器端才能操作cookie，浏览器端无法修改
 
+	>Cookie的HttpOnly属性，指示浏览器不要在除`HTTP`和 `HTTPS`请求之外暴露`Cookie`。一个有`HttpOnly`属性的`Cookie`，不能通过非HTTP方式来访问，例如通过调用`JavaScript`的`document.cookie`.因此，不可能通过XSS来偷走这种Cookie。
+
 ## storage事件
  无论什么时候存储在`localStorage`、`sessionStorage`中的数据发生改变，浏览器都会在其他对此`storage`可见的窗口对象上出发`storage`事件（类似广播）。**注意**只有当数据真正发生改变时才会出发此事件，如果设置的值和已存在的值一样，或者删除一个本来就不存在的数据项都不会触发该事项。
 
