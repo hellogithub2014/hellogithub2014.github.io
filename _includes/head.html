@@ -21,4 +21,14 @@
     <!-- Styles -->
     <link rel="stylesheet" href="{{ " /assets/css/main.css " | prepend: site.baseurl }}">
     <link media="all" rel="stylesheet" type="text/css" href="{{ " /assets/css/pygments.css " | prepend: site.baseurl }}" />
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker
+                .register("{{site.baseurl}}/sw.js")
+                .then(_ => console.log(`yehhh,serviceWorker register success`))
+                .catch(err => console.error(`error while register serviceWorker`, err));
+        } else {
+            console.log(`eeee,serviceWorker unsupported`)
+        }
+    </script>
 </head>

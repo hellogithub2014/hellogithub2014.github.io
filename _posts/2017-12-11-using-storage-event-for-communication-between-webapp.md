@@ -19,7 +19,7 @@ tag: [StorageEvent]
 ```html
 <ion-icon #feedbackBadge crmMoveable (moveEnd)="storePosition($event)">
 </ion-icon>
-```  
+```
 
 上面是Angular的模板语法， `crmMoveable`是一个指令，可以让宿主元素具备拖拽能力，它在停止拖拽时会出发一个`moveEnd`事件，事件对象`$event`包含图标最新的位置
 
@@ -35,7 +35,7 @@ $event: { x: string, y: string }; // x和y都是形如 100px这样的字符串
 /**
 * 记录当前图标的位置
 *
-* @param {{ x: string, y: string }} position x和y都是例如 100px这种
+* @param { { x: string, y: string } } position x和y都是例如 100px这种
 * @memberof FeedbackFloatButtonComponent
 */
 public storePosition( position: { x: string, y: string } ) {
@@ -81,7 +81,7 @@ public ngAfterViewInit() {
 
 # 遇到的坑
 
-写完后测一测，在pc chrome、安卓webview上均没有问题，运行的很好。但是发现在我们ios上就死活不行，又偏偏我不知道怎么调试ios webview里的web app~   
+写完后测一测，在pc chrome、安卓webview上均没有问题，运行的很好。但是发现在我们ios上就死活不行，又偏偏我不知道怎么调试ios webview里的web app~
 
 后来经过我们ios的同事提醒，他问我们是在UI webview还是WK webview测试的，我才知道一直不行的是在UI webview上。然后又在WK上做了个测试，发现是可以的。🙄🙄🙄
 
