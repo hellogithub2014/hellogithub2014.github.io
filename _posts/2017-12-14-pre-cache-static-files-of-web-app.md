@@ -14,6 +14,18 @@ tag: [AJAX,CACHE,NODEJS]
 
 以下描述中的A、B均指代上面的两个应用。
 
+# 更新
+
+这两天看了一个浏览器的新特性**`[preload](https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content)`**,它可以自定义预加载当前页面的资源。
+
+ 然后看到另一个相关的**`[prefetch](https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ)`**,它用于预加载在下一个页面可能会访问的资源，浏览器会在当前页面加载完的空闲时间来加载`prefecth`的资源。示范：
+
+ ```html
+ <link rel="prefetch" href="./icons.png">
+ ```
+
+
+
 # 方案1
 
 ## 总体思路
