@@ -209,6 +209,9 @@ self.addEventListener('fetch', event => {
     }
 });
 
+self.addEventListener('sync', function(event) {
+    self.registration.showNotification("你好啊!");
+});
 
 /**
  * Broadcasting all clients with MessageChannel API
