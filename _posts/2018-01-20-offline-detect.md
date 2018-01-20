@@ -47,6 +47,32 @@ xhr.open("GET", "./favico.png");
 xhr.send();
 ```
 
+# 利用fetch api
+
+`fetch`与`ajax`有一个很大的不同：**不会因为普通的后台错误码而导致请求失败，只会把`response.ok`设为false，fetch只会因为网络问题或者其他阻塞请求完成的原因而reject。**
+
+[fecth api](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
+
+所以如果是利用`fecth`进行的资源请求，那么其失败时就可以提示用户的网络有问题，例如：
+
+```js
+fetch('../icons.png').then(function(response) {
+    return response.blob();
+}).then(function(myBlob) {
+    // var objectURL = URL.createObjectURL(myBlob);
+    // myImage.src = objectURL;
+
+    var fr = new FileReader();
+    fr.onload = function() {
+        myImage.src = fr.result;
+    };
+    fr.readAsDataURL(myBlob);
+}).catch(err => {
+    console.error(`fetch 失败,网络有问题。`, err);
+});
+```
+
+
 # 借助serviceworker的sync事件
 
 参考了2篇文章：
