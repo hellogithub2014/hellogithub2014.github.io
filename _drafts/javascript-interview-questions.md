@@ -1,7 +1,7 @@
 ---
 title: "javascript面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2077-11-11 17:20:00 +0800
+# date: 2017-11-11 17:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JAVASCRIPT,INTERVIEW]
 ---
@@ -11,7 +11,7 @@ tag: [JAVASCRIPT,INTERVIEW]
 [Front-end-Developer-Interview-Questions](https://github.com/h5bp/Front-end-Developer-Interview-Questions)
 
 # 请解释事件代理 (event delegation)
-当我们需要对很多元素添加事件的时候，可以通过将事件添加到它们的父节点而将事件委托给父节点来触发处理函数。这主要得益于**浏览器的事件冒泡机制**。
+当我们需要对很多元素添加事件的时候，可以通过将事件添加到它们的父节点而将事件委托给父节点来触发处理函数。这主要得益于**浏览器的事件冒泡机制.事件有3个阶段：事件捕获、事件处理、事件冒泡。**。
 
 假入有如下结构：
 
@@ -290,6 +290,13 @@ function foo(){ }
 1. `var person = Person()` 此时person为undefined
 2. `var person = new Person()`,此时person为一个Person类型对象。
 
+**构造函数内部的几个细节**
+
+1. 新创建一个对象
+2. 新建对象的原型指向函数的原型
+3. 函数执行时的this指向新建对象
+4. 如果构造函数最后没有显示的return其他对象，那么构造函数最后默认返回这个新建对象。
+
 # `.call` 和 `.apply` 的区别是什么？
 二者都是为了显示绑定`this`，区别只是函数传参的方式不同。
 
@@ -486,6 +493,8 @@ function testFormData(file) {
 }
 ```
 
+**在使用表单提交数据时，请求头的`content-type`是`multipart/form-data`，同时会有一个`boundary`属性用于标识请求体的分隔符**
+
 ### 超时设定
 可以给XHR设置timeout属性，如果在规定时间内还没有收到响应，就会触发timeout事件。
 
@@ -529,7 +538,7 @@ xhr.overrideMimeType('text/xml'); // 强迫将响应当做xml来处理，而不�
 # 你使用过 JavaScript 模板系统吗？如有使用过，请谈谈你都使用过哪些库？
 在开发nodejs程序时，简单使用过jade；
 ![](http://segmentfault.com/img/bVcgWB)
-另外，编写angular程序时，也一直在写模板，它使用Mustache风格的`{{}}`
+另外，编写angular程序时，也一直在写模板，它使用Mustache风格的`{ { } }`
 
 # 请解释变量声明提升 (hoisting)。
 JavaScript在编译期，会在每个作用域中寻找变量声明、函数声明，将它们提升到作用域的最前面，这样即使在每个声明之前使用对应的标识符也不会报错。
@@ -586,7 +595,7 @@ function test(){
 
 **attribute 初始化 DOM property，然后它们的任务就完成了。property 的值可以改变；attribute 的值不能改变。**
 
-例如，当浏览器渲染<input type="text" value="Bob">时，它将创建相应 DOM 节点， 其valueproperty 被初始化为 “Bob”。
+例如，当浏览器渲染`<input type="text" value="Bob">`时，它将创建相应 DOM 节点， 其valueproperty 被初始化为 “Bob”。
 
 当用户在输入框中输入 “Sally” 时，DOM 元素的value property 变成了 “Sally”。 但是这个 HTML value attribute 保持不变。如果我们读取 input 元素的 attribute，就会发现确实没变：input.getAttribute('value') // 返回 "Bob"。
 
@@ -594,7 +603,7 @@ HTML attribute value指定了初始值；DOM value property 是当前值。
 
 disabled attribute 是另一个古怪的例子。按钮的disabled property 是false，因为默认情况下按钮是可用的。 当我们添加disabled attribute 时，只要它出现了按钮的disabled property 就初始化为true，于是按钮就被禁用了。
 
-添加或删除disabled attribute会禁用或启用这个按钮。但 attribute 的值无关紧要，这就是我们为什么没法通过 <button disabled="false">仍被禁用</button>这种写法来启用按钮。
+添加或删除disabled attribute会禁用或启用这个按钮。但 attribute 的值无关紧要，这就是我们为什么没法通过 `<button disabled="false">仍被禁用</button>`这种写法来启用按钮。
 
 设置按钮的disabled property（如，通过 Angular 绑定）可以禁用或启用这个按钮。 这就是 property 的价值。
 
@@ -901,26 +910,6 @@ obj2.internal.a; // undefined
 * 循环体外部缓存DOM查询结果
 * 先将DOM节点隐藏，然后操作，最后显示DOM节点
 
-## 图片预览
-
-```html
-<input type="file" name="file" onchange="showPreview(this)" />
-<img id="portrait" src="" width="70" height="75">
-```
-
-```js
-function showPreview(source) {
-  var file = source.files[0];
-  if(window.FileReader) {
-      var fr = new FileReader();
-      fr.onloadend = function(e) {
-        document.getElementById("portrait").src = e.target.result;
-      };
-      fr.readAsDataURL(file);
-  }
-}
-```
-
 ## 算法
 
 [常见算法面试题](https://mp.weixin.qq.com/s/lracv6RudV1DHY7cYXRG-w)
@@ -948,58 +937,58 @@ function showPreview(source) {
 
 	```js
 	jQuery.extend = jQuery.fn.extend = function() {
-    var options, name, src, copy, copyIsArray, clone,
-        target = arguments[ 0 ] || {},
-        i = 1,
-        length = arguments.length,
-        deep = false;
-    // Handle a deep copy situation
-    if ( typeof target === "boolean" ) {
-        deep = target;
-        // Skip the boolean and the target
-        target = arguments[ i ] || {};
-        i++;
-    }
-    // Handle case when target is a string or something (possible in deep copy)
-    if ( typeof target !== "object" && !jQuery.isFunction( target ) ) {
-        target = {};
-    }
-    // Extend jQuery itself if only one argument is passed
-    if ( i === length ) {
-        target = this;
-        i--;
-    }
-    for ( ; i < length; i++ ) {
-        // Only deal with non-null/undefined values
-        if ( ( options = arguments[ i ] ) != null ) {
-            // Extend the base object
-            for ( name in options ) {
-                src = target[ name ];
-                copy = options[ name ];
-                // Prevent never-ending loop
-                if ( target === copy ) {
-                    continue;
-                }
-                // Recurse if we're merging plain objects or arrays
-                if ( deep && copy && ( jQuery.isPlainObject( copy ) || ( copyIsArray = Array.isArray( copy ) ) ) ) {
-                    if ( copyIsArray ) {
-                        copyIsArray = false;
-                        clone = src && Array.isArray( src ) ? src : [];
-                    } else {
-                        clone = src && jQuery.isPlainObject( src ) ? src : {};
-                    }
-                    // Never move original objects, clone them
-                    target[ name ] = jQuery.extend( deep, clone, copy );
-                // Don't bring in undefined values
-                } else if ( copy !== undefined ) {
-                    target[ name ] = copy;
-                }
-            }
-        }
-    }
-    // Return the modified object
-    return target;
-};
+    	var options, name, src, copy, copyIsArray, clone,
+       		 target = arguments[ 0 ] || {},
+       		 i = 1,
+        	length = arguments.length,
+        	deep = false;
+	    // Handle a deep copy situation
+	    if ( typeof target === "boolean" ) {
+	        deep = target;
+	        // Skip the boolean and the target
+	        target = arguments[ i ] || {};
+	        i++;
+	    }
+	    // Handle case when target is a string or something (possible in deep copy)
+	    if ( typeof target !== "object" && !jQuery.isFunction( target ) ) {
+	        target = {};
+	    }
+	    // Extend jQuery itself if only one argument is passed
+	    if ( i === length ) {
+	        target = this;
+	        i--;
+	    }
+	    for ( ; i < length; i++ ) {
+	        // Only deal with non-null/undefined values
+	        if ( ( options = arguments[ i ] ) != null ) {
+	            // Extend the base object
+	            for ( name in options ) {
+	                src = target[ name ];
+	                copy = options[ name ];
+	                // Prevent never-ending loop
+	                if ( target === copy ) {
+	                    continue;
+	                }
+	                // Recurse if we're merging plain objects or arrays
+	                if ( deep && copy && ( jQuery.isPlainObject( copy ) || ( copyIsArray = Array.isArray( copy ) ) ) ) 				{
+	                    if ( copyIsArray ) {
+	                        copyIsArray = false;
+	                        clone = src && Array.isArray( src ) ? src : [];
+	                    } else {
+	                        clone = src && jQuery.isPlainObject( src ) ? src : {};
+	                    }
+	                    // Never move original objects, clone them
+	                    target[ name ] = jQuery.extend( deep, clone, copy );
+	                // Don't bring in undefined values
+	                } else if ( copy !== undefined ) {
+	                    target[ name ] = copy;
+	                }
+	            }
+	        }
+	    }
+	    // Return the modified object
+	    return target;
+	};
 	```
 
 **浅拷贝**
@@ -1243,6 +1232,28 @@ main();
 
 **[公众号文章](https://mp.weixin.qq.com/s?__biz=MjM5MTA1MjAxMQ==&mid=2651226470&idx=2&sn=001eb263b242cb43c47a1889d69c6de2&chksm=bd4958e28a3ed1f45698d903a6ff9bc8c4867f2c94a2070c2fb32c5db09002c116171bacce03&scene=38#wechat_redirect)**
 
+## 图片预览
+
+```html
+<input type="file" name="file" onchange="showPreview(this)" />
+<img id="portrait" src="" width="70" height="75">
+```
+
+```js
+function showPreview(source) {
+  var file = source.files[0];
+  if(window.FileReader) {
+      var fr = new FileReader();
+      fr.onloadend = function(e) {
+        document.getElementById("portrait").src = e.target.result;
+      };
+      fr.readAsDataURL(file);
+  }
+}
+```
+
+[FileReader](https://developer.mozilla.org/en-US/docs/Web/API/FileReader)
+
 
 ## 图片懒加载
 
@@ -1293,5 +1304,58 @@ main();
 		}
 		```
 
+## 图片预加载
 
+[参考1](https://segmentfault.com/a/1190000000684923)
+[参考2](http://www.topcss.org/image-preloading/)
+
+### 单张图片预加载
+
+```js
+function preloadImg(url) {
+    var img = new Image();
+    img.src = url;
+	/**
+	 * complete代表浏览器本地是否已缓存了此张图片
+	 */
+    if(img.complete) {
+        //接下来可以使用图片了
+        //do something here
+    } else {
+        img.onload = function() {
+            //接下来可以使用图片了
+            //do something here
+        };
+    }
+}
+```
+
+### 多张图片
+
+1. **并行加载** - 适用于不需要控制图片预加载顺序的情形
+
+```js
+function preloadImagesAsync(imgUrls){
+	for (var i = 0; i < imgUrls.length; ++i) {
+		var img = new Image();
+		img.src = imgUrls[i];
+	}
+}
+```
+
+2. **顺序加载** - 适用于可以预知哪些图片应当较先预加载的情形
+
+```js
+function preloadImagesSync(imgUrls,index){
+	index = index || 0;
+    if (imgUrls && imgUrls.length > index) {
+        var img = new Image();
+		// 加载完当前图片再加载下一张图片
+        img.onload = function() {
+            preload(imgUrls, index + 1);
+        }
+        img.src = imgUrls[index];
+    }
+}
+```
 

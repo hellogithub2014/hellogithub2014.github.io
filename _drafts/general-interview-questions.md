@@ -1,7 +1,7 @@
 ---
 title: "前端常见一般面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2077-11-18 11:25:00 +0800
+# date: 2017-11-18 11:25:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [INTERVIEW]
 ---
@@ -19,23 +19,9 @@ tag: [INTERVIEW]
 
 **ionic懒加载黑屏、返回键问题**
 
-TODO复制pdf文档，**添加通过学习nodejs、vscode的调试工具来加快理解并修改ionic的构建流程**
-
 **WK webview解决列表分页加载问题**
 
-**TODO复制pdf文档**
-
 **pc端分页组件**
-
-在我们pc端有很多分页列表页面，顶部是一个个性的搜索区域，中间是列表展示区域，底部有分页区域。
-
-在我之前的人都是拷贝已有的代码，我做了两个这样的页面之后，发现有相当多的代码是通用的。于是就想着怎么做一个通用的组件出来，于是花了一个周末写了一个这样的组件，并在我写的第三个分页列表页面中用上了，成倍的提升了效率。
-
-同时我将编写组件的思路总结成了博客文章，并将代码上传到了我的`github`上。
-
-其实我一直喜欢封装公用组件，在很早前做移动端ionic项目时，也封装了一个类似的组件，不过只适用于自己小组的项目。
-
-于是在封装pc端的这个组件时，我一开始就想着要做的更好更通用些，不仅要支持自己小组的项目，而是别的小组拿过去也能很方便的使用。
 
 # 在制作一个网页应用或网站的过程中，你是如何考虑其 UI、安全性、高性能、SEO、可维护性以及技术因素的？
 
@@ -180,9 +166,12 @@ Flash Of Unstyled Content
 
 **另外** - 在谷歌浏览器上进行了测试，即使将css文件放在底部，也不会出现闪烁。
 
+**[FOUC](https://web.archive.org/web/20150513055019/http://www.bluerobot.com/web/css/fouc.asp/)**
+
+
 # 请解释 CSS 动画和 JavaScript 动画的优缺点。
 
-**TODO  学习css、js动画**
+**TODO  学习js动画**
 
 [segmentfault](https://segmentfault.com/q/1010000000645415)
 [cnblogs](https://www.cnblogs.com/wangpenghui522/p/5394778.html)

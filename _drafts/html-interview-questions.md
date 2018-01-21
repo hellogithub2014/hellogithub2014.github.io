@@ -1,7 +1,7 @@
 ---
 title: "html面试题"
 img: canyon.jpg # Add image post (optional)
-date: 2077-11-12 17:20:00 +0800
+# date: 2017-11-12 17:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [HTML,INTERVIEW]
 ---
@@ -164,6 +164,8 @@ $('#content').data('userList');//读
 1. js加载和解析默认也都是阻塞的，因为它可以读取和修改 DOM 属性
 2. 如果将其放在靠前的位置，所有位于其后的内容都不会显示，直到js加载完成，这样会延迟首屏的展现
 
+**[FOUC](https://web.archive.org/web/20150513055019/http://www.bluerobot.com/web/css/fouc.asp/)**
+
 # 什么是渐进式渲染 (progressive rendering)？
 
 [What is progressive rendering?](https://stackoverflow.com/questions/33651166/what-is-progressive-rendering)
@@ -189,10 +191,10 @@ jade、angular模板
 <input type="month" name="month" value="2017-11">
 ```
 
-1.	<textarea>标签是成对的，有结束标签进行闭合，标签的内容写在标签对中间；<input>是单个标签，标签的内容通过 value 属性设置；
-2.	<textarea>的值是纯文本；<input>的值根据类型不同而不同；
-3.	<textarea>没有type属性；<input>有多种type来满足表单与用户的数据交互；
-4.	<textarea>的值可以是多行的，并且有rows和cols来控制多行结构；<input>的值是单行的；
+1.	`<textarea>`标签是成对的，有结束标签进行闭合，标签的内容写在标签对中间；`<input>`是单个标签，标签的内容通过 value 属性设置；
+2.	`<textarea>`的值是纯文本；`<input>`的值根据类型不同而不同；
+3.	`<textarea>`没有type属性；`<input>`有多种type来满足表单与用户的数据交互；
+4.	`<textarea>`的值可以是多行的，并且有rows和cols来控制多行结构；`<input>`的值是单行的；
 
 # 用一个div模拟textarea的实现
 
@@ -219,7 +221,7 @@ jade、angular模板
 }
 
 /* 设置placeholder */
-.test_box:empty::before { /* 这里的before使用两个冒号，不然不起作用。。 */
+.test_box:empty::before { /* 这里的before使用两个冒号，不然不起作用。。 或者写成 :empty:before */
    content: attr(placeholder);
    color: #bbb;
 }
@@ -239,3 +241,13 @@ jade、angular模板
 
 展开body时，为了随意点击页面其他地方均可收起，用一个类似back-drop的div元素充当背景，点击背景收起body。
 
+back-drop的关键css是：
+
+```css
+position:fixed;
+index:999; /* index只针对已定位（fixed、absolute、relative）元素才起作用 */
+top:0;
+bottom:0;
+left:0;
+right:0;
+```
