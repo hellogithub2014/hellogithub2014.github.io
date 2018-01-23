@@ -1,6 +1,6 @@
 ---
 title: "使用StorageEvent在web app间通信"
-img: canyon.jpg # Add image post (optional)
+img: alaska.jpg # Add image post (optional)
 date: 2017-12-11 20:10:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [StorageEvent]

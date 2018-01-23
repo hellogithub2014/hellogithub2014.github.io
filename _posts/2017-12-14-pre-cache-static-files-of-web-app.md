@@ -1,6 +1,6 @@
 ---
 title: "一种web app资源预缓存方案"
-img: alaska.jpg # Add image post (optional)
+img: bora-bora.jpg # Add image post (optional)
 date: 2017-12-14 17:00:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [AJAX,CACHE,NODEJS]
@@ -16,9 +16,9 @@ tag: [AJAX,CACHE,NODEJS]
 
 # 更新
 
-这两天看了一个浏览器的新特性**`[preload](https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content)`**,它可以自定义预加载当前页面的资源。
+这两天看了一个浏览器的新特性**[preload](https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content)**,它可以自定义预加载当前页面的资源。
 
- 然后看到另一个相关的**`[prefetch](https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ)`**,它用于预加载在下一个页面可能会访问的资源，浏览器会在当前页面加载完的空闲时间来加载`prefecth`的资源。示范：
+ 然后看到另一个相关的**[prefetch](https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ)**,它用于预加载在下一个页面可能会访问的资源，浏览器会在当前页面加载完的空闲时间来加载`prefecth`的资源。示范：
 
  ```html
  <link rel="prefetch" href="./icons.png">

@@ -1,6 +1,6 @@
 ---
 title: "Angular变更检测学习笔记"
-img: new-zealand.jpg # Add image post (optional)
+img: canyon.jpg # Add image post (optional)
 date: 2017-12-17 11:10:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [ANGULAR]
