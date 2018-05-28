@@ -106,3 +106,4 @@ tag: [LINUX]
     3.  `=` 设置权限
     4.  示范： `chmod +x todev`
 20. `vim file` 用于文本编辑,如果存在就打开，**不存在就以该文件夹创建一个文件**
+21. `touch [options] file` 用于修改文件时间戳或者, **创建一个不存在的文件**，如 `touch ./test.js`可以创建`test.js`
