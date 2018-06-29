@@ -112,7 +112,7 @@ this是由函数在运行时在何处被调用决定的，有4种情况：
 	var o={
 		a: 2
 	};
-
+¡
 	function test(){
 		this.a=3;
 	}
