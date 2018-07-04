@@ -55,6 +55,17 @@ Object.defineProperty( Student.prototype, "constructor",{
 3. bind显示绑定 ---> `.call` 和 `.apply` 的区别是什么
 4. 构造函数`new`调用, **优先级比bind高**
 
+## 【实习、1~3】RequestAnimationFrame与settimeout差别
+
+1. settimeout可能丢帧，若频幕刷新间隔16.7ms，settimeout间隔10ms，那么每第三个settimeout所作出的改变是无法看到的；raf的调用频率和浏览器刷新频率一致
+2. settimeout执行时间不确定，因为其真正的任务被放到任务队列里
+3. raf在窗口最小化时不执行，窗口恢复再执行；而settimeout在窗口最小化时继续执行。
+
+**追问：setInterval与settitmeout差别**
+
+1. setInterval仅当任务队列中没有该定时器的任务时才会将任务添加到队列中，这样会导致某些间隔被跳过
+2. 多个setInterval定时器的代码执行间隔可能比预期的要小
+
 ## 【实习、1~3】 es6新特性、es7的async/await及其底层实现原理
 
 **es6:** let/const、模板字符串、剪头函数、类、模块、迭代器、生成器、Promise、代理、反射、解构、展开收集操作符、Symbol、Set/Map
