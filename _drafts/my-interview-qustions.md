@@ -59,7 +59,7 @@ Object.defineProperty( Student.prototype, "constructor",{
 
 1. settimeout可能丢帧，若频幕刷新间隔16.7ms，settimeout间隔10ms，那么每第三个settimeout所作出的改变是无法看到的；raf的调用频率和浏览器刷新频率一致
 2. settimeout执行时间不确定，因为其真正的任务被放到任务队列里
-3. raf在窗口最小化时不执行，窗口恢复再执行；而settimeout在窗口最小化时继续执行。
+3. **经测试，raf、settimeout、setInterval在窗口最小化时不执行，窗口恢复再执行；**
 
 **追问：setInterval与settitmeout差别**
 
