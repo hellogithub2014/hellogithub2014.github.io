@@ -1,7 +1,7 @@
 ---
 title: "vue组件通信小结"
 img: canyon.jpg # Add image post (optional)
-date: 2018-05-19 17:30:00 +0800
+date: 2018-05-19 12:30:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [vue]
 ---
@@ -209,8 +209,8 @@ Vue.prototype.$on = function(event, fn) {
 
 使用`vuex`很好的解决了上面几种方法的缺点：
 
-* 祖先组件和子组件共享同一份数据，所有组件不再是层层传递`prop`，而是直接和`vuex`打交道
-* 也不在需要『逐层冒泡』`event`了，道理同上
-* 很好的支持了关注点分离，每个组件只专注于处理关心的数据，不用管这些数据在哪里被用到，这样也提高了可复用性
+- 祖先组件和子组件共享同一份数据，所有组件不再是层层传递`prop`，而是直接和`vuex`打交道
+- 也不在需要『逐层冒泡』`event`了，道理同上
+- 很好的支持了关注点分离，每个组件只专注于处理关心的数据，不用管这些数据在哪里被用到，这样也提高了可复用性
 
 唯一的缺点是在比较小的应用中会显得累赘，有点杀鸡用牛刀的感觉。
