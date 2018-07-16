@@ -220,6 +220,8 @@ it('has the expected html structure', () => {
 
 ![]({{site.url}}/assets/img/jest-quirks/snapshot.png)
 
+所有子组件如果默认情况下都是空的，组件名后面添加了`-snapshot`，被显式`stub`了的都有具体的`dom`结构。
+
 # CI
 
 如果直接利用了`bui`组件的定义来 stub，在集成单元测试到`gitlab ci`上时会出问题，因为无法在 ci 机器上安装 bui，bui 没有提供`https`的下载链接：
