@@ -30,6 +30,12 @@ new Vue({
 }).$mount('#app');
 ```
 
+# 结构
+
+整个插件的结构如下：
+
+![插件结构]({{ site.url }}/assets/img/vuei18n/VueI18n 结构.png)
+
 # 入口
 
 先看看`Vue.use`是如何工作的，代码位于`vue/src/core/global-api/use.js`：
