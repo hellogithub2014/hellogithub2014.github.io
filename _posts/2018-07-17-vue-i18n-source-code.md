@@ -34,7 +34,7 @@ new Vue({
 
 整个插件的结构如下：
 
-![插件结构]({{ site.url }}/assets/img/vuei18n/VueI18n 结构.png)
+![插件结构]({{ site.url }}/assets/img/vuei18n/vuei18n-struct.png)
 
 # 入口
 
