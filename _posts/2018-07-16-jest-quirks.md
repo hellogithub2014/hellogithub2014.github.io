@@ -265,16 +265,14 @@ unit test:
 
 # 其他
 
-对于如何写单元测试，自己也才刚刚开始，不过参考了两个文档：
+对于如何写单元测试，自己也才刚刚开始，不过参考了这个文档：
 
-- [wiki](https://wiki.bytedance.net/pages/viewpage.action?pageId=197056539)
 - [https://alexjoverm.github.io/2017/08/21/Write-the-first-Vue-js-Component-Unit-Test-in-Jest/](https://alexjoverm.github.io/2017/08/21/Write-the-first-Vue-js-Component-Unit-Test-in-Jest/)
 
 # 参考文档
 
 - [https://github.com/facebook/jest](https://github.com/facebook/jest)
 - [https://github.com/facebook/jest/blob/master/docs/Webpack.md](https://github.com/facebook/jest/blob/master/docs/Webpack.md)
-- [wiki](https://wiki.bytedance.net/pages/viewpage.action?pageId=197056539)
 - [https://medium.com/@mattmazzola/how-to-debug-jest-tests-with-vscode-48f003c7cb41](https://medium.com/@mattmazzola/how-to-debug-jest-tests-with-vscode-48f003c7cb41)
 - [https://vue-test-utils.vuejs.org](https://vue-test-utils.vuejs.org)
 - [https://jestjs.io/docs/en/jest-object](https://jestjs.io/docs/en/jest-object#jestfnimplementation)

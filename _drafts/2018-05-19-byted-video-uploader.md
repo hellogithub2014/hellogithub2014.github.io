@@ -12,8 +12,6 @@ tag: [Javascript]
 
 此前大概了解上传这种大文件时需要分片上传，后端会把分片合并，但这种公司级的库，前端具体的每一步是怎么做还不清楚。 于是就想着看看源码，并在这里记录下学习笔记。
 
-仓库地址：[byted-video-uploader](https://code.byted.org/pgcfe/byted-video-uploader)。本文里针对的是 v3 版本的库，最新版本是 v4.
-
 # 多个并发的任务队列
 
 此组件库在上传每个视频时，都会有一个跟视频文件关联的`key`，可以同时上传多个视频。 可以想像，在代码内部，必然有一个专门的维护视频上传队列的对象,事实确实如此。
@@ -66,12 +64,12 @@ tag: [Javascript]
 
 每个任务都有一个`index`属性，表示它在整个流程中的次序。各任务的`index`为：
 
-* `FileCrc32` 0
-* `PreUpload` 1
-* `InitUploadID` 2
-* `Upload` 3
-* `FileMerge` 4
-* `VideoCover` 5
+- `FileCrc32` 0
+- `PreUpload` 1
+- `InitUploadID` 2
+- `Upload` 3
+- `FileMerge` 4
+- `VideoCover` 5
 
 ## 启动队列
 
@@ -233,7 +231,7 @@ readFileCrc32 ( file ) {
 }
 ```
 
-`crc32(buf: ArrayBuffer , previous: number)`函数就是用于真正计算分片的 CRC 校验码的，使用的算法没看懂，[需要的自取](https://code.byted.org/pgcfe/byted-video-uploader/blob/master/src/class/Crc32.js)
+`crc32(buf: ArrayBuffer , previous: number)`函数就是用于真正计算分片的 CRC 校验码的，使用的算法没看懂...
 
 因为使用的是[FileReader](https://developer.mozilla.org/zh-CN/docs/Web/API/FileReader)来切片，而它[在 IE9 中是不兼容的](https://caniuse.com/#search=FileReader),这也是这个视频上传库目前兼容性的一个原因：
 
@@ -297,7 +295,7 @@ startPreUpload(){
 }
 ```
 
-可以看到，内部使用了一个叫`Transport`的类来发送请求，这个类封装了`xhr`，屏蔽了一些具体细节，逻辑并不复杂，里面用到了[xhr 2 级](https://www.html5rocks.com/zh/tutorials/file/xhr2/)的一些特性，这是不支持低版本 IE 的又一个原因。`Transport`具体代码[看这里](https://code.byted.org/pgcfe/byted-video-uploader/blob/master/src/class/Transport.js)
+可以看到，内部使用了一个叫`Transport`的类来发送请求，这个类封装了`xhr`，屏蔽了一些具体细节，逻辑并不复杂，里面用到了[xhr 2 级](https://www.html5rocks.com/zh/tutorials/file/xhr2/)的一些特性，这是不支持低版本 IE 的又一个原因。
 
 发送请求的 url 是拼接而成，一部分是由初始配置决定的。 url 模板：
 
@@ -751,11 +749,11 @@ videoCover (  ) {
 
 检查一下请求 url 是否正确：
 
-* PreUpload 时获取的 url：
+- PreUpload 时获取的 url：
 
 ![]({{site.url}}/assets/img/BytedVideoUploader/PreUpload获取的url.png)
 
-* VideoCover 中请求的 url
+- VideoCover 中请求的 url
 
 ![]({{site.url}}/assets/img/BytedVideoUploader/VideoCover中请求的url.png)
 
@@ -804,9 +802,9 @@ Object.assign(context.tasks[key], {
 
 最后，对于大文件上传，总体思想也应该非常类似，也可以参照`WebUploader`这款开源库：
 
-* [聊聊大文件上传](http://blog.kazaff.me/2014/11/14/%E8%81%8A%E8%81%8A%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/index.html)
+- [聊聊大文件上传](http://blog.kazaff.me/2014/11/14/%E8%81%8A%E8%81%8A%E5%A4%A7%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/index.html)
 
-* [webuploader](http://fex-team.github.io/webuploader/)
+- [webuploader](http://fex-team.github.io/webuploader/)
 
 ## v4 相比 v3
 
