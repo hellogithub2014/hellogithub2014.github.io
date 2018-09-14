@@ -1,5 +1,5 @@
 ---
-title: "BytedVideoUploader源码阅读笔记"
+title: 'BytedVideoUploader源码阅读笔记'
 img: canyon.jpg # Add image post (optional)
 # date: 2017-11-15 20:30:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
@@ -10,7 +10,7 @@ tag: [Javascript]
 
 在做品牌广告需求时，页面中会上传视频，在做的时候参考了已有的竞价广告中的视频上传。看代码发现里面是用的一个公司级视频上传组件，使用起来还算简单。另外同事说这个是一个异步上传视频的库，于是就很好奇具体是怎么实现的。
 
-此前大概了解上传这种大文件时需要分片上传，后端会把分片合并，但这种公司级的库，前端具体的每一步是怎么做还不清楚。 于是就想着看看源码，并在这里记录下学习笔记。
+此前大概了解上传这种大文件时需要分片上传，后端会把分片合并，但这种公司级的库，前端具体的每一步是怎么做还不清楚。 于是就想着看看源码，并在这里记录下学习笔记。.
 
 # 多个并发的任务队列
 
