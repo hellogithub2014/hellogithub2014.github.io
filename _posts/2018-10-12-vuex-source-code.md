@@ -326,7 +326,7 @@ function makeLocalContext(store, namespace, path) {
 }
 ```
 
-**注意何时一个 module 的 namspace 为空？并不是只有根 module 的`namespace`是空串，只要子`module`的`namespaced`属性不是空，那么它就不会在`namespace`上贡献自己的力量，而是使用`parent module`的`namespace`。**
+**注意何时一个 module 对应的 namespace 为空？并不是只有根 module 的`namespace`是空串，只要子`module`的`namespaced`属性是空或 false，那么它就不会在`namespace`上贡献自己的力量，而是使用`parent module`的`namespace`。**
 
 全局的`dispatch`和`commit`其实定义在构造函数里，他们均硬绑定了`store`参数
 
@@ -798,7 +798,7 @@ forEachValue(wrappedGetters, (fn, key) => {
 });
 ```
 
-**经过这 3 步，`store.getters`就存放了所有"长链"形式 getter。**那么`mapGetters`中的`this.$store.getters[val]`就很容易理解了。
+**经过这 3 步，`store.getters`就存放了所有"长链"形式 getter。** 那么`mapGetters`中的`this.$store.getters[val]`就很容易理解了。
 
 ### createNamespacedHelpers
 
