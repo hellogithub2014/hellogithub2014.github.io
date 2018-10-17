@@ -737,7 +737,27 @@ export function mergeOptions(parent: Object, child: Object, vm?: Component): Obj
 
 对于`i18n`选项的合并，通过代码我们已经知道他是使用`Vue.config.optionMergeStrategies.methods`，其实对于各种合并策略，无非就是怎么处理参数中的两个对象，我们不妨把所有提供提供的合并策略挨个了解下，代码都位于`vue/src/core/util/options.js`。
 
-**注意没有 strats.components 或 strats.mixin，所以你不能在 mixin 中提供 components 选项或者嵌套 mixin**。
+**components、directives和filters的合并策略都是mergeAssets,大体就是组件选项覆盖mixin选项。**
+
+```js
+function mergeAssets (
+  parentVal: ?Object,
+  childVal: ?Object,
+  vm?: Component,
+  key: string
+): Object {
+  const res = Object.create(parentVal || null)
+  if (childVal) {
+    return extend(res, childVal)
+  } else {
+    return res
+  }
+}
+// ASSET_TYPES => [component、directive、filter]
+ASSET_TYPES.forEach(function (type) {
+  strats[type + 's'] = mergeAssets
+})
+```
 
 ### strats.props、strats.methods、strats.inject 、strats.computed
 
