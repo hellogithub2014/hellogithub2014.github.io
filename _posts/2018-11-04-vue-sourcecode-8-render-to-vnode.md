@@ -19,13 +19,13 @@ vnode = render.call(vm._renderProxy, vm.$createElement)
 ```js
 with ( this )
 {
-  return _c( 
-    'div', 
-    { attrs: { id: 'app' } }, 
-    [ 
+  return _c(
+    'div',
+    { attrs: { id: 'app' } },
+    [
       _c( 'a', { attrs: { href: url } }, [ _v( _s( message ) ) ] ),
-      _v( ' ' ), _m( 0 ) 
-    ] 
+      _v( ' ' ), _m( 0 )
+    ]
   );
 }
 ```
@@ -44,6 +44,8 @@ with ( this )
 ```
 
 二者底层都是调用的`createElement`这个函数，唯一差别在于最后一个参数`alwaysNormalize`的赋值不一样，这个参数表示是否做深层归一化，后面会说。
+
+不知道大家有没有注意到`render`函数的细节：它是被`with(this)`包围起来的，同时在调用`render`时传入了`vm._renderProxy`。暂时可以把`vm._renderProxy`当做`vm`，这样我们`render`函数内部所有变量如`url`都是在`vm`上来查找，**这也就是模板上的变量如何与我们组件中的数据如何关联起来的关键!**
 
 至此，我们知道生成`vnode`的绝大部分逻辑都在这个`createElement`里。不过在此之前还是说一下`vnode`是个什么。
 
@@ -157,7 +159,7 @@ export function _createElement (
   data?: VNodeData,
   children?: any,
   normalizationType?: number
-): VNode | Array<VNode> { 
+): VNode | Array<VNode> {
   // object syntax in v-bind
   if (isDef(data) && isDef(data.is)) {
     tag = data.is
@@ -233,7 +235,7 @@ export function _createElement (
 	  id: string,
 	  warnMissing?: boolean
 	): any {
-	  
+
 	  if (typeof id !== 'string') {
 	    return
 	  }
