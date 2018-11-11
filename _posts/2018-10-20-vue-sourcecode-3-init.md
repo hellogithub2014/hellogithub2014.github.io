@@ -1,5 +1,5 @@
 ---
-title: 'Vue源码解析三-初始化流程'
+title: 'Vue源码解析3-初始化流程'
 img: canyon.jpg # Add image post (optional)
 date: 2018-10-20 12:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
@@ -503,7 +503,7 @@ function initState(vm: Component) {
 }
 ```
 
-# $mount
+# \$mount
 
 经过我们上篇文章，我们已经知道，`vm.$mount`真正的定义是在`entry-runtime-with-compiler.js`中。
 
@@ -1013,7 +1013,7 @@ Vue.prototype._update = function(vnode: VNode, hydrating?: boolean) {
 
 1. 合并构造器及构造器父级上定义的 options。
 2. 给 vm 添加$parent、$root、$children、$refs 等属性
-3. 给 vm 添加$slots、$scopeSlots、\_c、$createElement、$attrs、$listeners 等属性
+3. 给 vm 添加$slots、$scopeSlots、\_c、$createElement、$attrs、\$listeners 等属性
 4. 调用`beforeCreate`钩子
 5. 解析 inject，将拿到的值放到 vm 上
 6. 处理 props、methods、data、computed、watch.，将他们统统挂载到 vm 上

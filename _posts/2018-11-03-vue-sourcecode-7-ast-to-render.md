@@ -1,5 +1,5 @@
 ---
-title: 'Vue源码解析七-生成render函数'
+title: 'Vue源码解析7-生成render函数'
 img: new-york.jpg # Add image post (optional)
 date: 2018-11-03 17:20:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
@@ -16,17 +16,17 @@ tag: [Vue, javascript]
 
 ```html
 <div id="app">
-	<a :href="url">{{message}}</a>
-	<p>静态根节点<span>静态内容</span></p>
+  <a :href="url">{{message}}</a>
+  <p>静态根节点<span>静态内容</span></p>
 </div>
 <script type="text/javascript">
-	var vm = new Vue({
-		el: '#app',
-		data: {
-			message: '博客地址',
-			url: 'https://www.baidu.com'
-		}
-	})
+  var vm = new Vue({
+    el: '#app',
+    data: {
+      message: '博客地址',
+      url: 'https://www.baidu.com',
+    },
+  });
 </script>
 ```
 
