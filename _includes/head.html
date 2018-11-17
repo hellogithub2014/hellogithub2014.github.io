@@ -1,66 +1,98 @@
 <head>
-    <meta charset="utf-8">
-    <title>{% if page.title %}{{page.title}} - {{site.title}}{% else %}{{site.title}}{% endif %}</title>
-    <meta name="description" content="{{ page.description }}">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta property="og:image" content="">
-    <link rel="shortcut icon" href="{{ " /assets/img/favicon/favicon_mushroom.ico " | prepend: site.baseurl }}" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{ " /assets/img/favicon/apple-touch-icon.png " | prepend: site.baseurl }}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{ " /assets/img/favicon/apple-touch-icon-72x72.png " | prepend: site.baseurl }}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{ " /assets/img/favicon/apple-touch-icon-114x114.png " | prepend: site.baseurl }}">
-    <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#d25469">
-    <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#d25469">
-    <!-- iOS Safari -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#d25469">
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
-    <link rel="stylesheet" href="{{ " /assets/fonts/font-awesome/css/font-awesome.min.css " | prepend: site.baseurl }}">
-    <!-- Styles -->
-    <link rel="stylesheet" href="{{ " /assets/css/main.css " | prepend: site.baseurl }}">
-    <link media="all" rel="stylesheet" type="text/css" href="{{ " /assets/css/pygments.css " | prepend: site.baseurl }}" />
-    <script>
-        if ("serviceWorker" in navigator) {
-            navigator.serviceWorker
-                .register("{{site.baseurl}}/sw.js")
-                .then(_ => console.log(`yehhh,serviceWorker register success`))
-                .catch(err => console.error(`error while register serviceWorker`, err));
+  <meta charset="utf-8" />
+  <title>
+    {% if page.title %}
+    {{ page.title }}
+    -
+    {{ site.title }}
+    {% else %}
+    {{ site.title }}
+    {% endif %}
+  </title>
+  <meta name="description" content="{{ page.description }}" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta property="og:image" content="" />
+  <link rel="shortcut icon" href="
+  {{
+    ' /assets/img/favicon/favicon_mushroom.ico ' | prepend: site.baseurl
+  }}
+  " type="image/x-icon"> <link rel="apple-touch-icon" href="
+  {{
+    ' /assets/img/favicon/apple-touch-icon.png ' | prepend: site.baseurl
+  }}
+  "> <link rel="apple-touch-icon" sizes="72x72" href="
+  {{
+    ' /assets/img/favicon/apple-touch-icon-72x72.png ' | prepend: site.baseurl
+  }}
+  "> <link rel="apple-touch-icon" sizes="114x114" href="
+  {{
+    ' /assets/img/favicon/apple-touch-icon-114x114.png ' | prepend: site.baseurl
+  }}
+  ">
+  <!-- Chrome, Firefox OS and Opera -->
+  <meta name="theme-color" content="#d25469" />
+  <!-- Windows Phone -->
+  <meta name="msapplication-navbutton-color" content="#d25469" />
+  <!-- iOS Safari -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="#d25469" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" />
+  <link rel="stylesheet" href="
+  {{
+    ' /assets/fonts/font-awesome/css/font-awesome.min.css ' | prepend: site.baseurl
+  }}
+  ">
+  <!-- Styles -->
+  <link rel="stylesheet" href="
+  {{
+    ' /assets/css/main.css ' | prepend: site.baseurl
+  }}
+  "> <link media="all" rel="stylesheet" type="text/css" href="
+  {{
+    ' /assets/css/pygments.css ' | prepend: site.baseurl
+  }}
+  " />
+  <script>
+    // if ("serviceWorker" in navigator) {
+    //     navigator.serviceWorker
+    //         .register("{{site.baseurl}}/sw.js")
+    //         .then(_ => console.log(`yehhh,serviceWorker register success`))
+    //         .catch(err => console.error(`error while register serviceWorker`, err));
 
-            // register sync
-            // see:  https://developers.google.com/web/updates/2015/12/background-sync
-            new Promise(function(resolve, reject) {
-                Notification.requestPermission(function(result) {
-                    if (result !== 'granted') {
-                        return reject(Error("Denied notification permission"));
-                    }
-                    resolve();
-                })
-            }).then(function() {
-                return navigator.serviceWorker.ready;
-            }).then(function(reg) {
-                return reg.sync.register('syncTest');
-            }).then(function() {
-                console.log('SUCCESS Sync registered');
-            }).catch(function(err) {
-                console.log('FAILED Sync registe', err);
-            });
+    //     // register sync
+    //     // see:  https://developers.google.com/web/updates/2015/12/background-sync
+    //     new Promise(function(resolve, reject) {
+    //         Notification.requestPermission(function(result) {
+    //             if (result !== 'granted') {
+    //                 return reject(Error("Denied notification permission"));
+    //             }
+    //             resolve();
+    //         })
+    //     }).then(function() {
+    //         return navigator.serviceWorker.ready;
+    //     }).then(function(reg) {
+    //         return reg.sync.register('syncTest');
+    //     }).then(function() {
+    //         console.log('SUCCESS Sync registered');
+    //     }).catch(function(err) {
+    //         console.log('FAILED Sync registe', err);
+    //     });
 
-            // register message receiver
-            // https://dbwriteups.wordpress.com/2015/11/16/service-workers-part-3-communication-between-sw-and-pages/
-            navigator.serviceWorker.onmessage = (e) => {
-                console.log('SW: SW Broadcasting:', event);
-                const data = e.data
+    //     // register message receiver
+    //     // https://dbwriteups.wordpress.com/2015/11/16/service-workers-part-3-communication-between-sw-and-pages/
+    //     navigator.serviceWorker.onmessage = (e) => {
+    //         console.log('SW: SW Broadcasting:', event);
+    //         const data = e.data
 
-                if (data.command == "UPDATE_FOUND") {
-                    console.log("UPDATE_FOUND_BY_SW", data);
-                    location.reload();
-                }
-            }
+    //         if (data.command == "UPDATE_FOUND") {
+    //             console.log("UPDATE_FOUND_BY_SW", data);
+    //             location.reload();
+    //         }
+    //     }
 
-        } else {
-            console.log(`eeee,serviceWorker unsupported`)
-        }
-    </script>
+    // } else {
+    //     console.log(`eeee,serviceWorker unsupported`)
+    // }
+  </script>
 </head>
