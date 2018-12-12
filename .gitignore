@@ -1,7 +1,7 @@
-_site
-.sass-cache
-.jekyll-metadata
+.DS_Store
+Thumbs.db
+db.json
+*.log
 node_modules/
-packge.json
-gulpfile.js
-yarn.lock
+public/
+.deploy*/
