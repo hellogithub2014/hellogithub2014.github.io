@@ -1,7 +1,7 @@
 ---
 title: "使用table构建三列自适应布局"
 img: malaysia.jpg # Add image post (optional)
-date: 2017-11-08 21:50:00 Asia/Shanghai
+date: 2017-11-08 21:50:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [CSS,TABLE]
 ---

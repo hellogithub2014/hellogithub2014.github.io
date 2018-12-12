@@ -1,7 +1,7 @@
 ---
 title: "DOM元素大小、形状和滚动总结"
 img: alaska.jpg # Add image post (optional)
-date: 2017-10-19 23:20:00 Asia/Shanghai
+date: 2017-10-19 23:20:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [DOM,JAVASCRIPT]
 ---

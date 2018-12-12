@@ -1,7 +1,7 @@
 ---
 title: "前端监控系统的尝试"
 img: malaysia.jpg # Add image post (optional)
-date: 2018-01-23 09:25:00 Asia/Shanghai
+date: 2018-01-23 09:25:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JAVASCRIPT]
 ---

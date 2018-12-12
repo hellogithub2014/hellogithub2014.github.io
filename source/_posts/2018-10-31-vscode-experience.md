@@ -1,7 +1,7 @@
 ---
 title: 'vscode使用经验'
 img: nevada.jpg # Add image post (optional)
-date: 2018-10-31 15:20:00 Asia/Shanghai
+date: 2018-10-31 15:20:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [vscode]
 ---

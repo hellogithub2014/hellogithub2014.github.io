@@ -1,7 +1,7 @@
 ---
 title: "前端跨域方法小结"
 img: indonesia.jpg # Add image post (optional)
-date: 2017-10-29 22:30:00 Asia/Shanghai
+date: 2017-10-29 22:30:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [CROSS-ORIGIN,JAVASCRIPT]
 ---

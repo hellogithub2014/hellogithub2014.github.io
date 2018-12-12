@@ -1,7 +1,7 @@
 ---
 title: "Chrome开发者工具之elements&console面板使用总结"
 img: malaysia.jpg # Add image post (optional)
-date: 2017-10-18 22:00:00 Asia/Shanghai
+date: 2017-10-18 22:00:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [CACHE,HTTP]
 ---

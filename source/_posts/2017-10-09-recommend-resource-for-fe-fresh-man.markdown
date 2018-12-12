@@ -1,7 +1,7 @@
 ---
 title: "给前端新人推荐的学习资源"
 img: new-zealand.jpg # Add image post (optional)
-date: 2017-10-09 20:00:00 Asia/Shanghai
+date: 2017-10-09 20:00:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [FRONT-END,RESOURCE]
 ---

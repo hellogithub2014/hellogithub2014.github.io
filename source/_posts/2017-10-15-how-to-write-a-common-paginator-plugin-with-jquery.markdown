@@ -1,7 +1,7 @@
 ---
 title: "如何写一个pc端通用的分页组件"
 img: canyon.jpg # Add image post (optional)
-date: 2017-10-15 23:30:00 Asia/Shanghai
+date: 2017-10-15 23:30:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JQUERY,PAGINATOR,JAVASCRIPT]
 ---
