@@ -54,7 +54,7 @@ var CRM_PRE_CACHE_PATH_LIST = ['ccrmSocialChatApp'];
 
 ### 真正做预缓存的文件 - `pre-cache.js`
 
-内容较长，参见附件[pre-cache.js](/_assets/pre-cache/pre-cache.js)， 使用时直接拷贝到`www/pre-cache`即可，无需修改
+内容较长，参见附件[pre-cache.js](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/pre-cache/pre-cache.js)， 使用时直接拷贝到`www/pre-cache`即可，无需修改
 
 ### 在 A 的空闲时间加载上述`js`
 
@@ -170,7 +170,7 @@ location ~* /(pre-cache-manifest\.json)$ {
 
 2. 根据配置动态生成清单文件 - `generate-pre-cache.js`
 
-   内容较长，参见附件[generate-pre-cache.js](/_assets/pre-cache/generate-pre-cache.js)， 使用时直接拷贝到项目根目录即可，无需修改
+   内容较长，参见附件[generate-pre-cache.js](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/pre-cache/generate-pre-cache.js)， 使用时直接拷贝到项目根目录即可，无需修改
 
 3. 在 package.json 中生成`script`
 

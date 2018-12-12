@@ -459,6 +459,6 @@ with (this) {
 
 # 完整源码注释
 
-[index.js](/_assets/vue-generate/index.js)
+[index.js](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/vue-generate/index.js)
 
-[events.js](/_assets/vue-generate/events.js)
+[events.js](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/vue-generate/events.js)

@@ -318,7 +318,7 @@ public ngOnInit() {
 
 ### 相关代码
 
-[crm-trackor.service.ts](/_assets/fe-trackor-system/crm-trackor.service.ts)
+[crm-trackor.service.ts](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/fe-trackor-system/crm-trackor.service.ts)
 
 # 启动性能埋点
 
