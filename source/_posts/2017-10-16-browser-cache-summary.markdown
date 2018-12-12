@@ -1,6 +1,6 @@
 ---
 title: '浏览器缓存机制总结'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2017-10-16 23:00:00
 
 tag: [CACHE, HTTP]

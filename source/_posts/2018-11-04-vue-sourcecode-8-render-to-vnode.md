@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析8-render函数生成vnode'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2018-11-04 16:20:00
 
 tag: [Vue, javascript]

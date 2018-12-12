@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析9-children归一化'
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2018-11-04 18:20:00
 
 tag: [Vue, javascript]

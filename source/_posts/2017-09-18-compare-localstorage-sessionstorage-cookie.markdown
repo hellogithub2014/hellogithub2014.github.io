@@ -1,6 +1,6 @@
 ---
 title: '比较localStorage、sessionStorage、cookie'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2017-09-18 17:41:00
 
 tag: [JavaScript]

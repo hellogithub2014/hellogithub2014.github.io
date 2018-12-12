@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析15-自定义指令'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2018-11-17 16:20:00
 
 tag: [Vue, javascript]

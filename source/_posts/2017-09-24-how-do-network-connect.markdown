@@ -1,6 +1,6 @@
 ---
 title: '从浏览器输入url按回车后发生了什么'
-img: nevada.jpg # Add image post (optional)
+summary_img: /images/nevada.jpg # Add image post (optional)
 date: 2017-09-24 10:08:00
 
 tag: [NetWork]

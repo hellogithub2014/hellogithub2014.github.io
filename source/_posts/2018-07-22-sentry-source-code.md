@@ -1,6 +1,6 @@
 ---
 title: 'Sentry源码解析'
-img: nevada.jpg # Add image post (optional)
+summary_img: /images/nevada.jpg # Add image post (optional)
 date: 2018-07-22 22:20:00
 
 tag: [vue, Sentry, Raven]

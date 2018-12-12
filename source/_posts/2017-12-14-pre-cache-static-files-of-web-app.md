@@ -1,6 +1,6 @@
 ---
 title: '一种web app资源预缓存方案'
-img: bora-bora.jpg # Add image post (optional)
+summary_img: /images/bora-bora.jpg # Add image post (optional)
 date: 2017-12-14 17:00:00
 
 tag: [AJAX, CACHE, NODEJS]

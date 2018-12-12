@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析3-初始化流程'
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2018-10-20 12:20:00
 
 tag: [Vue, javascript]

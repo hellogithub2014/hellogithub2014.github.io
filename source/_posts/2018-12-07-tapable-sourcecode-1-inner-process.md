@@ -1,6 +1,6 @@
 ---
 title: 'tapable源码解析1-内部逻辑处理'
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2018-12-07 12:20:00
 
 tag: [Tabpable, javascript]

@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析18-自定义组件的v-model'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2018-11-18 12:20:00
 
 tag: [Vue, javascript]

@@ -1,6 +1,6 @@
 ---
 title: "css学习笔记之bootstrap at mooc"
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2018-05-19 08:30:00
 
 tag: [css]

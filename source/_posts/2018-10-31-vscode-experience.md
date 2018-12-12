@@ -1,6 +1,6 @@
 ---
 title: 'vscode使用经验'
-img: nevada.jpg # Add image post (optional)
+summary_img: /images/nevada.jpg # Add image post (optional)
 date: 2018-10-31 15:20:00
 
 tag: [vscode]

@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析17-v-if的处理'
-img: new-york.jpg # Add image post (optional)
+summary_img: /images/new-york.jpg # Add image post (optional)
 date: 2018-11-17 18:20:00
 
 tag: [Vue, javascript]

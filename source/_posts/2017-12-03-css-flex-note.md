@@ -1,6 +1,6 @@
 ---
 title: 'css flex布局学习笔记'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2017-12-03 15:25:00
 
 tag: [CSS]

@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析4-双向数据绑定'
-img: himalayan.jpg # Add image post (optional)
+summary_img: /images/himalayan.jpg # Add image post (optional)
 date: 2018-10-20 20:20:00
 
 tag: [Vue, javascript]

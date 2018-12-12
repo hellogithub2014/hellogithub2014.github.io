@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析2-全局api'
-img: bora-bora.jpg # Add image post (optional)
+summary_img: /images/bora-bora.jpg # Add image post (optional)
 date: 2018-10-16 22:20:00
 
 tag: [Vue, javascript]

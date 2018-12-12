@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析16-v-for的处理'
-img: nevada.jpg # Add image post (optional)
+summary_img: /images/nevada.jpg # Add image post (optional)
 date: 2018-11-17 17:20:00
 
 tag: [Vue, javascript]

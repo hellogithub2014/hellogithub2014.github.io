@@ -1,6 +1,6 @@
 ---
 title: '前端埋点系统研究小结'
-img: nevada.jpg # Add image post (optional)
+summary_img: /images/nevada.jpg # Add image post (optional)
 date: 2018-02-22 19:00:00
 
 tag: [JAVASCRIPT]

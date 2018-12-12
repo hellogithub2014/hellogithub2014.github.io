@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析14-指令处理概述'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2018-11-17 14:20:00
 
 tag: [Vue, javascript]

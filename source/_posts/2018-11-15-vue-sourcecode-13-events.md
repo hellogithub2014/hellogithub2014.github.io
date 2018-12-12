@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析13-事件处理'
-img: himalayan.jpg # Add image post (optional)
+summary_img: /images/himalayan.jpg # Add image post (optional)
 date: 2018-11-15 21:20:00
 
 tag: [Vue, javascript]

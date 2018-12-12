@@ -1,6 +1,6 @@
 ---
 title: 'tapable源码解析2-解析各个钩子内部原理'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2018-12-07 17:20:00
 tag: [Tabpable, javascript]
 ---

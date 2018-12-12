@@ -1,6 +1,6 @@
 ---
 title: 'mock.js学习笔记'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2017-11-21 11:25:00
 
 tag: [MOCK]

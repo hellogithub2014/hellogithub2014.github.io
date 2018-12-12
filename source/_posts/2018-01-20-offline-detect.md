@@ -1,6 +1,6 @@
 ---
 title: '前端离线检测'
-img: himalayan.jpg # Add image post (optional)
+summary_img: /images/himalayan.jpg # Add image post (optional)
 date: 2018-01-20 15:48:00
 
 tag: [OFFLINE]

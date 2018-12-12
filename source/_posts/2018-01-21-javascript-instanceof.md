@@ -1,6 +1,6 @@
 ---
 title: 'javascript中的instanceof操作符'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2018-01-21 21:25:00
 
 tag: [JAVASCRIPT]

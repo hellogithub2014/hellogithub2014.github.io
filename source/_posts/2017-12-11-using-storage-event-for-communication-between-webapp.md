@@ -1,6 +1,6 @@
 ---
 title: '使用StorageEvent在web app间通信'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2017-12-11 20:10:00
 
 tag: [StorageEvent]

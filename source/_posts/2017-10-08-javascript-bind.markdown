@@ -1,6 +1,6 @@
 ---
 title: 'javascript bind函数小结'
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2017-10-08 21:30:00
 
 tag: [JavaScript]

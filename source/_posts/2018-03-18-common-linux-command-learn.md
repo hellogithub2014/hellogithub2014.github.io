@@ -1,6 +1,6 @@
 ---
 title: "常见linux命令学习"
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2018-03-18 19:00:00
 
 tag: [LINUX]

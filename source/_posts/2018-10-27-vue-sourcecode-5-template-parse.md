@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析5-模板解析parse'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2018-10-27 15:20:00
 
 tag: [Vue, javascript]

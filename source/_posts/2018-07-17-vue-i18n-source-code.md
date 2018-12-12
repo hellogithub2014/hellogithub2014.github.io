@@ -1,6 +1,6 @@
 ---
 title: 'VueI18n源码解析'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2018-07-17 22:30:00
 
 tag: [vue, VueI18n]

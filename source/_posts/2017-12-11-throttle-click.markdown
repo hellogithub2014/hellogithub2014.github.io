@@ -1,6 +1,6 @@
 ---
 title: '移动端点击元素重复跳转同一页面BUG解决方案'
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2017-12-11 21:00:00
 
 tag: [JavaScript]

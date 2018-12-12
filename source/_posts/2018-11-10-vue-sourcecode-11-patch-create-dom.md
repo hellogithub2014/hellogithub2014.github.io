@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析11-patch创建dom'
-img: bora-bora.jpg # Add image post (optional)
+summary_img: /images/bora-bora.jpg # Add image post (optional)
 date: 2018-11-10 17:20:00
 
 tag: [Vue, javascript]

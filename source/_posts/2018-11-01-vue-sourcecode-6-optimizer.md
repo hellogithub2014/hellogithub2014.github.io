@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析6-静态AST优化'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2018-11-01 08:20:00
 
 tag: [Vue, javascript]

@@ -1,6 +1,6 @@
 ---
 title: "lodash源码学习之Array篇"
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2018-05-19 10:30:00
 
 tag: [lodash]

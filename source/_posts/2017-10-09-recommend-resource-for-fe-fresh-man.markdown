@@ -1,6 +1,6 @@
 ---
 title: '给前端新人推荐的学习资源'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2017-10-09 20:00:00
 
 tag: [FRONT-END, RESOURCE]

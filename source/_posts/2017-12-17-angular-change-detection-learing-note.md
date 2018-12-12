@@ -1,6 +1,6 @@
 ---
 title: "Angular变更检测学习笔记"
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2017-12-17 11:10:00
 
 tag: [ANGULAR]

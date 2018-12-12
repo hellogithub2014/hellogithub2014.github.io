@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析1-入口'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2018-10-14 22:20:00
 
 tag: [Vue, javascript]

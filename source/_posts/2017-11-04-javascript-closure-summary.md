@@ -1,6 +1,6 @@
 ---
 title: "JavaScript闭包小结"
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2017-11-04 22:00:00
 
 tag: [CLOSURE,JAVASCRIPT]

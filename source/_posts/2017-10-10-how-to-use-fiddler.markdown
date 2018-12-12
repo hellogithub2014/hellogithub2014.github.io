@@ -1,6 +1,6 @@
 ---
 title: 'Fiddler搭建指南'
-img: new-york.jpg # Add image post (optional)
+summary_img: /images/new-york.jpg # Add image post (optional)
 date: 2017-10-10 20:00:00
 
 tag: [TOOL, FIDDLER]

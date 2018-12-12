@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析10-patch函数入口'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2018-11-04 22:20:00
 
 tag: [Vue, javascript]

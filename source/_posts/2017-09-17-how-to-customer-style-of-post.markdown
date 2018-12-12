@@ -1,6 +1,6 @@
 ---
 title: '如何定制Jekyll文章中的样式'
-img: himalayan.jpg # Add image post (optional)
+summary_img: /images/himalayan.jpg # Add image post (optional)
 date: 2017-09-17 12:55:00
 
 tag: [TOOL, Jekyll]

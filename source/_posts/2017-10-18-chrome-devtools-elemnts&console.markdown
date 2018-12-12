@@ -1,6 +1,6 @@
 ---
 title: "Chrome开发者工具之elements&console面板使用总结"
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-10-18 22:00:00
 
 tag: [CACHE,HTTP]

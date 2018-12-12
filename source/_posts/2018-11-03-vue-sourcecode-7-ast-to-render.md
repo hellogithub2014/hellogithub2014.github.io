@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析7-生成render函数'
-img: new-york.jpg # Add image post (optional)
+summary_img: /images/new-york.jpg # Add image post (optional)
 date: 2018-11-03 17:20:00
 
 tag: [Vue, javascript]

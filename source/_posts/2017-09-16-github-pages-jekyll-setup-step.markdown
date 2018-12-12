@@ -1,6 +1,6 @@
 ---
 title: 'MAC 搭建GITHUB PAGES + Jekyll 步骤'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-09-16 12:55:00
 
 tag: [TOOL, Jekyll]

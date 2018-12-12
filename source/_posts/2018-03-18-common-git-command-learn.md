@@ -1,6 +1,6 @@
 ---
 title: "常见git命令学习"
-img: new-york.jpg # Add image post (optional)
+summary_img: /images/new-york.jpg # Add image post (optional)
 date: 2018-03-18 19:00:00
 
 tag: [GIT]

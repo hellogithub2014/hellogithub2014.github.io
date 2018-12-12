@@ -1,6 +1,6 @@
 ---
 title: '如何写一个pc端通用的分页组件'
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2017-10-15 23:30:00
 
 tag: [JQUERY, PAGINATOR, JAVASCRIPT]

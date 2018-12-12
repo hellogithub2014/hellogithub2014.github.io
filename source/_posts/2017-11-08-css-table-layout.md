@@ -1,6 +1,6 @@
 ---
 title: '使用table构建三列自适应布局'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-11-08 21:50:00
 
 tag: [CSS, TABLE]

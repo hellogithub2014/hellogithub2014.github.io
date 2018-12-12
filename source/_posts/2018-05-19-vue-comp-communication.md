@@ -1,6 +1,6 @@
 ---
 title: "vue组件通信小结"
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2018-05-19 12:30:00
 
 tag: [vue]

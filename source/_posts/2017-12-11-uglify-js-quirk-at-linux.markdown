@@ -1,6 +1,6 @@
 ---
 title: 'uglify.js在linux下的填坑经验'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-12-11 18:00:00
 
 tag: [UGLIFY.JS]

@@ -1,6 +1,6 @@
 ---
 title: 'Vue源码解析12-patch中的diff算法'
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2018-11-10 21:20:00
 
 tag: [Vue, javascript]

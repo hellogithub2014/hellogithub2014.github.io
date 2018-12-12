@@ -1,6 +1,6 @@
 ---
 title: 'JavaScript事件循环小结'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2017-11-05 18:00:00
 
 tag: [JAVASCRIPT, EVENT-LOOP]

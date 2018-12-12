@@ -1,6 +1,6 @@
 ---
 title: "浏览器渲染过程小结"
-img: canyon.jpg # Add image post (optional)
+summary_img: /images/canyon.jpg # Add image post (optional)
 date: 2017-11-05 11:30:00
 
 tag: [BROWSER]

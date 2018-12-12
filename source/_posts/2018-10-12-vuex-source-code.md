@@ -1,6 +1,6 @@
 ---
 title: 'Vuex源码解析'
-img: sweden.jpg # Add image post (optional)
+summary_img: /images/sweden.jpg # Add image post (optional)
 date: 2018-10-12 22:20:00
 
 tag: [Vue, Vuex, javascript]

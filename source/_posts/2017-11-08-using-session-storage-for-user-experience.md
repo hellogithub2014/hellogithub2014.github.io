@@ -1,6 +1,6 @@
 ---
 title: '使用sessionStorage构建更好的用户体验'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-11-08 20:25:00
 
 tag: [CACHE, SESSION_STORAGE]

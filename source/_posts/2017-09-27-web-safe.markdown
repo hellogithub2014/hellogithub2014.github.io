@@ -1,6 +1,6 @@
 ---
 title: '前端安全小结'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2017-09-27 10:08:00
 
 tag: [HTML, safe]

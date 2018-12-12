@@ -1,6 +1,6 @@
 ---
 title: "lodash源码学习之技巧篇"
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2018-05-19 11:30:00
 
 tag: [lodash]

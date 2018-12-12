@@ -1,6 +1,6 @@
 ---
 title: 'Unicode与Javascript'
-img: new-zealand.jpg # Add image post (optional)
+summary_img: /images/new-zealand.jpg # Add image post (optional)
 date: 2018-08-23 22:20:00
 
 tag: [unicode, javascript]

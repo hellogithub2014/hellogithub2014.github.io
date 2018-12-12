@@ -1,6 +1,6 @@
 ---
 title: '前端跨域方法小结'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2017-10-29 22:30:00
 
 tag: [CROSS-ORIGIN, JAVASCRIPT]

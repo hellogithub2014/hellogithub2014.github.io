@@ -1,6 +1,6 @@
 ---
 title: 'vue结合jest踩坑记'
-img: indonesia.jpg # Add image post (optional)
+summary_img: /images/indonesia.jpg # Add image post (optional)
 date: 2018-07-16 08:30:00
 
 tag: [vue, jest]

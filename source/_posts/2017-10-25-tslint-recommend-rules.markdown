@@ -1,6 +1,6 @@
 ---
 title: 'Tslint官方推荐规则详细解释'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2017-10-25 21:00:00
 
 tag: [TOOL, TSLINT]

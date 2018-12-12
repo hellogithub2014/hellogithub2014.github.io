@@ -1,6 +1,6 @@
 ---
 title: '前端监控系统的尝试'
-img: malaysia.jpg # Add image post (optional)
+summary_img: /images/malaysia.jpg # Add image post (optional)
 date: 2018-01-23 09:25:00
 
 tag: [JAVASCRIPT]

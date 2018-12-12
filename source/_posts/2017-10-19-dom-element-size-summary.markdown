@@ -1,6 +1,6 @@
 ---
 title: 'DOM元素大小、形状和滚动总结'
-img: alaska.jpg # Add image post (optional)
+summary_img: /images/alaska.jpg # Add image post (optional)
 date: 2017-10-19 23:20:00
 
 tag: [DOM, JAVASCRIPT]
