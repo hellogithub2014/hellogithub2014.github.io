@@ -2,11 +2,9 @@
 title: 'Vue源码解析9-children归一化'
 img: sweden.jpg # Add image post (optional)
 date: 2018-11-04 18:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 归一化操作其实就是将多维的数组，合并转换成一个一维的数组。在 Vue 中归一化分为三个级别，
 

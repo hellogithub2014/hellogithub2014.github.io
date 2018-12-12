@@ -2,11 +2,9 @@
 title: '前端埋点系统研究小结'
 img: nevada.jpg # Add image post (optional)
 date: 2018-02-22 19:00:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [JAVASCRIPT]
 ---
-
-# 前言
 
 埋点具有很重要的意义，可以获取用户在使用 app 时的各种行为或数据指标。这篇文章主要用来记录我们的项目中对于埋点的一些预研，包括页面点击埋点、页面路由埋点、应用启动时的性能数据埋点三个方面。
 

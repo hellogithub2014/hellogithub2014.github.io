@@ -2,11 +2,9 @@
 title: 'Vue源码解析4-双向数据绑定'
 img: himalayan.jpg # Add image post (optional)
 date: 2018-10-20 20:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 原理
 
 Vue 的响应式原理见
 [官网的这张图](https://camo.githubusercontent.com/3845b9554e62650727fa7cae8f1c169060b879f7/68747470733a2f2f636e2e7675656a732e6f72672f696d616765732f646174612e706e67)

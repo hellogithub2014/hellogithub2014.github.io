@@ -1,12 +1,10 @@
 ---
-title: "浏览器缓存机制总结"
+title: '浏览器缓存机制总结'
 img: alaska.jpg # Add image post (optional)
 date: 2017-10-16 23:00:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
-tag: [CACHE,HTTP]
----
 
-# 前言
+tag: [CACHE, HTTP]
+---
 
 前段时间在优化我们的一个前端项目，其中利用了浏览器的缓存机制，学习了一部分相关的`HTTP`头部的作用。索性翻出以前收藏的关于浏览器缓存机制的文章，做一个总结。相关参考文章放在了最后。
 
@@ -32,21 +30,21 @@ Cache-Control : cache-directive
 
 首先是**缓冲能力，它关注的是缓存到什么地方，和是否应该被缓存**。他的几个重要的属性是：
 
-* `private`：表示它只应该存在本地缓存；
-* `public`：表示它既可以存在共享缓存，也可以被存在本地缓存；
-* `no-cache`：表示不论是本地缓存还是共享缓存，在使用它以前必须用缓存里的值来重新验证；
-* `no-store`：表示不允许被缓存。
+- `private`：表示它只应该存在本地缓存；
+- `public`：表示它既可以存在共享缓存，也可以被存在本地缓存；
+- `no-cache`：表示不论是本地缓存还是共享缓存，在使用它以前必须用缓存里的值来重新验证；
+- `no-store`：表示不允许被缓存。
 
 第二个是**过期时间，很显然它关注的是内容可以被缓存多久**。它的几个重要的属性是：
 
-* `max-age=<seconds>`：设置缓存时间，设置单位为秒。本地缓存和共享缓存都可以；
-* `s-maxage=<seconds>`：覆盖 max-age 属性。只在共享缓存中起作用。
+- `max-age=<seconds>`：设置缓存时间，设置单位为秒。本地缓存和共享缓存都可以；
+- `s-maxage=<seconds>`：覆盖 max-age 属性。只在共享缓存中起作用。
 
 最后一个是**二次验证，表示精细控制**。它的几个重要属性是：
 
-* `immutable`：表示文档是不能更改的。
-* `must-revalidate`：表示客户端（浏览器）必须检查代理服务器上是否存在，即使它已经本地缓存了也要检查。
-* `proxy-revalidata`：表示共享缓存（CDN）必须要检查源是否存在，即使已经有缓存。
+- `immutable`：表示文档是不能更改的。
+- `must-revalidate`：表示客户端（浏览器）必须检查代理服务器上是否存在，即使它已经本地缓存了也要检查。
+- `proxy-revalidata`：表示共享缓存（CDN）必须要检查源是否存在，即使已经有缓存。
 
 #### 详细解释
 
@@ -126,11 +124,11 @@ http1.0 字段, 通常设置为`Pragma:no-cache`, 作用同`Cache-Control:no-cac
 
 **`ETag`的优先级高于`Last-modified`.使用`ETag`可以解决`Last-modified`存在的一些问题**：
 
-* 某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新
+- 某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新
 
-* 如果资源修改非常频繁，在秒以下的时间内进行修改，而`Last-modified`只能精确到秒
+- 如果资源修改非常频繁，在秒以下的时间内进行修改，而`Last-modified`只能精确到秒
 
-* 一些资源的最后修改时间改变了，但是内容没改变，使用`ETag`就认为资源还是没有修改的。
+- 一些资源的最后修改时间改变了，但是内容没改变，使用`ETag`就认为资源还是没有修改的。
 
 # from memory cache 和 from disk cache
 
@@ -138,8 +136,8 @@ http1.0 字段, 通常设置为`Pragma:no-cache`, 作用同`Cache-Control:no-cac
 
 **from memory cache** 表示使用内存中的缓存
 
-* 快速读取： 会将编译解析后的文件，直接存入该进程的内存中，占据该进程一定的内存资源，以方便下次运行时的快速读取
-* 时效性： 一旦该进程关闭，则该进程的内存会清空。
+- 快速读取： 会将编译解析后的文件，直接存入该进程的内存中，占据该进程一定的内存资源，以方便下次运行时的快速读取
+- 时效性： 一旦该进程关闭，则该进程的内存会清空。
 
 **from disk cache**表示使用的是硬盘中的缓存， 读取缓存需要对该缓存存放的硬盘文件进行 IO 操作，然后重新解析该缓存内容，读取复杂，比 memory cache 慢。
 

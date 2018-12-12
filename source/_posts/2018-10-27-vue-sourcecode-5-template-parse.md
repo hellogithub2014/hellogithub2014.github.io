@@ -2,11 +2,9 @@
 title: 'Vue源码解析5-模板解析parse'
 img: indonesia.jpg # Add image post (optional)
 date: 2018-10-27 15:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 Vue 源码可以分为 3 大块：**双向绑定**、**patch 算法**和**模板解析**。其中又以模板解析最为复杂，它是用来将我们写的`template`模板编译成`render`函数，可以猜到如果我们直接写`render`，那么整个解析过程就可以跳过，而且分析其中的代码可以看出这个解析的过程其实是很独立的。
 

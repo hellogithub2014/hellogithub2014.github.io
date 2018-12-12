@@ -2,11 +2,9 @@
 title: 'Vue源码解析18-自定义组件的v-model'
 img: new-zealand.jpg # Add image post (optional)
 date: 2018-11-18 12:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 这篇文章主要讨论自定义组件的`v-model`处理，会顺带提一提普通标签上的`v-model`处理。`v-model`算是比较复杂的一个内置指令了，主要是对于不同的宿主元素它需要不同的特殊处理，所以分支比较多。
 
@@ -179,8 +177,8 @@ export function genComponentModel(el: ASTElement, value: string, modifiers: ?AST
           },
         },
         template: `
-                                                                  <p>{{value}}</p>
-                                                                `,
+                                                                    <p>{{value}}</p>
+                                                                  `,
       },
     },
   });

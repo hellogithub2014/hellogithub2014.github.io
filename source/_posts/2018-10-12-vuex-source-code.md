@@ -2,32 +2,9 @@
 title: 'Vuex源码解析'
 img: sweden.jpg # Add image post (optional)
 date: 2018-10-12 22:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, Vuex, javascript]
 ---
-
-- [插件思路](#插件思路)
-- [入口](#入口)
-- [Store](#store)
-  - [ModuleCollection](#modulecollection)
-  - [installModule](#installmodule)
-    - [**getNamespace**:](#getnamespace)
-    - [**makeLocalContext**](#makelocalcontext)
-    - [registerMutation](#registermutation)
-    - [registerAction](#registeraction)
-    - [registerGetter](#registergetter)
-  - [resetStoreVM](#resetstorevm)
-- [公共 api](#公共-api)
-  - [commit、dispatch](#commitdispatch)
-  - [registerModule](#registermodule)
-  - [unregisterModule](#unregistermodule)
-  - [resetStore](#resetstore)
-  - [mapXXX 系列](#mapxxx-系列)
-    - [mapState](#mapstate)
-    - [mapGetters](#mapgetters)
-    - [createNamespacedHelpers](#createnamespacedhelpers)
-
-# 插件思路
 
 `Vuex`将所有的数据统一存放到内部`store`中，然后内部实例化一个`vm`监听`store`的变化，业务代码中使用到`store`时就会产生依赖。 业务代码中使用的各种`mutation`、`action`最终都是尝试修改内部的`store`状态，`store`真正变化时就会自动由`Vue`通知到业务组件。
 

@@ -2,11 +2,9 @@
 title: 'Vue源码解析11-patch创建dom'
 img: bora-bora.jpg # Add image post (optional)
 date: 2018-11-10 17:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 上篇文章了解了`patch`的入口，这篇文章的目的是了解`patch`函数功能的一部分：**创建 DOM**。`patch`的功能大致分为 3 块：
 

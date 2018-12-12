@@ -1,35 +1,32 @@
 ---
-title: "使用StorageEvent在web app间通信"
+title: '使用StorageEvent在web app间通信'
 img: alaska.jpg # Add image post (optional)
 date: 2017-12-11 20:10:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [StorageEvent]
 ---
 
-# 前言
+最近项目中有一个功能，需要在两个 webview 中运行的同域 web app 间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询 localstorage 的方式完成的。即一个 webview 中的页面把数据放到 localstorage 里，然后另一个 webview 中的页面使用定时器不断查询想要的数据是否已改变。
 
-最近项目中有一个功能，需要在两个webview中运行的同域web app间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询localstorage的方式完成的。即一个webview中的页面把数据放到localstorage里，然后另一个webview中的页面使用定时器不断查询想要的数据是否已改变。
+后来看到说 localstorage 其实有一个 storage 事件，可以在其中的数据发生改变时触发，事件对象中可以获取是哪个键的值改变了，以及最新的值，这个特性很符合我们的需求。
 
-后来看到说localstorage其实有一个storage事件，可以在其中的数据发生改变时触发，事件对象中可以获取是哪个键的值改变了，以及最新的值，这个特性很符合我们的需求。
-
-背景：我们的两个webview页面中都会有一个浮动图标，图标的位置需要同步。
+背景：我们的两个 webview 页面中都会有一个浮动图标，图标的位置需要同步。
 
 # HTML
 
 ```html
-<ion-icon #feedbackBadge crmMoveable (moveEnd)="storePosition($event)">
-</ion-icon>
+<ion-icon #feedbackBadge crmMoveable (moveEnd)="storePosition($event)"> </ion-icon>
 ```
 
-上面是Angular的模板语法， `crmMoveable`是一个指令，可以让宿主元素具备拖拽能力，它在停止拖拽时会出发一个`moveEnd`事件，事件对象`$event`包含图标最新的位置
+上面是 Angular 的模板语法， `crmMoveable`是一个指令，可以让宿主元素具备拖拽能力，它在停止拖拽时会出发一个`moveEnd`事件，事件对象`$event`包含图标最新的位置
 
 ```js
 $event: { x: string, y: string }; // x和y都是形如 100px这样的字符串
 ```
 
-# localstorage存储
+# localstorage 存储
 
-我们需要在停止时把最新位置数据存到localstorage去：
+我们需要在停止时把最新位置数据存到 localstorage 去：
 
 ```js
 /**
@@ -44,9 +41,9 @@ localStorage.setItem( POSITION_Y, position.y );
 }
 ```
 
-# 注册storage事件
+# 注册 storage 事件
 
-这里注意的是**要在window对象上注册事件处理**：
+这里注意的是**要在 window 对象上注册事件处理**：
 
 ```js
 public ngAfterViewInit() {
@@ -81,9 +78,8 @@ public ngAfterViewInit() {
 
 # 遇到的坑
 
-写完后测一测，在pc chrome、安卓webview上均没有问题，运行的很好。但是发现在我们ios上就死活不行，又偏偏我不知道怎么调试ios webview里的web app~
+写完后测一测，在 pc chrome、安卓 webview 上均没有问题，运行的很好。但是发现在我们 ios 上就死活不行，又偏偏我不知道怎么调试 ios webview 里的 web app~
 
-后来经过我们ios的同事提醒，他问我们是在UI webview还是WK webview测试的，我才知道一直不行的是在UI webview上。然后又在WK上做了个测试，发现是可以的。🙄🙄🙄
+后来经过我们 ios 的同事提醒，他问我们是在 UI webview 还是 WK webview 测试的，我才知道一直不行的是在 UI webview 上。然后又在 WK 上做了个测试，发现是可以的。🙄🙄🙄
 
-在google上搜了下，发现很多人也在问，貌似这是UI webview的一个BUG。 [BUG地址](https://bugs.webkit.org/show_bug.cgi?id=145565)
-
+在 google 上搜了下，发现很多人也在问，貌似这是 UI webview 的一个 BUG。 [BUG 地址](https://bugs.webkit.org/show_bug.cgi?id=145565)

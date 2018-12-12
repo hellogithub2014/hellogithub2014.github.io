@@ -2,11 +2,9 @@
 title: '如何定制Jekyll文章中的样式'
 img: himalayan.jpg # Add image post (optional)
 date: 2017-09-17 12:55:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [TOOL, Jekyll]
 ---
-
-# 前言
 
 这两天在搭建`Jekyll`，然后利用`Markdown`来写文章，挑了一个喜欢的模板，本来一切都挺好的。然后发现操蛋的来了，这个模板的代码块样式和链接样式那叫一个丑。我又不舍得换模板，只能想着怎么把这些样式给定制。经过一番折腾，总结了一些小经验，但是感觉我的这种方法太暴力，应该会有更方便的方法，以后慢慢继续琢磨吧。
 

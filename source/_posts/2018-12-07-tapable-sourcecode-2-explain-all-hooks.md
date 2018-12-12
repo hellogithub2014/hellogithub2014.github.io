@@ -2,90 +2,8 @@
 title: 'tapable源码解析2-解析各个钩子内部原理'
 img: alaska.jpg # Add image post (optional)
 date: 2018-12-07 17:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [Tabpable, javascript]
 ---
-
-- [前言](#前言)
-- [SyncBailHook](#syncbailhook)
-  - [demo](#demo)
-  - [执行结果](#执行结果)
-  - [生成函数](#生成函数)
-- [SyncLoopHook](#syncloophook)
-  - [demo](#demo-1)
-  - [执行结果](#执行结果-1)
-  - [生成函数](#生成函数-1)
-- [SyncWaterfallHook](#syncwaterfallhook)
-  - [demo](#demo-2)
-  - [运行结果](#运行结果)
-  - [生成函数](#生成函数-2)
-- [AsyncParallelBailHook](#asyncparallelbailhook)
-  - [tap - callAsync](#tap---callasync)
-    - [demo](#demo-3)
-    - [运行结果](#运行结果-1)
-    - [生成函数](#生成函数-3)
-  - [tapAsync - callAsync](#tapasync---callasync)
-    - [demo](#demo-4)
-    - [运行结果](#运行结果-2)
-    - [生成函数](#生成函数-4)
-  - [tapPromise - promise](#tappromise---promise)
-    - [demo](#demo-5)
-    - [运行结果](#运行结果-3)
-    - [生成函数](#生成函数-5)
-- [AsyncParallelHook](#asyncparallelhook)
-  - [tap - callAsync](#tap---callasync-1)
-    - [demo](#demo-6)
-    - [运行结果](#运行结果-4)
-    - [生成函数](#生成函数-6)
-  - [tapAsync -callAsync](#tapasync--callasync)
-    - [demo](#demo-7)
-    - [运行结果](#运行结果-5)
-    - [生成函数](#生成函数-7)
-  - [tapPromise - promise](#tappromise---promise-1)
-    - [demo](#demo-8)
-    - [运行结果](#运行结果-6)
-    - [生成函数](#生成函数-8)
-- [AsyncSeriesBailHook](#asyncseriesbailhook)
-  - [tap - callAsync](#tap---callasync-2)
-    - [demo](#demo-9)
-    - [运行结果](#运行结果-7)
-    - [生成函数](#生成函数-9)
-  - [tapAsync - callAsync](#tapasync---callasync-1)
-    - [demo](#demo-10)
-    - [运行结果](#运行结果-8)
-    - [生成函数](#生成函数-10)
-  - [tapPromise - promise](#tappromise---promise-2)
-    - [demo](#demo-11)
-    - [运行结果](#运行结果-9)
-    - [生成函数](#生成函数-11)
-- [AsyncSeriesHook](#asyncserieshook)
-  - [tap - callAsync](#tap---callasync-3)
-    - [demo](#demo-12)
-    - [运行结果](#运行结果-10)
-    - [生成函数](#生成函数-12)
-  - [tapAsync - callAsync](#tapasync---callasync-2)
-    - [demo](#demo-13)
-    - [运行结果](#运行结果-11)
-    - [生成函数](#生成函数-13)
-  - [tapPromise - promise](#tappromise---promise-3)
-    - [demo](#demo-14)
-    - [运行结果](#运行结果-12)
-    - [生成函数](#生成函数-14)
-- [AsyncSeriesWaterfallHook](#asyncserieswaterfallhook)
-  - [tap - callAsync](#tap---callasync-4)
-    - [demo](#demo-15)
-    - [运行结果](#运行结果-13)
-    - [生成函数](#生成函数-15)
-  - [tapAsync - callAsync](#tapasync---callasync-3)
-    - [demo](#demo-16)
-    - [运行结果](#运行结果-14)
-    - [生成函数](#生成函数-16)
-  - [tapPromise - promise](#tappromise---promise-4)
-    - [demo](#demo-17)
-    - [运行结果](#运行结果-15)
-    - [生成函数](#生成函数-17)
-
-# 前言
 
 上一篇文章我们以`SyncHook`为例讲解了`tapable`对于钩子的内部处理逻辑，这篇文章会挨个讲解剩余每种钩子，会直接对照例子和生成的代码来帮助大家理解。
 
@@ -1444,21 +1362,21 @@ function anonymous(name) {
 ### demo
 
 ```js
-queue1.tap( '1', function ( name ) {
-  console.log( 1 );
-  return "Wrong";
-} );
-queue1.tap( '2', function ( name ) {
-  console.log( 2 );
-  throw new Error('tap2 error')
-} );
-queue1.tap( '3', function ( name ) {
-  console.log( 3 );
-} );
-queue1.callAsync( 'zfpx', err => {
-  console.log( err );
-  console.timeEnd( 'cost1' );
-} );
+queue1.tap('1', function(name) {
+  console.log(1);
+  return 'Wrong';
+});
+queue1.tap('2', function(name) {
+  console.log(2);
+  throw new Error('tap2 error');
+});
+queue1.tap('3', function(name) {
+  console.log(3);
+});
+queue1.callAsync('zfpx', err => {
+  console.log(err);
+  console.timeEnd('cost1');
+});
 ```
 
 ### 运行结果
@@ -1520,30 +1438,30 @@ function anonymous(name, _callback) {
 ### demo
 
 ```js
-queue2.tapAsync( '1', function ( name, callback ) {
-  setTimeout( () => {
-    console.log( name, 1 );
+queue2.tapAsync('1', function(name, callback) {
+  setTimeout(() => {
+    console.log(name, 1);
     callback();
-  }, 1000 );
-} );
-queue2.tapAsync( '2', function ( name, callback ) {
-  setTimeout( () => {
-    console.log( name, 2 );
+  }, 1000);
+});
+queue2.tapAsync('2', function(name, callback) {
+  setTimeout(() => {
+    console.log(name, 2);
     callback('tapAsync2 error');
-  }, 2000 );
-} );
-queue2.tapAsync( '3', function ( name, callback ) {
-  setTimeout( () => {
-    console.log( name, 3 );
+  }, 2000);
+});
+queue2.tapAsync('3', function(name, callback) {
+  setTimeout(() => {
+    console.log(name, 3);
     callback();
-  }, 3000 );
-} );
+  }, 3000);
+});
 
-queue2.callAsync( 'webpack', ( err ) => {
-  console.log( err );
-  console.log( 'over' );
-  console.timeEnd( 'cost2' );
-} );
+queue2.callAsync('webpack', err => {
+  console.log(err);
+  console.log('over');
+  console.timeEnd('cost2');
+});
 ```
 
 ### 运行结果
@@ -1596,39 +1514,42 @@ function anonymous(name, _callback) {
 ### demo
 
 ```js
-queue3.tapPromise( '1', function ( name ) {
-  return new Promise( function ( resolve, reject ) {
-    setTimeout( function () {
-      console.log( name, 1 );
+queue3.tapPromise('1', function(name) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      console.log(name, 1);
       resolve();
       // reject( 'tapPromise1 error' );
-    }, 1000 )
-  } );
-} );
-queue3.tapPromise( '2', function ( name ) {
-  return new Promise( function ( resolve, reject ) {
-    setTimeout( function () {
-      console.log( name, 2 );
+    }, 1000);
+  });
+});
+queue3.tapPromise('2', function(name) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      console.log(name, 2);
       // resolve();
-      reject( 'tapPromise2 error' );
-    }, 2000 )
-  } );
-} );
-queue3.tapPromise( '3', function ( name ) {
-  return new Promise( function ( resolve ) {
-    setTimeout( function () {
-      console.log( name, 3 );
+      reject('tapPromise2 error');
+    }, 2000);
+  });
+});
+queue3.tapPromise('3', function(name) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      console.log(name, 3);
       resolve();
-    }, 3000 )
-  } );
-} );
-queue3.promise( 'webapck' ).then( result => {
-  console.log( 'result: ', result );
-  console.timeEnd( 'cost3' );
-},err=>{
-  console.log( 'err: ', err );
-  console.timeEnd( 'cost3' );
-} )
+    }, 3000);
+  });
+});
+queue3.promise('webapck').then(
+  result => {
+    console.log('result: ', result);
+    console.timeEnd('cost3');
+  },
+  err => {
+    console.log('err: ', err);
+    console.timeEnd('cost3');
+  },
+);
 ```
 
 ### 运行结果
@@ -1710,34 +1631,33 @@ function anonymous(name) {
     _sync = false;
   });
 }
-
 ```
 
 # AsyncSeriesWaterfallHook
 
 ## tap - callAsync
 
-上一个监听函数的返回值, 可以作为下一个监听函数的参数。 如果监听函数报错，直接执行`callAsync`的回调,后续tap回调不会被执行
+上一个监听函数的返回值, 可以作为下一个监听函数的参数。 如果监听函数报错，直接执行`callAsync`的回调,后续 tap 回调不会被执行
 
 ### demo
 
 ```js
-queue1.tap( '1', function ( name ) {
-  console.log( name, 1 );
-  return 'lily'
-} );
-queue1.tap( '2', function ( data ) {
-  console.log( 2, data );
+queue1.tap('1', function(name) {
+  console.log(name, 1);
+  return 'lily';
+});
+queue1.tap('2', function(data) {
+  console.log(2, data);
   return 'Tom';
-} );
-queue1.tap( '3', function ( data ) {
-  console.log( 3, data );
-} );
-queue1.callAsync( 'webpack', err => {
-  console.log( err );
-  console.log( 'over' );
-  console.timeEnd( 'cost1' );
-} );
+});
+queue1.tap('3', function(data) {
+  console.log(3, data);
+});
+queue1.callAsync('webpack', err => {
+  console.log(err);
+  console.log('over');
+  console.timeEnd('cost1');
+});
 ```
 
 ### 运行结果
@@ -1809,29 +1729,29 @@ function anonymous(name, _callback) {
 ### demo
 
 ```js
-queue2.tapAsync( '1', function ( name, callback ) {
-  setTimeout( function () {
-    console.log( '1: ', name );
-    callback( null, 'tapAsync1' );
-  }, 1000 )
-} );
-queue2.tapAsync( '2', function ( data, callback ) {
-  setTimeout( function () {
-    console.log( '2: ', data );
-    callback( 'tapAsync2 error');
-  }, 2000 )
-} );
-queue2.tapAsync( '3', function ( data, callback ) {
-  setTimeout( function () {
-    console.log( '3: ', data );
-    callback( null, 'tapAsync3' );
-  }, 3000 )
-} );
-queue2.callAsync( 'webpack', (err,result) => {
-  console.log( "err: ", err, 'result: ', result );
-  console.log( 'over' );
-  console.timeEnd( 'cost2' );
-} );
+queue2.tapAsync('1', function(name, callback) {
+  setTimeout(function() {
+    console.log('1: ', name);
+    callback(null, 'tapAsync1');
+  }, 1000);
+});
+queue2.tapAsync('2', function(data, callback) {
+  setTimeout(function() {
+    console.log('2: ', data);
+    callback('tapAsync2 error');
+  }, 2000);
+});
+queue2.tapAsync('3', function(data, callback) {
+  setTimeout(function() {
+    console.log('3: ', data);
+    callback(null, 'tapAsync3');
+  }, 3000);
+});
+queue2.callAsync('webpack', (err, result) => {
+  console.log('err: ', err, 'result: ', result);
+  console.log('over');
+  console.timeEnd('cost2');
+});
 ```
 
 ### 运行结果
@@ -1893,39 +1813,42 @@ function anonymous(name, _callback) {
 ### demo
 
 ```js
-queue3.tapPromise( '1', function ( name ) {
-  return new Promise( function ( resolve, reject ) {
-    setTimeout( function () {
-      console.log( '1:', name );
-      resolve( 'tapPromise1' );
+queue3.tapPromise('1', function(name) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      console.log('1:', name);
+      resolve('tapPromise1');
       // reject( 'tapPromise1 error' ) // 后续的tapPromise回调不会执行，直接执行Hook.promise的catch回调。
-    }, 1000 )
-  } );
-} );
-queue3.tapPromise( '2', function ( data ) {
-  return new Promise( function ( resolve,reject ) {
-    setTimeout( function () {
-      console.log( '2:', data );
+    }, 1000);
+  });
+});
+queue3.tapPromise('2', function(data) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      console.log('2:', data);
       // resolve( '2' );
       reject('tapPromise2 error');
-    }, 2000 )
-  } );
-} );
-queue3.tapPromise( '3', function ( data ) {
-  return new Promise( function ( resolve ) {
-    setTimeout( function () {
-      console.log( '3:', data );
-      resolve( 'over' );
-    }, 3000 )
-  } );
-} );
-queue3.promise( 'webpack' ).then( result => {
-  console.log( 'result: ', result );
-  console.timeEnd( 'cost3' );
-}, err => {
-  console.log( "err: ", err );
-  console.timeEnd( 'cost3' );
-} );
+    }, 2000);
+  });
+});
+queue3.tapPromise('3', function(data) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      console.log('3:', data);
+      resolve('over');
+    }, 3000);
+  });
+});
+queue3.promise('webpack').then(
+  result => {
+    console.log('result: ', result);
+    console.timeEnd('cost3');
+  },
+  err => {
+    console.log('err: ', err);
+    console.timeEnd('cost3');
+  },
+);
 ```
 
 ### 运行结果

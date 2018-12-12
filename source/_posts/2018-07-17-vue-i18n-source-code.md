@@ -1,12 +1,10 @@
 ---
-title: "VueI18n源码解析"
+title: 'VueI18n源码解析'
 img: malaysia.jpg # Add image post (optional)
 date: 2018-07-17 22:30:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
-tag: [vue,VueI18n]
----
 
-# 背景
+tag: [vue, VueI18n]
+---
 
 这段时间一直在做国际化的项目，需要对界面上的文本都对各种语言做翻译，利用了[vue-i18n](https://github.com/kazupon/vue-i18n)这个库,它可以在切换语言时无刷新的更新页面上的文本翻译。 本文主要用来记录阅读这个库时的心得体会。
 
@@ -737,26 +735,21 @@ export function mergeOptions(parent: Object, child: Object, vm?: Component): Obj
 
 对于`i18n`选项的合并，通过代码我们已经知道他是使用`Vue.config.optionMergeStrategies.methods`，其实对于各种合并策略，无非就是怎么处理参数中的两个对象，我们不妨把所有提供提供的合并策略挨个了解下，代码都位于`vue/src/core/util/options.js`。
 
-**components、directives和filters的合并策略都是mergeAssets,大体就是组件选项覆盖mixin选项。**
+**components、directives 和 filters 的合并策略都是 mergeAssets,大体就是组件选项覆盖 mixin 选项。**
 
 ```js
-function mergeAssets (
-  parentVal: ?Object,
-  childVal: ?Object,
-  vm?: Component,
-  key: string
-): Object {
-  const res = Object.create(parentVal || null)
+function mergeAssets(parentVal: ?Object, childVal: ?Object, vm?: Component, key: string): Object {
+  const res = Object.create(parentVal || null);
   if (childVal) {
-    return extend(res, childVal)
+    return extend(res, childVal);
   } else {
-    return res
+    return res;
   }
 }
 // ASSET_TYPES => [component、directive、filter]
-ASSET_TYPES.forEach(function (type) {
-  strats[type + 's'] = mergeAssets
-})
+ASSET_TYPES.forEach(function(type) {
+  strats[type + 's'] = mergeAssets;
+});
 ```
 
 ### strats.props、strats.methods、strats.inject 、strats.computed

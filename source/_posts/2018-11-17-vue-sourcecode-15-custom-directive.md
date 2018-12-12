@@ -2,16 +2,9 @@
 title: 'Vue源码解析15-自定义指令'
 img: malaysia.jpg # Add image post (optional)
 date: 2018-11-17 16:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-- [前言](#前言)
-- [`parse`](#parse)
-- [`generate`](#generate)
-- [patch](#patch)
-
-# 前言
 
 `Vue`可以自定义局部和全局指令，具体用法参考官网即可，这篇文章讲述其内部实现。
 

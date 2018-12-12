@@ -2,24 +2,9 @@
 title: 'tapable源码解析1-内部逻辑处理'
 img: sweden.jpg # Add image post (optional)
 date: 2018-12-07 12:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Tabpable, javascript]
 ---
-
-- [前言](#前言)
-- [概念](#概念)
-- [主体逻辑](#主体逻辑)
-  - [初始化](#初始化)
-  - [注册监听](#注册监听)
-  - [触发回调](#触发回调)
-- [interceptor](#interceptor)
-  - [Hook.prototype.intercept 添加新的interceptor](#hookprototypeintercept-添加新的interceptor)
-  - [Hook.prototype.tapXXX新注册的事件监听接受老的interceptor洗礼](#hookprototypetapxxx新注册的事件监听接受老的interceptor洗礼)
-  - [HookCodeFactory.prototype.header执行interceptor.call](#hookcodefactoryprototypeheader执行interceptorcall)
-  - [HookCodeFactory.prototype.callTap执行interceptor.tap](#hookcodefactoryprototypecalltap执行interceptortap)
-- [小结](#小结)
-
-# 前言
 
 最近在尝试学习`webpack`的源码，其实很早前就知道`webpack`的`plugin`体系核心是[`tapable`](https://github.com/webpack/tapable)，然后在`webpack`的入口代码里就看到了它的身影，索性先来研读下`tapable`的内部原理，这篇文章就是用来帮助大家理解它。
 

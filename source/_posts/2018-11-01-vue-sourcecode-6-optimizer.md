@@ -2,11 +2,9 @@
 title: 'Vue源码解析6-静态AST优化'
 img: malaysia.jpg # Add image post (optional)
 date: 2018-11-01 08:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 上篇文章说到了模板解析的第一步`parse`，现在来说第二步`optimize`，用于优化静态内容的渲染，主要是给静态节点打上一些标记。
 

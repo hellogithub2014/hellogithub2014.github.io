@@ -2,11 +2,9 @@
 title: '一种web app资源预缓存方案'
 img: bora-bora.jpg # Add image post (optional)
 date: 2017-12-14 17:00:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [AJAX, CACHE, NODEJS]
 ---
-
-# 背景
 
 我们的移动端有多个项目，有一些功能是公共的，每个项目都会用到，现在的方案是将它们拆分成独立应用。随着逐渐有公共功能拆分成独立应用，随之而来就有一个问题：**主应用中进入独立应用，如何更快的显示独立应用的首屏？**其中一个可以做的事情是预缓存独立应用中的关键资源。
 

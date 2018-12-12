@@ -2,11 +2,9 @@
 title: 'Vue源码解析8-render函数生成vnode'
 img: new-zealand.jpg # Add image post (optional)
 date: 2018-11-04 16:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 前面说到模板编译完会生成一个`render`函数，这篇文章要讲的是如何根据`render`函数生成对应的`vnode`。入口代码位于`src/core/instance/render.js`的`Vue.prototype._render`：
 

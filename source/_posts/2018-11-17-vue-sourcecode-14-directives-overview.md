@@ -2,16 +2,9 @@
 title: 'Vue源码解析14-指令处理概述'
 img: indonesia.jpg # Add image post (optional)
 date: 2018-11-17 14:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-- [前言](#前言)
-- [`parse`阶段](#parse阶段)
-- [`generate`阶段生成`render`字符串](#generate阶段生成render字符串)
-- [`patch`阶段处理`vnode.data`](#patch阶段处理vnodedata)
-
-# 前言
 
 接下来的几篇文章焦点放到`Vue`的指令处理上，我们知道`Vue`内置了一些指令，比如常用的`v-for`、`v-if`等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。
 

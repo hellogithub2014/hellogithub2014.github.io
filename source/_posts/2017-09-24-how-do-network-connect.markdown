@@ -2,11 +2,9 @@
 title: '从浏览器输入url按回车后发生了什么'
 img: nevada.jpg # Add image post (optional)
 date: 2017-09-24 10:08:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [NetWork]
 ---
-
-# 前言
 
 之前看到有个很火的面试题，大概是说从浏览器输入 url 按回车到页面显示内容期间发生了什么，恰好这段时间在读《网络是怎样连接的》，就边看书边试着回答这个问题。
 

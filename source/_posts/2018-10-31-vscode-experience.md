@@ -2,11 +2,9 @@
 title: 'vscode使用经验'
 img: nevada.jpg # Add image post (optional)
 date: 2018-10-31 15:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [vscode]
 ---
-
-# 前言
 
 看到很多同事都在用 vscode，但一些人没有体会到它的威力，只把它当做普通的编辑器来用，忽略了它最大的特性：插件。 事实上配合一些插件，可以让开发效率得到很大提升。 本文总结个人在使用`vscode`时用的最多的那些插件和快捷键，希望可以帮助到大家 😄。
 

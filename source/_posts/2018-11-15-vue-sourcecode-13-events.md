@@ -2,23 +2,9 @@
 title: 'Vue源码解析13-事件处理'
 img: himalayan.jpg # Add image post (optional)
 date: 2018-11-15 21:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-- [前言](#前言)
-- [DOM 事件](#dom-事件)
-  - [compile 阶段转为 AST](#compile-阶段转为-ast)
-  - [generate 阶段生成 render 字符串](#generate-阶段生成-render-字符串)
-  - [patch 阶段添加事件处理到 DOM 上](#patch-阶段添加事件处理到-dom-上)
-- [自定义事件](#自定义事件)
-  - [`$on`](#on)
-  - [`$once`](#once)
-  - [`$off`](#off)
-- [`$emit`](#emit)
-- [自定义组件 DOM 事件](#自定义组件-dom-事件)
-
-# 前言
 
 到这里为止，Vue 的主要逻辑就已经全部介绍完了。接下来的文章会从其他角度来解析，如事件处理、各个指令的处理等等。先从事件处理开始。
 

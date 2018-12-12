@@ -2,11 +2,9 @@
 title: 'Vue源码解析1-入口'
 img: alaska.jpg # Add image post (optional)
 date: 2018-10-14 22:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 主要是记录自己在学习 Vue 源码时的心得，学习的版本是`2.5.17-beta.0`. 主要参考的博客是[liutao/vue2.0-source](https://github.com/liutao/vue2.0-source/)。
 

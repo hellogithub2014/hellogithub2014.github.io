@@ -2,11 +2,9 @@
 title: 'Vue源码解析12-patch中的diff算法'
 img: canyon.jpg # Add image post (optional)
 date: 2018-11-10 21:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 上篇文章说到了`patch`中的新增`dom`过程，这篇会说`diif`算法。`Vue`的`diff`算法是基于[`snabbdom`](https://github.com/snabbdom/snabbdom)的，另外网上也有很多分析的文章，我自己是看的[掘金上的篇博客](https://juejin.im/entry/58d3857544d90400692458ee)。
 

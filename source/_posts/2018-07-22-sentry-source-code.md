@@ -1,17 +1,14 @@
 ---
-title: "Sentry源码解析"
+title: 'Sentry源码解析'
 img: nevada.jpg # Add image post (optional)
 date: 2018-07-22 22:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
-tag: [vue,Sentry,Raven]
+
+tag: [vue, Sentry, Raven]
 ---
-
-
-# 背景
 
 目前的项目中很早前就引入了[Sentry](https://github.com/getsentry/raven-js)进行错误监控，自己以前也零零散散看过一些错误监控的博客，但都没有深入到源码层面。很好奇`Sentry`是怎么抓取错误的，能够获取到那么多的错误信息。于是花了几天的闲暇时间加上周末，把它的源码撸了一遍，虽然没有仔细阅读每一行代码，但还是学到了很多，这篇文章就是用于记录自己的学习笔记。注意，这里不会介绍如何安装`Sentry`，因为网上的教程很多。
 
-# 配置及主入口install方法
+# 配置及主入口 install 方法
 
 配置很简单，几行代码就可以完成：
 
@@ -19,17 +16,16 @@ tag: [vue,Sentry,Raven]
 import Raven from 'raven-js';
 import RavenVue from 'raven-js/plugins/vue';
 
-Raven
-      .config('http://user@host:port/path', {
-        environment: 'prod',
-      })
-      .addPlugin(RavenVue, Vue)
-      .install();
+Raven.config('http://user@host:port/path', {
+  environment: 'prod',
+})
+  .addPlugin(RavenVue, Vue)
+  .install();
 ```
 
 可能很好奇为啥是`Raven`而不是`Sentry`，这个我也不知道，不去深究。。。
 
-可以看到一个`config`+`addPlugin`+`install`就ok了，`addPlugin`是用于安装`Raven`专门给`Vue`写的一个插件，`install`就是整个`Raven`的主入口了。
+可以看到一个`config`+`addPlugin`+`install`就 ok 了，`addPlugin`是用于安装`Raven`专门给`Vue`写的一个插件，`install`就是整个`Raven`的主入口了。
 
 `addPlugin`很简单，其实就是把参数放到自己内部的一个插件数组中，等待合适时机安装每个插件：
 
@@ -42,7 +38,7 @@ Raven
   },
 ```
 
-我们的`RavenVue`老哥其实也很简单，就是实现了`Vue.config.errorHandler`，这是Vue的[全局错误处理钩子](https://cn.vuejs.org/v2/api/#errorHandler)， 然后把抓到的错误交给`Raven`处理：
+我们的`RavenVue`老哥其实也很简单，就是实现了`Vue.config.errorHandler`，这是 Vue 的[全局错误处理钩子](https://cn.vuejs.org/v2/api/#errorHandler)， 然后把抓到的错误交给`Raven`处理：
 
 ```js
 // vuePlugin就是RavenVue
@@ -62,9 +58,9 @@ function vuePlugin(Raven, Vue) {
       metaData.lifecycleHook = info;
     }
 
-	 // captureException手动把异常发送给Sentry服务器
+    // captureException手动把异常发送给Sentry服务器
     Raven.captureException(error, {
-      extra: metaData
+      extra: metaData,
     });
 
     if (typeof _oldOnError === 'function') {
@@ -75,7 +71,6 @@ function vuePlugin(Raven, Vue) {
 ```
 
 可以看到主要逻辑就是捕捉到错误时先获取`vue`实例或组件的一些信息，最后发送到服务器。至于`captureException`是怎么实现的我们后面再看。
-
 
 接下来就是我们的重点`install`了：
 
@@ -110,15 +105,15 @@ install: function() {
   }
 ```
 
-我们不去管各种if条件，无非是判断各种配置，先假设他们全部成立。那么我们的注意力就很清晰了：
+我们不去管各种 if 条件，无非是判断各种配置，先假设他们全部成立。那么我们的注意力就很清晰了：
 
-* `TraceKit.report.subscribe`
-* `_handleOnErrorStackInfo`
-* `_attachPromiseRejectionHandler`
-* `_patchFunctionToString`
-* `_instrumentTryCatch`
-* `_instrumentBreadcrumbs`
-* `_drainPlugins`
+- `TraceKit.report.subscribe`
+- `_handleOnErrorStackInfo`
+- `_attachPromiseRejectionHandler`
+- `_patchFunctionToString`
+- `_instrumentTryCatch`
+- `_instrumentBreadcrumbs`
+- `_drainPlugins`
 
 余下所有篇幅都是解析他们的实现过程，挨个来看。
 
@@ -196,34 +191,34 @@ TraceKit.report = (function reportModuleWrapper() {
 **`installGlobalHandler`会拦截`window.onrror`，对错误对象进行一系列处理，最后交由每个`handler`处理。**
 
 ```js
-  function installGlobalHandler() {
-    // ...
-    _oldOnerrorHandler = _window.onerror;
-    _window.onerror = traceKitWindowOnError;
-   // ...
-  }
+function installGlobalHandler() {
+  // ...
+  _oldOnerrorHandler = _window.onerror;
+  _window.onerror = traceKitWindowOnError;
+  // ...
+}
 
 function traceKitWindowOnError(msg, url, lineNo, colNo, ex) {
-    var stack = null;
+  var stack = null;
 
-    // ... 此处省略一坨逻辑
+  // ... 此处省略一坨逻辑
 
-    // non-string `exception` arg; attempt to extract stack trace
+  // non-string `exception` arg; attempt to extract stack trace
 
-      // New chrome and blink send along a real error object
-      // Let's just report that like a normal error.
-      // See: https://mikewest.org/2013/08/debugging-runtime-errors-with-window-onerror
-      stack = TraceKit.computeStackTrace(exception);
-      notifyHandlers(stack, true);
+  // New chrome and blink send along a real error object
+  // Let's just report that like a normal error.
+  // See: https://mikewest.org/2013/08/debugging-runtime-errors-with-window-onerror
+  stack = TraceKit.computeStackTrace(exception);
+  notifyHandlers(stack, true);
 
-    // ... 此处省略一坨逻辑
+  // ... 此处省略一坨逻辑
 
-    if (_oldOnerrorHandler) {
-      return _oldOnerrorHandler.apply(this, arguments);
-    }
-
-    return false;
+  if (_oldOnerrorHandler) {
+    return _oldOnerrorHandler.apply(this, arguments);
   }
+
+  return false;
+}
 ```
 
 把上面的`traceKitWindowOnError`逻辑略去了很多，只看关键的`TraceKit.computeStackTrace`和`notifyHandlers`。 前者的逻辑很多，是用来帮助调用方屏蔽跨浏览器的堆栈处理细节，后者很简单，就是挨个调用每个`handler`处理`stack`信息。
@@ -231,28 +226,27 @@ function traceKitWindowOnError(msg, url, lineNo, colNo, ex) {
 我们先看简单的`notifyHandlers`：
 
 ```js
-
-  /**
-   * Dispatch stack information to all handlers.
-   * @param {Object.<string, *>} stack
-   */
-  function notifyHandlers(stack, isWindowError) {
-    var exception = null;
-    // ...
-    for (var i in handlers) {
-      if (handlers.hasOwnProperty(i)) {
-        try {
-          handlers[i].apply(null, [stack].concat(_slice.call(arguments, 2)));
-        } catch (inner) {
-          exception = inner;
-        }
+/**
+ * Dispatch stack information to all handlers.
+ * @param {Object.<string, *>} stack
+ */
+function notifyHandlers(stack, isWindowError) {
+  var exception = null;
+  // ...
+  for (var i in handlers) {
+    if (handlers.hasOwnProperty(i)) {
+      try {
+        handlers[i].apply(null, [stack].concat(_slice.call(arguments, 2)));
+      } catch (inner) {
+        exception = inner;
       }
     }
-
-    if (exception) {
-      throw exception;
-    }
   }
+
+  if (exception) {
+    throw exception;
+  }
+}
 ```
 
 可以看到确实很简单。再来看看复杂的`TraceKit.computeStackTrace`。
@@ -262,7 +256,6 @@ function traceKitWindowOnError(msg, url, lineNo, colNo, ex) {
 这个函数首先给了一大坨注释用于描述跨浏览器堆栈信息的混乱，此函数的目的就是返回一个统一格式的堆栈信息。
 
 ```js
-
 /**
  * TraceKit.computeStackTrace: cross-browser stack traces in JavaScript
  *
@@ -320,16 +313,15 @@ function traceKitWindowOnError(msg, url, lineNo, colNo, ex) {
 
 ```js
 TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
-
   /**
    * Computes stack trace information from the stack property.
    * Chrome and Gecko use this property.
    * @param {Error} ex
    * @return {?Object.<string, *>} Stack trace information.
    */
-	function computeStackTraceFromStackProp(ex) {
-		// ...
-	}
+  function computeStackTraceFromStackProp(ex) {
+    // ...
+  }
 
   /**
    * Adds information about the first frame to incomplete stack traces.
@@ -345,8 +337,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
    * augmented.
    */
   function augmentStackTraceWithInitialElement(stackInfo, url, lineNo, message) {
-		// ..
-	}
+    // ..
+  }
 
   /**
    * Computes stack trace information by walking the arguments.caller
@@ -358,9 +350,8 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
    * @return {?Object.<string, *>} Stack trace information.
    */
   function computeStackTraceByWalkingCallerChain(ex, depth) {
-		// ...
-	}
-
+    // ...
+  }
 
   /**
    * Computes a stack trace for an exception.
@@ -395,7 +386,7 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
     return {
       name: ex.name,
       message: ex.message,
-      url: getLocationHref()
+      url: getLocationHref(),
     };
   }
 
@@ -406,23 +397,23 @@ TraceKit.computeStackTrace = (function computeStackTraceWrapper() {
 })();
 ```
 
-整个`TraceKit.computeStackTrace`会挨个尝试用不同方法来解析堆栈，先尝试适用于Chrome的套路，不行再尝试适用于Safari或IE的，如果还是不行就手动构造。我们的重点放在适用于Chrome的`computeStackTraceFromStackProp`。
+整个`TraceKit.computeStackTrace`会挨个尝试用不同方法来解析堆栈，先尝试适用于 Chrome 的套路，不行再尝试适用于 Safari 或 IE 的，如果还是不行就手动构造。我们的重点放在适用于 Chrome 的`computeStackTraceFromStackProp`。
 
 ### computeStackTraceFromStackProp
 
 说实话这个函数的实现没有怎么看，涉及到奇怪的很多正则，整个函数的代码很多，大致的逻辑是先把错误堆栈信息按换行符切割，然后针对每一行提取各种信息：
 
-* `url` 错误的文件url
-* `func` 错误的函数
-* `args` 调用的参数
-* `line` 行
-* `column` 列
+- `url` 错误的文件 url
+- `func` 错误的函数
+- `args` 调用的参数
+- `line` 行
+- `column` 列
 
 最后如果`url`是以`blob:`开头的，会尝试通过相关链接拉取真正的`url`:
 
 ```js
 // NOTE: blob urls are now supposed to always have an origin, therefore it's format
-    // which is `blob:http://url/path/with-some-uuid`, is matched by `blob.*?:\/` as well
+// which is `blob:http://url/path/with-some-uuid`, is matched by `blob.*?:\/` as well
 
 // ...
 
@@ -439,24 +430,23 @@ var sourceMaps = source.match(/\/\/# sourceMappingURL=(.*)$/);
 
 // If we don't find a source map comment or we find more than one, continue on to the next element.
 if (sourceMaps) {
-	var sourceMapAddress = sourceMaps[1];
+  var sourceMapAddress = sourceMaps[1];
 
-	// Now we check to see if it's a relative URL.
-	// If it is, convert it to an absolute one.
-	if (sourceMapAddress.charAt(0) === '~') {
-		sourceMapAddress = getLocationOrigin() + sourceMapAddress.slice(1);
-	}
+  // Now we check to see if it's a relative URL.
+  // If it is, convert it to an absolute one.
+  if (sourceMapAddress.charAt(0) === '~') {
+    sourceMapAddress = getLocationOrigin() + sourceMapAddress.slice(1);
+  }
 
-	// Now we strip the '.map' off of the end of the URL and update the
-	// element so that Sentry can match the map to the blob.
-	element.url = sourceMapAddress.slice(0, -4);
+  // Now we strip the '.map' off of the end of the URL and update the
+  // element so that Sentry can match the map to the blob.
+  element.url = sourceMapAddress.slice(0, -4);
 }
 ```
 
 最后不管怎么样，我们会拿到一个『归一化』的堆栈信息，最后交由了`handler`处理，接下来看看我们注册的`handler`是如何处理的。
 
-
-# _handleOnErrorStackInfo
+# \_handleOnErrorStackInfo
 
 我们的`handler`就是这个函数，跟踪这个函数会发现真正调用的是`_handleStackInfo`函数：
 
@@ -484,9 +474,9 @@ if (sourceMaps) {
 
 **`_send`中一个重要的步骤就是携带上`_breadcrumbs`数组，这个数组记录了用户的行为轨迹**，后面会说到轨迹是在什么时候被记录的。
 
-可能会好奇，`server`的url怎么拿到的呢？是不是就是在`config`函数传入的那个url呢？好吧其实并不是，这个url需要经过一些处理才能拿到。
+可能会好奇，`server`的 url 怎么拿到的呢？是不是就是在`config`函数传入的那个 url 呢？好吧其实并不是，这个 url 需要经过一些处理才能拿到。
 
-首先发送的url是存储在全局的`_globalEndpoint`中，他是在`setDSN`方法中被赋值：
+首先发送的 url 是存储在全局的`_globalEndpoint`中，他是在`setDSN`方法中被赋值：
 
 ```js
 setDSN: function(dsn) {
@@ -513,12 +503,9 @@ setDSN: function(dsn) {
 
 参数中的`DSN`才是我们传给`config`的值，如果我们的`dsn`为`http://123456@sentry.io.com/5`,那么最终的`_globalEndpoint`就是`http://sentry.io.com/api/5/store`。
 
+好，小结一下，**到目前为止我们知道`Raven`通过`TraceKit`这个库监听了`window.onerror`事件，并由`TraceKit`处理了复杂的错误信息并最终获得归一化的堆栈信息，然后`Raven`会拿着这个信息再经过一些处理最后发送给 server 端,发送的地址是由我们传入的配置决定的。**
 
-好，小结一下，**到目前为止我们知道`Raven`通过`TraceKit`这个库监听了`window.onerror`事件，并由`TraceKit`处理了复杂的错误信息并最终获得归一化的堆栈信息，然后`Raven`会拿着这个信息再经过一些处理最后发送给server端,发送的地址是由我们传入的配置决定的。**
-
-
-
-# _attachPromiseRejectionHandler
+# \_attachPromiseRejectionHandler
 
 捕捉未`catch`的`Promise`错误，然后会调用`captrueException`处理异常。这里会先调用`Tracekit.computeStackTrace`处理堆栈信息，然后调用`_handleStackInfo`.
 
@@ -622,10 +609,10 @@ setDSN: function(dsn) {
 
 代码注释很详细了，可以看到`captureException`有两种出口：
 
-* captureMessage： 与_handleStackInfo的过程类似，会手动发送一条信息给server
-* _handleStackInfo： 前面已经介绍了，会经过一系列处理后把错误发送给后端
+- captureMessage： 与\_handleStackInfo 的过程类似，会手动发送一条信息给 server
+- \_handleStackInfo： 前面已经介绍了，会经过一系列处理后把错误发送给后端
 
-# _patchFunctionToString
+# \_patchFunctionToString
 
 用于将函数转为字符串：
 
@@ -645,7 +632,7 @@ setDSN: function(dsn) {
 
 这里有个`__raven__`变量，如果有这个属性说明此函数是一个`wrapped function`，其`__orig__`表示原始函数。`__raven__`属性会在原函数被作用于`wrap`函数时赋值，`wrap`函数是一个很重要的函数，后面会说到。
 
-# _instrumentTryCatch
+# \_instrumentTryCatch
 
 这个函数用于包裹各种异步回调，例如`setTimeout`，将回调函数`wrap`住，`wrap`内部会使用`try-catch`包裹原始函数调用，并在出错时将信息发送给`server`。
 
@@ -885,9 +872,9 @@ function fill(obj, name, replacement, track) {
 1. 利用`fill+wrap`函数拦截了`setTimeout`、`setInterval`、`requestAnimationFrame`的实现，将其中的回调函数使用`try-catch`包裹，回调出错时使用`captureException`发送
 2. 使用类似的技巧，内部也利用了`wrapEventTarget`函数拦截各种对象上的`addEventListener`。
 
-# _instrumentBreadcrumbs
+# \_instrumentBreadcrumbs
 
-用于记录行为轨迹，包括路由切换、控制台日志、xhr/fetch请求、点击事件等，将轨迹放到全局`_breadcrumbs`数组中，之后发送server时会携带。
+用于记录行为轨迹，包括路由切换、控制台日志、xhr/fetch 请求、点击事件等，将轨迹放到全局`_breadcrumbs`数组中，之后发送 server 时会携带。
 
 ```js
 
@@ -1141,15 +1128,13 @@ function fill(obj, name, replacement, track) {
 
 里面有几个辅助函数，这里稍作说明，每个辅助函数的代码都比较好理解。
 
-* `captureBreadcrumb`： 将参数对象放到全局的`_breadcrumbs`数组中，在此之前如果用户设置了`breadcrumbCallback`，会先把参数给此`callback`处理一下。`_breadcrumbs`会在`_send`中被发送到后端，`_send`会由`_processException`或`captureMessage`调用，其中`_processException`会由`_handleStackInfo`调用.所以可以认为`captureBreadcrumb`中的`_breadcrumbs`会在之后向后台发送错误时携带上.
+- `captureBreadcrumb`： 将参数对象放到全局的`_breadcrumbs`数组中，在此之前如果用户设置了`breadcrumbCallback`，会先把参数给此`callback`处理一下。`_breadcrumbs`会在`_send`中被发送到后端，`_send`会由`_processException`或`captureMessage`调用，其中`_processException`会由`_handleStackInfo`调用.所以可以认为`captureBreadcrumb`中的`_breadcrumbs`会在之后向后台发送错误时携带上.
 
-* `_breadcrumbEventHandler`：记录发生`dom`事件时，事件目标节点的在`dom tree`中的路径（如果重复触发多次则只记录第一次）。路径只记录从当前节点到最高5级父节点，最终格式为`....grandparent>parent>node`. 获取的路径最后也是由`captureBreadcrumb`处理.
+- `_breadcrumbEventHandler`：记录发生`dom`事件时，事件目标节点的在`dom tree`中的路径（如果重复触发多次则只记录第一次）。路径只记录从当前节点到最高 5 级父节点，最终格式为`....grandparent>parent>node`. 获取的路径最后也是由`captureBreadcrumb`处理.
 
-* `_keypressEventHandler`： 主要是记录`input/textarea`上的`keypress`事件，`_breadcrumbEventHandler`更多的是针对鼠标事件。`keypress`事件通过`1000ms`的`debounce`做了截流，最终还是会调用`_breadcrumbEventHandler`记录路径.
+- `_keypressEventHandler`： 主要是记录`input/textarea`上的`keypress`事件，`_breadcrumbEventHandler`更多的是针对鼠标事件。`keypress`事件通过`1000ms`的`debounce`做了截流，最终还是会调用`_breadcrumbEventHandler`记录路径.
 
-* `_captureUrlChange`：对之前和现在的`url`进行一些处理后，交由`captureBreadcrumb`处理.
-
-
+- `_captureUrlChange`：对之前和现在的`url`进行一些处理后，交由`captureBreadcrumb`处理.
 
 如果理解了`_instrumentTryCatch`的套路，那么理解`_instrumentBreadcrumbs`就会简单很多，因为他们都是通过`fill+wrap`的组合来做到这些。
 
@@ -1161,10 +1146,9 @@ function fill(obj, name, replacement, track) {
    1. 使用`wrap`包裹`onload`, `onerror`, `onprogress`的回调，使用`try-catch`抓错
    2. 在`onreadystatechange`时，使用`captureBreadcrumb`记录本次请求的`url+method+status_code`
 4. 拦截`fetch`，使用与拦截`xhr`类似的技巧，在`fetch`成功或失败时记录本次请求
-5.  拦截冒泡到`document`上的`click`、`keypress`事件，使用`_breadcrumbEventHandler`、`_keypressEventHandler`处理
+5. 拦截冒泡到`document`上的`click`、`keypress`事件，使用`_breadcrumbEventHandler`、`_keypressEventHandler`处理
 
-
-# _drainPlugins
+# \_drainPlugins
 
 跟前面的几个比起来，这个算很简单的了，就是拿到内部插件数组中的每个插件安装一下：
 
@@ -1180,39 +1164,38 @@ function fill(obj, name, replacement, track) {
   },
 ```
 
-
 # 总结
 
 `Raven`通过各种方法来捕获错误，同时记录行为轨迹，所有的方式列举如下：
 
-*	`TraceKit`：监听全局`window.error`事件，处理错误堆栈信息后发送给`Sentry Server`
+- `TraceKit`：监听全局`window.error`事件，处理错误堆栈信息后发送给`Sentry Server`
 
-*	`_attachPromiseRejectionHandler`：捕捉未`catch`的`Promise`错误，处理后发送`server`
+- `_attachPromiseRejectionHandler`：捕捉未`catch`的`Promise`错误，处理后发送`server`
 
-*	`_breadcrumbEventHandler`：记录发生`dom`事件时目标节点的路径，并在下次发送`server`时携带
+- `_breadcrumbEventHandler`：记录发生`dom`事件时目标节点的路径，并在下次发送`server`时携带
 
-*	`_keypressEventHandler`：记录`input/textarea`上的`keypress`事件，`1000ms`截流，最终调用`_breadcrumbEventHandler`
+- `_keypressEventHandler`：记录`input/textarea`上的`keypress`事件，`1000ms`截流，最终调用`_breadcrumbEventHandler`
 
-*	`captureMessage`、`captureException`：手动发送错误到`server`
+- `captureMessage`、`captureException`：手动发送错误到`server`
 
-*	`_instrumentTryCatch`：
-	1.	拦截了`setTimeout`、`setInterval`、`requestAnimationFrame`的实现，将其中的回调函数使用`try-catch`包裹，回调出错时使用`captureException`发送
-	2.	拦截`Window`等多个对象上的`addEventListener`，同样使用上面的方式包裹
+- `_instrumentTryCatch`：
 
-*	`_instrumentBreadcrumbs`，记录各种操作，存为『面包屑』，并在下次发送`server`时携带
+  1.  拦截了`setTimeout`、`setInterval`、`requestAnimationFrame`的实现，将其中的回调函数使用`try-catch`包裹，回调出错时使用`captureException`发送
+  2.  拦截`Window`等多个对象上的`addEventListener`，同样使用上面的方式包裹
 
-	1.	拦截`popstate`、`pushState`、`replaceState`，利用记录当前`url`
+- `_instrumentBreadcrumbs`，记录各种操作，存为『面包屑』，并在下次发送`server`时携带
 
-	2.	拦截`console`上的`debug`, `info`, `warn`, `error`, `log`，记录调用方法和参数
+  1.  拦截`popstate`、`pushState`、`replaceState`，利用记录当前`url`
 
-	3.	拦截`xhr`，在`open`时记录发送的`url+method`，在`send`时
-		1.	 包裹`onload`, `onerror`, `onprogress`的回调，使用`try-catch`抓错
-		2.	 在`onreadystatechange`时，记录本次请求的`url+method+status_code`
+  2.  拦截`console`上的`debug`, `info`, `warn`, `error`, `log`，记录调用方法和参数
 
-	4.	拦截`fetch`，使用与拦截`xhr`类似的技巧，在`fetch`成功或失败时记录本次请求
+  3.  拦截`xhr`，在`open`时记录发送的`url+method`，在`send`时
 
-	5.	拦截冒泡到`document`上的`click、keypress`事件，使用`_breadcrumbEventHandler`、`_keypressEventHandler`处理
+      1.  包裹`onload`, `onerror`, `onprogress`的回调，使用`try-catch`抓错
+      2.  在`onreadystatechange`时，记录本次请求的`url+method+status_code`
 
-*	`RavenVuePlugin`: 设置`Vue.config.errorHandler`，并将错误交由`captureException`处理
+  4.  拦截`fetch`，使用与拦截`xhr`类似的技巧，在`fetch`成功或失败时记录本次请求
 
+  5.  拦截冒泡到`document`上的`click、keypress`事件，使用`_breadcrumbEventHandler`、`_keypressEventHandler`处理
 
+- `RavenVuePlugin`: 设置`Vue.config.errorHandler`，并将错误交由`captureException`处理

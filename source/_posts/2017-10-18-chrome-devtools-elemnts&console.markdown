@@ -2,11 +2,10 @@
 title: "Chrome开发者工具之elements&console面板使用总结"
 img: malaysia.jpg # Add image post (optional)
 date: 2017-10-18 22:00:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [CACHE,HTTP]
 ---
 
-# 前言
 
 作为前端开发者，谷歌浏览器的开发者工具是每天都要用的。以前在公众号上也会偶尔看到相关的文章，不过都是别人消化过的知识了，倒不如自己去官网系统的学习一遍，这样以后碰到类似的文章就心中有数了😆
 

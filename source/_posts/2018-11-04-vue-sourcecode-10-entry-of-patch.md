@@ -2,11 +2,9 @@
 title: 'Vue源码解析10-patch函数入口'
 img: alaska.jpg # Add image post (optional)
 date: 2018-11-04 22:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 前面简单介绍了`compile`的最后一步：生成`render`函数，还剩下很多分支细节没说，主要是各种内置指令以及自定义组件和`slot`，这些结合之后的`patch`过程说效果会好一些。
 

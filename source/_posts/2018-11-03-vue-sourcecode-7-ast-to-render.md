@@ -2,11 +2,9 @@
 title: 'Vue源码解析7-生成render函数'
 img: new-york.jpg # Add image post (optional)
 date: 2018-11-03 17:20:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [Vue, javascript]
 ---
-
-# 前言
 
 上篇文章说到了模板解析的第一步`parse`，现在来说第最后一步`generate`，用于生成`render`函数。这一步的代码基本都放在了`src/compiler/codegen/index.js`中，初看一下会觉得非常长，但并没有想象中复杂，只是需要处理的情况比较多。
 

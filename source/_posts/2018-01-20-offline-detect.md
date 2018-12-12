@@ -1,12 +1,10 @@
 ---
-title: "前端离线检测"
+title: '前端离线检测'
 img: himalayan.jpg # Add image post (optional)
 date: 2018-01-20 15:48:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [OFFLINE]
 ---
-
-# 前言
 
 webapp 有时候需要检测应用是否处于离线状态，以此做出一些针对性的展示。这里小结一下如何来检测离线。
 
@@ -118,8 +116,8 @@ fetch('../icons.png')
 
 参考了 2 篇文章：
 
-* [前端小吉米](https://www.villainhr.com/page/2017/01/08/Service%20Worker%20%E5%85%A8%E9%9D%A2%E8%BF%9B%E9%98%B6#Sync %E7%A6%BB%E7%BA%BF%E5%A4%84%E7%90%86)
-* [google developers](https://developers.google.com/web/updates/2015/12/background-sync)
+- [前端小吉米](https://www.villainhr.com/page/2017/01/08/Service%20Worker%20%E5%85%A8%E9%9D%A2%E8%BF%9B%E9%98%B6#Sync %E7%A6%BB%E7%BA%BF%E5%A4%84%E7%90%86)
+- [google developers](https://developers.google.com/web/updates/2015/12/background-sync)
 
 先注册一个 Sync 事件，然后在 serviceworker 中监听这个事件，事件监听器会在用户有网络时被调用。如果用户在断网情况下触发了 sync 事件，监听函数会在有网络时立即调用。
 

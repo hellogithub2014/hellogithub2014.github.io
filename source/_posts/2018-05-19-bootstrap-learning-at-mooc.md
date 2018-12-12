@@ -2,11 +2,11 @@
 title: "css学习笔记之bootstrap at mooc"
 img: indonesia.jpg # Add image post (optional)
 date: 2018-05-19 08:30:00
-description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
+
 tag: [css]
 ---
 
-[toc]
+
 
 [MOOC课程地址](http://www.imooc.com/learn/141)
 #  排版
