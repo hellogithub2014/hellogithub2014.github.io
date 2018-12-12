@@ -20,11 +20,11 @@ tag: [lodash]
 
 **`lodash-array-part1`**
 
-![]({{site.url}}/assets/img/Lodash-Array/lodash-array-part1.png)
+![](/images/Lodash-Array/lodash-array-part1.png)
 
 **`lodash-array-part2`**
 
-![]({{site.url}}/assets/img/Lodash-Array/lodash-array-part2.png)
+![](/images/Lodash-Array/lodash-array-part2.png)
 
 ## concat
 

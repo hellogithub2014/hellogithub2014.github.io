@@ -12,7 +12,7 @@ tag: [DOM,JAVASCRIPT]
 
 # 文档坐标、视口坐标
 
-![]({{site.url}}/assets/img/dom-element-size/document-viewport-cordinate.jpg)
+![](/images/dom-element-size/document-viewport-cordinate.jpg)
 
 文档坐标 - 滚动量 = 视口坐标
 
@@ -31,7 +31,7 @@ tag: [DOM,JAVASCRIPT]
 * `offsetLeft` - 元素的左外边框**至包含元素（保存在`offsetParent`属性中）**的左内边框之间的像素距离
 * `offetTop` - 元素的上外边框**至包含元素**的上内边框之间的像素距离
 
-![]({{site.url}}/assets/img/dom-element-size/offset.jpeg)
+![](/images/dom-element-size/offset.jpeg)
 
 要想知道某个元素在页面上的偏移量，将这个元素的`offsetLeft`和`offetTop`与其`offsetParent`的相同属性相加，如此循环直到根元素即可：
 
@@ -58,7 +58,7 @@ function getElementLeft(element){
 * `clientWidth` - 元素内容区宽度加上左右内边距宽度,
 * `clientHeight` - 元素内容区高度加上上下内边距的高度
 
-![]({{site.url}}/assets/img/dom-element-size/client.jpeg)
+![](/images/dom-element-size/client.jpeg)
 
 最常用到这些属性的情况，就是确定浏览器视口大小。要确定浏览器视口大小，可以使用`doucment.documentElement`或`document.body`的`clientWidth`和`clientHeight`。
 
@@ -91,7 +91,7 @@ function getViewPort(){
 * `scrollLeft` - 被隐藏在内容区左侧的像素数。**通过设置这个属性可以改变元素的滚动位置**。
 * `scrollTop` - 被隐藏在内容区上方的像素数。**通过设置这个属性可以改变元素的滚动位置**。
 
-![]({{site.url}}/assets/img/dom-element-size/scroll.jpg)
+![](/images/dom-element-size/scroll.jpg)
 
 `scrollHeight`和`scrollWidth`主要用于确定元素内容的实际大小。例如通常认为<html>元素是在浏览器视口中滚动的元素，因此带有垂直滚动条的页面总高度就是`document.documentElement.scrollHeight`或`document.body.scrollHeight`。
 此时**浏览器的垂直滚动条高度**就是`document.documentElement.scrollTop`或`document.body.scrollTop`。

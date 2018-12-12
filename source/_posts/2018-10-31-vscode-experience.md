@@ -53,9 +53,9 @@ tag: [vscode]
 
 若同时安装[Document This](https://marketplace.visualstudio.com/items?itemName=joelday.docthis)这个插件，就可以结合`TypeScript`使用，会将参数类型也自动填充到注释中。之后在使用到函数的地方，鼠标悬浮上去会显示具体注释。支持快捷键： 连续按两次`Ctrl+Alt+D`
 
-![]({{site.url}}/assets/img/vscode-experience/complete-jsdoc-tag-1.png)
+![](/images/vscode-experience/complete-jsdoc-tag-1.png)
 
-![]({{site.url}}/assets/img/vscode-experience/complete-jsdoc-tag-2.png)
+![](/images/vscode-experience/complete-jsdoc-tag-2.png)
 
 ![](https://github.com/joelday/vscode-docthis/raw/master/images/demo.gif)
 
@@ -78,7 +78,7 @@ tag: [vscode]
 
 另外还提供了一个`autoFixOnSave`配置，可以在保存时自动修复 eslint 错误，不过个人使用了一段时间觉得不大好，频繁自动修复会导致`cpu`占用变的很高，然后出现卡顿。替代方案是使用提供的命令：先快捷键`Command+Shift+P`调出命令板，然后选择`Eslint: Fix all auto-fixable problems`，它会尽力帮我们修复所有的错误，不过有时候需要多按几次才能全部修复完。。。
 
-![]({{site.url}}/assets/img/vscode-experience/eslint-auto-fix.png)
+![](/images/vscode-experience/eslint-auto-fix.png)
 
 #### [eslint-disable-snippets](https://marketplace.visualstudio.com/items?itemName=drKnoxy.eslint-disable-snippets)
 
@@ -94,7 +94,7 @@ vscode 已经内置 git，可以完成的功能有：
 
 > Review diffs, stage files, and make commits right from the editor. Push and pull from any hosted SCM service.
 
-![]({{site.url}}/assets/img/vscode-experience/built-in-git.png)
+![](/images/vscode-experience/built-in-git.png)
 
 从个人使用体验来说，确实已经满足了绝大部分需求。**在遇到代码冲突时，也会在左侧面板展示所有存在冲突的文件，不用费力一个个去查找。**
 
@@ -120,7 +120,7 @@ vscode 已经内置 git，可以完成的功能有：
 
 另外，它会在编辑器侧边栏添加一个图标，点开可以浏览仓库、查看文件变更记录等等一系列功能，具体可以参考插件的官网介绍，个人也只是使用了其中很小一部分功能。
 
-![]({{site.url}}/assets/img/vscode-experience/git-lens-icon.png)
+![](/images/vscode-experience/git-lens-icon.png)
 
 ![](https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/ss-gitlens-explorer-repository.png)
 
@@ -138,7 +138,7 @@ vscode 已经内置 git，可以完成的功能有：
 
 ![](https://file-wkbcnlcvbn.now.sh/import-cost.gif)
 
-![]({{site.url}}/assets/img/vscode-experience/import-cost.png)
+![](/images/vscode-experience/import-cost.png)
 
 #### [JavaScript (ES6) code snippets](https://marketplace.visualstudio.com/items?itemName=xabikos.JavaScriptSnippets)
 
@@ -148,7 +148,7 @@ vscode 已经内置 git，可以完成的功能有：
 
 列举这个插件支持的一部分`snippets`：
 
-![](<{{site.url}}/assets/img/vscode-experience/js(es6)-code-snippets.png>)
+![](</images/vscode-experience/js(es6)-code-snippets.png>)
 
 #### [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
 
@@ -200,18 +200,18 @@ vscode 已经内置 git，可以完成的功能有：
 
 这个插件可以让切换变得非常简单，它会在侧边栏添加一个图标，里面有保存的所有项目名，点击文件名即可切换。
 
-![]({{site.url}}/assets/img/vscode-experience/project-manage-1.png)
+![](/images/vscode-experience/project-manage-1.png)
 
 唯一不是很方便的是保存项目需要使用插件提供的命令，而不能自动保存。具体方法是：
 
 1. 调用命令板`Command+Shift+P`
 2. 输入`Project Manager: Save Project`, 不要感觉命令太长了，输入前几个字母会自动筛选的
 
-![]({{site.url}}/assets/img/vscode-experience/project-manage-2.png)
+![](/images/vscode-experience/project-manage-2.png)
 
 编辑器底部也提供了图标来快捷切换项目：
 
-![]({{site.url}}/assets/img/vscode-experience/project-manage-3.png)
+![](/images/vscode-experience/project-manage-3.png)
 
 #### [Settings Sync](https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync)
 
@@ -221,7 +221,7 @@ vscode 已经内置 git，可以完成的功能有：
 
 具体配置步骤见插件文档即可，这里展示一下在 A 电脑上修改一个配置，然后自动同步上传到服务器的日志：
 
-![]({{site.url}}/assets/img/vscode-experience/setting-sync.png)
+![](/images/vscode-experience/setting-sync.png)
 
 #### [TODO Highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
 
@@ -316,4 +316,4 @@ vscode 也是可以进行代码调试的，官网专门提供了一个[教程](h
 
 说来惭愧，目前用到这个功能最多的地方还是在调试单元测试代码，截个图。。。
 
-![]({{site.url}}/assets/img/vscode-experience/vscode-debug.png)
+![](/images/vscode-experience/vscode-debug.png)

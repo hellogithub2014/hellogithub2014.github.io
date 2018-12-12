@@ -1,21 +1,20 @@
 ---
-title: "前端埋点系统研究小结"
+title: '前端埋点系统研究小结'
 img: nevada.jpg # Add image post (optional)
 date: 2018-02-22 19:00:00
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
 tag: [JAVASCRIPT]
 ---
 
-
 # 前言
 
-埋点具有很重要的意义，可以获取用户在使用app时的各种行为或数据指标。这篇文章主要用来记录我们的项目中对于埋点的一些预研，包括页面点击埋点、页面路由埋点、应用启动时的性能数据埋点三个方面。
+埋点具有很重要的意义，可以获取用户在使用 app 时的各种行为或数据指标。这篇文章主要用来记录我们的项目中对于埋点的一些预研，包括页面点击埋点、页面路由埋点、应用启动时的性能数据埋点三个方面。
 
 # 点击埋点
 
 ## 思路
 
-顾名思义，就是在用户点击每一个类似按钮这样的可点击元素时，进行记录，然后发送给后端。如果在传统的如jquery下做的话，可能需要在每个点击事件里都加上一段统一的逻辑，这样显得很麻烦。 好在我们使用的`Angular`，可以写一个自定义的指令，指令会监控宿主元素上的点击事件，然后进行埋点记录。对的，思路就是这么简单。
+顾名思义，就是在用户点击每一个类似按钮这样的可点击元素时，进行记录，然后发送给后端。如果在传统的如 jquery 下做的话，可能需要在每个点击事件里都加上一段统一的逻辑，这样显得很麻烦。 好在我们使用的`Angular`，可以写一个自定义的指令，指令会监控宿主元素上的点击事件，然后进行埋点记录。对的，思路就是这么简单。
 
 ## 指令
 
@@ -92,29 +91,21 @@ export class CrmTrackorDirective implements AfterViewInit {
   }
 ```
 
-这里的`track2Server`实际上使用了`( new Image() ).src = xxx `信标的方式来向后端发送记录，就不贴具体代码了。
+这里的`track2Server`实际上使用了`( new Image() ).src = xxx`信标的方式来向后端发送记录，就不贴具体代码了。
 
 ## 使用方法
 
 有了这个指令后，就可以很简单的在模板文件中使用了，只用传递一个描述信息给指令就行，示范如下：
 
 ```html
+<div>单纯指令: <button type="button" id="test-trackor1" crmTrackor="crmTrackortest1">测试1</button></div>
 <div>
-    单纯指令:
-    <button type="button" id="test-trackor1" crmTrackor="crmTrackortest1">测试1</button>
+  指令与事件同在： <button type="button" id="test-trackor2" crmTrackor="这是第二个按钮 随便写什么都行" tappable (click)="testClick()">测试2</button>
 </div>
+<div>没有id： <button type="button" crmTrackor="crmTrackortest3">测试点击3</button></div>
 <div>
-    指令与事件同在：
-    <button type="button" id="test-trackor2" crmTrackor="这是第二个按钮 随便写什么都行" tappable (click)="testClick()">测试2</button>
-</div>
-<div>
-    没有id：
-    <button type="button" crmTrackor="crmTrackortest3">测试点击3</button>
-</div>
-<div>
-    动态绑定指令入参：
-    <button type="button" id="test-trackor4" [crmTrackor]="dynamicTrackorInput">测试点击4</button>
-    <button type="button" id="test-trackor5" [crmTrackor]="dynamicTrackorInput+'555555555555'">测试点击5</button>
+  动态绑定指令入参： <button type="button" id="test-trackor4" [crmTrackor]="dynamicTrackorInput">测试点击4</button>
+  <button type="button" id="test-trackor5" [crmTrackor]="dynamicTrackorInput+'555555555555'">测试点击5</button>
 </div>
 ```
 
@@ -127,7 +118,7 @@ export class CrmTrackorDirective implements AfterViewInit {
 1. 有很多页面其实并没有实现这两个钩子
 2. 即使实现了这个钩子，把埋点代码硬编码到其中总让人觉得不爽，侵入性太强
 
-于是想到了ts中的[装饰器](https://www.tslang.cn/docs/handbook/decorators.html)，具体语法请直接参考官网。它可以修改某个类或者方法的元数据，有点类似java中的注解。 如果我们利用一个装饰器自动在这两个钩子中插入我们的埋点代码，那岂不是用起来很爽，就像spring中的切面编程一样。
+于是想到了 ts 中的[装饰器](https://www.tslang.cn/docs/handbook/decorators.html)，具体语法请直接参考官网。它可以修改某个类或者方法的元数据，有点类似 java 中的注解。 如果我们利用一个装饰器自动在这两个钩子中插入我们的埋点代码，那岂不是用起来很爽，就像 spring 中的切面编程一样。
 
 ## 类装饰器
 
@@ -153,14 +144,13 @@ export class CrmTrackorDirective implements AfterViewInit {
 
 ```js
 @CrmTrackor.ViewTrackor
-@Component( {
-  templateUrl: "app.component.html",
-} )
-export class MyApp{
-    // code ...
+@Component({
+  templateUrl: 'app.component.html',
+})
+export class MyApp {
+  // code ...
 }
 ```
-
 
 这里只拦截了`ionViewDidEnter`，但是测试发现方法是被替换掉了，但最终这个方法根本就没有执行，囧，暂时还没有找到原因，待日后再研究。
 
@@ -304,15 +294,15 @@ class Trace {
 
 初始化时进入列表页面：
 
-![]({{site.url}}/assets/img/fe-trackor-system/初始化进入列表页面.png)
+![](/images/fe-trackor-system/初始化进入列表页面.png)
 
 列表进入详情：
 
-![]({{site.url}}/assets/img/fe-trackor-system/列表进入详情.png)
+![](/images/fe-trackor-system/列表进入详情.png)
 
 详情返回列表：
 
-![]({{site.url}}/assets/img/fe-trackor-system/详情返回列表.png)
+![](/images/fe-trackor-system/详情返回列表.png)
 
 ### 记录到后端
 
@@ -328,14 +318,14 @@ public ngOnInit() {
 
 ### 相关代码
 
-[crm-trackor.service.ts]({{site.url}}/assets/js/fe-trackor-system/crm-trackor.service.ts)
+[crm-trackor.service.ts](/_assets/fe-trackor-system/crm-trackor.service.ts)
 
 # 启动性能埋点
 
 主要利用了`performance.timing API`，一些相关的资料：
 
 1. [初探 performance – 监控网页与程序性能](http://www.alloyteam.com/2015/09/explore-performance/)
-2. [记录使用Performance API遇到的问题](https://segmentfault.com/a/1190000011850869)
+2. [记录使用 Performance API 遇到的问题](https://segmentfault.com/a/1190000011850869)
 3. [前端性能优化 —— 前端性能分析](https://mp.weixin.qq.com/s/v1Tn1WQqXlQV-hEtZCqppA)
 
 这里直接贴出代码：
@@ -392,4 +382,3 @@ export class MyApp  implements OnInit{
       }
 }
 ```
-

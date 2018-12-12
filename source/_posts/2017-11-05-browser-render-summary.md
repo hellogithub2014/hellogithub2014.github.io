@@ -32,12 +32,12 @@ Layout 和 Painting 也会被重复执行，除了DOM、CSSOM更新的原因外�
 
 DOM 树的构建过程是一个深度遍历过程：当前节点的所有子节点都构建好后才会去构建当前节点的下一个兄弟节点。DOM 和 CSSOM 都是以 Bytes → characters → tokens → nodes → object model. 这样的方式生成最终的数据。如下图所示：
 
-![]({{site.url}}/assets/img/browser-render/DOM-tree.png)
+![](/images/browser-render/DOM-tree.png)
 
 ## 渲染树
 DOM 和 CSSOM 合并后生成 Render Tree：
 
-![]({{site.url}}/assets/img/browser-render/render-tree.png)
+![](/images/browser-render/render-tree.png)
 
 **注意**：display:none 的节点不会被加入 Render Tree，而 visibility: hidden 则会，所以，如果某个节点最开始是不显示的，设为 display:none 是更优的。
 
@@ -52,7 +52,7 @@ DOM 和 CSSOM 合并后生成 Render Tree：
 * 计算元素位置进行布局
 * 绘制 **开始渲染图片**
 
-![]({{site.url}}/assets/img/browser-render/img-load-time.png)
+![](/images/browser-render/img-load-time.png)
 
 这里需要注意：
 
@@ -68,7 +68,7 @@ DOM 和 CSSOM 合并后生成 Render Tree：
 <div class="img-purple" style="display:none"></div>
 ```
 
-![]({{site.url}}/assets/img/browser-render/display-none-img.png)
+![](/images/browser-render/display-none-img.png)
 
 **这里是我不明白的地方，如果按照上图的解释，purple那张图应该不会加载**
 
@@ -129,11 +129,11 @@ async 属性表示异步执行引入的 JavaScript，与 defer 的区别在于�
 
 `defer` - 始终在`DOMContentLoaded`之前完成，最差情况下也是一起完成
 
-![]({{site.url}}/assets/img/browser-render/defer-domcontentloaded.png)
+![](/images/browser-render/defer-domcontentloaded.png)
 
 `async` - 网速快时会在`DOMContentLoaded`之前加载完成，网速慢时会在它之后完成
 
-![]({{site.url}}/assets/img/browser-render/async-domcontentload.png)
+![](/images/browser-render/async-domcontentload.png)
 
 
 # 重绘 Repaint

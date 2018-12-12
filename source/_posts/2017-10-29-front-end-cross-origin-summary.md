@@ -132,7 +132,7 @@ echo $callback.'('.json_encode($data).')';//输出
 * `WebSocket`协议跨域【3】
 
 【4】中介绍了一种在两个完全不相干的浏览器跨域tab页之间进行通信的技巧，核心思想是这两个tab页都嵌入一个`iframe`，两个`iframe`加载两个同域的页面。 tab页和`iframe`之间的通信可以使用上面说的方法（例如`postMessage`），两个`iframe`之间因为是同域的，可以使用`localStorage`传递数据。
-![]({{site.url}}/assets/img/cross-origin/tabs-communicate.png)
+![](/images/cross-origin/tabs-communicate.png)
 
 # 参考
 1. [JS 中几种实用的跨域方法原理详解](https://mp.weixin.qq.com/s/IWMm7t5362xrj9WRoTlPfw)

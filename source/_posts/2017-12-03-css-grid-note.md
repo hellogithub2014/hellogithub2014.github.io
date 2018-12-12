@@ -10,7 +10,7 @@ tag: [CSS]
 
 在 `Can I Use`中搜索结果：
 
-![]({{site.url}}/assets/img/css-grid-layout/browser-support.png)
+![](/images/css-grid-layout/browser-support.png)
 
 # 一些术语
 
@@ -27,7 +27,7 @@ tag: [CSS]
 
 ## 间隙`gutters`
 
-![]({{site.url}}/assets/img/css-grid-layout/gutters.png)
+![](/images/css-grid-layout/gutters.png)
 
 很多时候行与行、列与列之间并不是紧挨着的，中间会留有一些间隔。在上图中的加深区域就是这些间隙。
 
@@ -372,7 +372,7 @@ grid-template-columns: 300px 1fr 3fr 20%;
 
 默认的，网格布局会将每个单元格从左到右依次排列，如
 
-![]({{site.url}}/assets/img/css-grid-layout/sparse.png)
+![](/images/css-grid-layout/sparse.png)
 
 可以改变这个顺序，让它从上到下排列：
 
@@ -390,7 +390,7 @@ grid-template-columns: 300px 1fr 3fr 20%;
 }
 ```
 
-![]({{site.url}}/assets/img/css-grid-layout/auto-flow-column.png)
+![](/images/css-grid-layout/auto-flow-column.png)
 
 **dense/sparse**
 
@@ -402,7 +402,7 @@ grid-auto-flow: row dense; // 默认是sparse稀疏
 
 设置成dense，会自动调整布局，尽量占据在稀疏布局下不会占据的空间。
 
-![]({{site.url}}/assets/img/css-grid-layout/dense.png)
+![](/images/css-grid-layout/dense.png)
 
 不过这样可能会导致DOM结构和页面展示的顺序不一致。
 

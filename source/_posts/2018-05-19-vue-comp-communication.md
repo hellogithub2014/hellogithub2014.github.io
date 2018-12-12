@@ -12,7 +12,7 @@ tag: [vue]
 
 最常见的通信方式了，父组件通过`prop`将数据传给子组件，子组件若想将数据回传给父组件，发送`event`即可,如图：
 
-![]({{site.url}}/assets/img/vue-comp-communication/prop+event1.png)
+![](/images/vue-comp-communication/prop+event1.png)
 
 举个例子：
 
@@ -55,7 +55,7 @@ Vue.component('child', {
 
 这种方式适用于组件层级较浅的情况，因为不管是`prop`还是`event`都只能在父子组件之间传递，如果组件层级较深，这时传值就会很麻烦：
 
-![]({{site.url}}/assets/img/vue-comp-communication/prop+event2.png)
+![](/images/vue-comp-communication/prop+event2.png)
 
 上面的图中，如果`grandfather`想要把数据传给`child`，就必须经过两次`prop`的传递，反之`child`传递数据给`grandfather`也是一样。
 
@@ -67,7 +67,7 @@ Vue.component('child', {
 
 如果可以直接指定任意祖先组件发送事件给其父组件，并带上想要的数据，就节省了很多多余的步骤。如图：
 
-![]({{site.url}}/assets/img/vue-comp-communication/emitter mixin.png)
+![](/images/vue-comp-communication/emitter mixin.png)
 
 为了使每个组件都有这种能力，借助了`vue`的[mixin](https://cn.vuejs.org/v2/guide/mixins.html),它可以很方便的让组件复用功能。
 
@@ -111,7 +111,7 @@ Vue.component('grandson', {
 
 在[vue 官网](https://cn.vuejs.org/v2/guide/components.html#%E9%9D%9E%E7%88%B6%E5%AD%90%E7%BB%84%E4%BB%B6%E7%9A%84%E9%80%9A%E4%BF%A1)上提到一种利用`vue`当做事件总线来通信的方法，示意图如下：
 
-![]({{site.url}}/assets/img/vue-comp-communication/event-bus.png)
+![](/images/vue-comp-communication/event-bus.png)
 
 事件总线可以贯穿整个组件树，每个组件都可以利用这根总线进行发布订阅。举个例子：
 

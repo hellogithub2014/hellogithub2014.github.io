@@ -88,11 +88,11 @@ module.exports = {
 }
 ```
 
-![]({{site.url}}/assets/img/jest-quirks/vscode-debug-config.png)
+![](/images/jest-quirks/vscode-debug-config.png)
 
 之后就可以打断点调试了：
 
-![]({{site.url}}/assets/img/jest-quirks/vscode-debug.png)
+![](/images/jest-quirks/vscode-debug.png)
 
 # jest wacth 问题
 
@@ -104,7 +104,7 @@ npm run utest -- --watch
 
 不过遇到奇怪的问题，总是会卡在`Determining test suites to run…`,除非强行退出：
 
-![]({{site.url}}/assets/img/jest-quirks/jest-wacth-bug.png)
+![](/images/jest-quirks/jest-wacth-bug.png)
 
 暂时使用了另一个`watchAll`选项规避了，`npm run utest -- --watchAll`, 也可以 之后有空再研究怎么解决吧。。
 
@@ -123,7 +123,7 @@ const wrapper = shallowMount(compToTest, {
 
 不过在尝试时发现报了另一个错：
 
-![]({{site.url}}/assets/img/jest-quirks/element-ui-setup-bug.png)
+![](/images/jest-quirks/element-ui-setup-bug.png)
 
 看起来是解析 css 时出错，解决方案是添加[jest 官网给的一段配置](https://github.com/facebook/jest/blob/master/docs/Webpack.md)到`jest.config.js`中：
 
@@ -140,7 +140,7 @@ const wrapper = shallowMount(compToTest, {
 
 项目中使用了内部的`bui`组件库，它不是通过`npm`安装的，而是直接外链`script`引入，这会导致在测试使用了`bui`组件的 vue 文件时，提示`bui`组件找不到：
 
-![]({{site.url}}/assets/img/jest-quirks/bui-comp-not-found.png)
+![](/images/jest-quirks/bui-comp-not-found.png)
 
 一开始的思路是跟`element-ui`一样解决，不过发现`bui`的`install`过程是在引入外链时自动执行了：
 
@@ -218,7 +218,7 @@ it('has the expected html structure', () => {
 
 跑完这个生成的文件如下：
 
-![]({{site.url}}/assets/img/jest-quirks/snapshot.png)
+![](/images/jest-quirks/snapshot.png)
 
 所有子组件如果默认情况下都是空的，组件名后面添加了`-snapshot`，被显式`stub`了的都有具体的`dom`结构。
 
@@ -226,7 +226,7 @@ it('has the expected html structure', () => {
 
 如果直接利用了`bui`组件的定义来 stub，在集成单元测试到`gitlab ci`上时会出问题，因为无法在 ci 机器上安装 bui，bui 没有提供`https`的下载链接：
 
-![]({{site.url}}/assets/img/jest-quirks/ci-fail.png)
+![](/images/jest-quirks/ci-fail.png)
 
 目前的解决方案是自己写一个很简单的组件来`stub`。最后贴一下 ci 的配置，在项目根目录的`.gitlab-ci.yml`中：
 

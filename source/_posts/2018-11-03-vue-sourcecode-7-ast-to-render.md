@@ -459,6 +459,6 @@ with (this) {
 
 # 完整源码注释
 
-[index.js]({{site.url}}/assets/js/vue-generate/index.js)
+[index.js](/_assets/vue-generate/index.js)
 
-[events.js]({{site.url}}/assets/js/vue-generate/events.js)
+[events.js](/_assets/vue-generate/events.js)

@@ -292,9 +292,9 @@ var smc = new sourceMap.SourceMapConsumer(urlContentMap.get(errorLocation.url));
 
 ## 效果
 
-![原始堆栈]({{site.url}}/assets/img/front-end-monitor/origin_error_stack.png)
+![原始堆栈](/images/front-end-monitor/origin_error_stack.png)
 
-![映射后堆栈]({{site.url}}/assets/img/front-end-monitor/mapperd_error_stack.jpg)
+![映射后堆栈](/images/front-end-monitor/mapperd_error_stack.jpg)
 
 
 # 后续计划
