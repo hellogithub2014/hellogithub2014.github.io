@@ -1711,5 +1711,5 @@ handler 格式
 
 最后生成的 AST 为：
 
-![]({{ site.url }}/assets/img/vue-source-code/parse/ast-1.png)
-![]({{ site.url }}/assets/img/vue-source-code/parse/ast-2.png)
+![](/images/vue-source-code/parse/ast-1.png)
+![](/images/vue-source-code/parse/ast-2.png)

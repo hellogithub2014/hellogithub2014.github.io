@@ -14,13 +14,13 @@ tag: [CACHE,HTTP]
 ## 切换 Device Mode
 
 切换 Device Mode 按钮可以打开或关闭 Device Mode。
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/device-mode-initial-view.png)
+![](/images/chrome-devtools/10-18/device-mode-initial-view.png)
 
 当 Device Mode 打开时，该图标呈蓝色
-<img src="{{ site.url }}/assets/img/chrome-devtools/10-18/device-mode-on.png" style="height:70px;width:70px;">。当 Device Mode 关闭时，该图标呈灰色<img src="{{ site.url }}/assets/img/chrome-devtools/10-18/device-mode-off.png" style="height:70px;width:70px;">。
+<img src="images/chrome-devtools/10-18/device-mode-on.png" style="height:70px;width:70px;">。当 Device Mode 关闭时，该图标呈灰色<img src="images/chrome-devtools/10-18/device-mode-off.png" style="height:70px;width:70px;">。
 ## 使用视口控件
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/device-mode.png)
+![](/images/chrome-devtools/10-18/device-mode.png)
 包括以下两个模式：
 
 1. 自适应。使视口可以通过任意一侧的大手柄随意调整大小。
@@ -34,7 +34,7 @@ tag: [CACHE,HTTP]
 ### 特定设备
 #### 内置设备预设
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/select-device.png)
+![](/images/chrome-devtools/10-18/select-device.png)
 
 #### 添加自定义设备预设
 
@@ -48,16 +48,16 @@ tag: [CACHE,HTTP]
 
 5.	点击 save。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.40.59.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 20.40.59.png)
 
 #### 设备状态和方向
 
 主要用于在横向和纵向屏幕方向之间切换
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/change-orientation.png)
+![](/images/chrome-devtools/10-18/change-orientation.png)
 
 ####  缩放到合适大小
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/zoom-to-fit.png)
+![](/images/chrome-devtools/10-18/zoom-to-fit.png)
 
 #### 可选控件
 点击设备工具栏右侧上的三个小圆点，可以更改或启用可选控件。当前选项包括：
@@ -72,7 +72,7 @@ tag: [CACHE,HTTP]
 
 *	配置网络（UA、网络节流）
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/device-mode-dotmenu.png)
+![](/images/chrome-devtools/10-18/device-mode-dotmenu.png)
 
 这些工具的具体使用方法参见[测试自适应和设备特定的视口](https://developers.google.com/web/tools/chrome-devtools/device-mode/emulate-mobile-viewports)
 
@@ -86,32 +86,32 @@ Chrome DevTools 的 Elements 面板中的 DOM 树视图可以显示当前网页�
 
 在 Styles 窗格中实时编辑样式属性名称和值。所有样式均可修改，除了灰色部分（与 User Agent 样式表一样）。
 要编辑名称或值，请点击它，进行更改，然后按 Tab 或 Enter 保存更改。
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/edit-property-name.png)
+![](/images/chrome-devtools/10-18/edit-property-name.png)
 
 styles窗格更详细使用请阅读[编辑样式](https://developers.google.com/web/tools/chrome-devtools/inspect-styles/edit-styles)
 
 ### 检查和编辑框模型参数
 
 使用 Computed 窗格检查和编辑当前元素的框模型参数。 框模型中的所有值均可修改，只需点击它们即可。
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/computed-pane.png)
+![](/images/chrome-devtools/10-18/computed-pane.png)
 
 ## 编辑DOM
 ### 检查元素
 
 1. 右键点击页面上的任何元素并选择 Inspect。
-    ![]({{ site.url }}/assets/img/chrome-devtools/10-18/right-click-inspect.png)
+    ![](/images/chrome-devtools/10-18/right-click-inspect.png)
 
 2. 打开控制台，然后按 `Ctrl + Shift + C (Windows)` 或 `Cmd + Shift + C (Mac)`，然后将鼠标悬停到某个元素上。 DevTools 会在 Elements 面板中自动突出显示您悬停的元素。点击元素可以退出检查模式，同时保持元素在 Elements 面板中处于突出显示状态。
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.29.56.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-19 19.29.56.png)
 
-3. 点击 Inspect Element 按钮<img src="{{ site.url }}/assets/img/chrome-devtools/10-18/inspect-icon.png" style="height:70px;width:70px;"> 转到 Inspect Element 模式，然后点击元素。
+3. 点击 Inspect Element 按钮<img src="images/chrome-devtools/10-18/inspect-icon.png" style="height:70px;width:70px;"> 转到 Inspect Element 模式，然后点击元素。
 
 4. 在控制台中使用 inspect 方法，例如 inspect(document.body)。
 
 ### 实时编辑 DOM 节点
 
 要实时编辑 DOM 节点，只需双击选定元素，然后进行更改。
-![]({{ site.url }}/assets/img/chrome-devtools/实时编辑dom结构.png)
+![](/images/chrome-devtools/实时编辑dom结构.png)
 
 ### 以 HTML 形式编辑 DOM 节点及其子级
 
@@ -123,7 +123,7 @@ styles窗格更详细使用请阅读[编辑样式](https://developers.google.com
 
 4. 按 Esc 可以退出编辑器而不保存。
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/edit-as-html.png)
+![](/images/chrome-devtools/10-18/edit-as-html.png)
 
 ### 移动 DOM 节点
 
@@ -132,7 +132,7 @@ styles窗格更详细使用请阅读[编辑样式](https://developers.google.com
 ### 设置 DOM 断点
 
 设置 DOM 断点以调试复杂的 JavaScript 应用。例如，如果 JavaScript 正在更改 DOM 元素的样式，将 DOM 断点设置为在元素属性修改时触发。在发生以下一种 DOM 更改时触发断点：子树更改、属性更改、节点移除。
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.44.20.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.44.20.png)
 
 #### 子树修改
 
@@ -145,7 +145,7 @@ var mySpan = document.createElement('span');
 element.appendChild( mySpan );
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.49.04.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.49.04.png)
 
 #### 属性修改
 
@@ -157,7 +157,7 @@ var element = document.getElementById('main-content');
 element.className = 'active';
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.50.40.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.50.40.png)
 
 #### 节点移除
 
@@ -167,15 +167,15 @@ element.className = 'active';
 document.getElementById('main-content').remove();
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.52.04.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.52.04.png)
 
 ### 与 DOM 断点交互
 
 Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每个断点都会列出元素标识符和断点类型。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.56.14.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.56.14.png)
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 19.56.34.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 19.56.34.png)
 
 可通过以下方式之一与列出的每一个断点交互：
 
@@ -189,7 +189,7 @@ Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每
 
 在 Event Listeners 窗格中查看与 DOM 节点关联的 JavaScript 事件侦听器。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.04.23.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 20.04.23.png)
 
 右键点击`handler`，并选择 `Show Function Definition` 可以查看函数的定义位置。另外：如果启用 `Ancestors` 复选框，除了当前选定节点的事件侦听器外，还会显示其祖先实体的事件侦听器。如果停用复选框，将仅显示当前选定节点的事件侦听器。
 
@@ -200,7 +200,7 @@ Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每
 
 2. 任何其他面板旁的抽屉式导航栏的形式
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.14.19.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-19 20.14.19.png)
 
 3. 任何其他面板中，按ESC键
 
@@ -208,15 +208,15 @@ Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每
 
 如果一条消息连续重复，而不是在新行上输出每一个消息实例，控制台将“堆叠”消息并在左侧外边距显示一个数字。此数字表示该消息已重复的次数。
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/message-stacking.png)
+![](/images/chrome-devtools/10-18/message-stacking.png)
 
 如果倾向于为每一个日志使用一个独特的行条目，在 DevTools 设置中启用 Show timestamps。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.17.56.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 20.17.56.png)
 
 由于每一条消息的时间戳均不同，因此，每一条消息都将显示在各自的行上。
 
-![]({{ site.url }}/assets/img/chrome-devtools/10-18/timestamped-console.png)
+![](/images/chrome-devtools/10-18/timestamped-console.png)
 
 ## 处理控制台历史记录
 ### 清除历史记录
@@ -231,7 +231,7 @@ Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每
 
 * 按 Ctrl+L （Mac、Windows、Linux）。
 
-* 点击面板左上角的按钮![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.21.36.png)
+* 点击面板左上角的按钮![](/images/chrome-devtools/屏幕快照 2017-08-19 20.21.36.png)
 
 ### 保留历史记录
 
@@ -241,13 +241,13 @@ Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每
 
 在控制台中点击右键，然后选择 `Save as`，将控制台的输出保存到日志文件中。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.24.19.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 20.24.19.png)
 
 ## 过滤控制台输出
 
 可以按严重性等级过滤控制台输出。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-19 20.31.21.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-19 20.31.21.png)
 
 ## console api
 ### 诊断并记录到控制台中
@@ -286,7 +286,7 @@ Node count: 3 and the current time is: 1503235350740
     console.groupEnd();
     ```
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.26.23.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 21.26.23.png)
 
 2. 嵌套组
 日志组也可以彼此嵌套。同时以小片段查看较大的组时，嵌套组非常有用。
@@ -310,7 +310,7 @@ Node count: 3 and the current time is: 1503235350740
     console.log("A group-less log trace.");
     ```
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.27.35.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 21.27.35.png)
 
 3. 自动折叠组:
 大量使用组时，即时查看所有信息可能不是非常有用。这些情况下，您可以通过调用 `console.groupCollapsed()` 而不是 `console.group()` 的方式自动折叠组：
@@ -327,7 +327,7 @@ Node count: 3 and the current time is: 1503235350740
     console.log('other info.....')
     ```
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.31.15.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 21.31.15.png)
 
 #### 错误和警告
 
@@ -342,7 +342,7 @@ Node count: 3 and the current time is: 1503235350740
     connectToServer();
     ```
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.34.09.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 21.34.09.png)
 
 2. `console.warn()` 方法会显示一个黄色警告图标和相应的消息文本：
 
@@ -354,21 +354,21 @@ Node count: 3 and the current time is: 1503235350740
     }
     ```
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.35.39.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 21.35.39.png)
 
 #### 断言
 
 `console.assert()` 方法可以仅在其第一个参数为 false 时有条件地显示错误字符串（其第二个参数）。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.37.38.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.37.38.png)
 
 #### 字符串替代和格式设置
 
 传递到任何记录方法的第一个参数可能包含一个或多个格式说明符。格式说明符由一个 `%` 符号与后面紧跟的一个字母组成，字母指示应用到值的格式。字符串后面的参数会按顺序应用到占位符。
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.39.22.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.39.22.png)
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.43.40.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.43.40.png)
 
 完整的格式说明符参见[诊断病假记录到控制台中](https://developers.google.com/web/tools/chrome-devtools/console/console-write)
 
@@ -385,7 +385,7 @@ console.table([{a:1, b:2, c:3}, {a:"foo", b:false, c:undefined}]);
 console.table([[1,2,3], [2,3,4]]);
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.47.42.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.47.42.png)
 
 #### 记录特定的属性
 
@@ -407,7 +407,7 @@ family.son = new Person("Mike", "Doyle", 8);
 console.table(family, ["firstName", "lastName", "age"]);
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.50.22.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.50.22.png)
 
 ### 测量执行时间和对执行进行计数
 
@@ -431,7 +431,7 @@ for (var i = array.length - 1; i >= 0; i--) {
 console.timeEnd("Array initialize");
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.55.22.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.55.22.png)
 
 #### 对语句执行进行计数
 
@@ -455,7 +455,7 @@ users.forEach(function(element, index, array) {
 login(users[0]);
 ```
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 21.59.15.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 21.59.15.png)
 
 ### 表达式求值
 
@@ -479,14 +479,14 @@ login(users[0]);
 | `$$()` | 返回一个与指定 CSS 选择器匹配的所有元素数组。等同于 `document.querySelectorAll()`。 |
 | `$x()` | 返回一个与指定 `XPath` 匹配的元素数组。                                             |
 
-![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 22.08.47.png)
+![](/images/chrome-devtools/屏幕快照 2017-08-20 22.08.47.png)
 
 ###  其他console api
 
 1. `console.dir(object)`
 输出以 JavaScript 形式表示的指定对象。如果正在记录的对象是 HTML 元素，将输出其以 DOM 形式表示的属性，如下所示：
 
-    ![]({{ site.url }}/assets/img/chrome-devtools/屏幕快照 2017-08-20 22.22.17.png)
+    ![](/images/chrome-devtools/屏幕快照 2017-08-20 22.22.17.png)
 
 2. `console.clear()` 清理控制台
 
