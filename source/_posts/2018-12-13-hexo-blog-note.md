@@ -45,7 +45,7 @@ hexo s
 
 如果控制台没报错的话，会提示在浏览器打开`localhost:4000`，一切正常的话我们就可以看到我们刚刚建的博客啦(我截图里是修改过主题配置，后面会说到)：
 
-![first-blog](first-blog.png)
+![first-blog](/images/hexo-blog-note/first-blog.png)
 
 到这里你就可以在本地跑一个自己的博客站点了，恭喜！
 
@@ -132,7 +132,7 @@ scheme: Pisces
 
 `source/images`其实就是专门给我们放置图片的，在`markdown`中可以很简单的使用`![](/images/path/to/image)`的方式引用。
 
-![post_images](post_images.png)
+![post_images](/images/hexo-blog-note/post_images.png)
 
 ### 封面图
 
@@ -150,7 +150,7 @@ summary_img: /images/test.png # 注意这里开头的 / ，没有它会导致一
 
 ```
 
-`hexo`默认是不支持这个字段的，需要增加一些配置，修改 `\themes\next\layout\_macro\post.swig` 文件, 将代码：
+`hexo`默认是不支持这个字段的，需要增加一些配置，修改 `/themes/next/layout/_macro/post.swig` 文件, 将代码：
 
 ```swig
 <!--自定义封面摘要图片  start-->
@@ -164,7 +164,7 @@ summary_img: /images/test.png # 注意这里开头的 / ，没有它会导致一
 
 放到如下位置：
 
-![summary_img_config](summary_img_config.png)
+![summary_img_config](/images/hexo-blog-note/summary_img_config.png)
 
 ## 站点基本信息
 
@@ -184,11 +184,11 @@ avatar: https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544
 
 在站点中就可以看到这些信息了：
 
-![site_base_config.png](site_base_config.png)
+![site_base_config.png](/images/hexo-blog-note/site_base_config.png)
 
 ## 网站背景图
 
-将选好的背景图命名为`background.jpg`，放在`themes\next\source\images`里，在`themes\next\source\css\_custom\custom.styl`添加如下`css`代码：
+将选好的背景图命名为`background.jpg`，放在`themes/next/source/images`里，在`themes/next/source/css/_custom/custom.styl`添加如下`css`代码：
 
 ```css
 body {
@@ -201,7 +201,7 @@ body {
 
 细心的同学可能发现一个很难受的地方，在`hexo d`之后，我们的远程仓库里文件发生了变化，所有的`markdown`文章全部不见了，取而代之的是一堆生成的`html`静态文件：
 
-![generated_remote_repo.png](generated_remote_repo.png)
+![generated_remote_repo.png](/images/hexo-blog-note/generated_remote_repo.png)
 
 也就是说我们的原始文章全部被转化掉了，这很可能不是个好事情，因为万一哪天换了电脑，本地也没有保存这些原始文章，就再也找不回来了。我们需要将原始文章和发布生成的静态文件分离，利用`git`的分支管理可以很方便的做到这点。
 
