@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "pub": "git co save && hexo g && hexo d && git add . && git ciam 'update' && git push"
+    "pub": "git checkout save && hexo clean &&  hexo g && hexo d && git add . && git commit -m 'update' && git push"
   },
   "hexo": {
     "version": "3.8.0"
