@@ -1035,3 +1035,11 @@ this.outputFileSystem.writeFile(targetPath, content, callback); // 写入文件
 ```
 
 以上就是`webpack`的主体流程了~
+
+# 参考文章
+
+- [玩转 webpack](https://lxzjj.github.io/2017/11/02/%E7%8E%A9%E8%BD%ACwebpack%EF%BC%88%E4%B8%80%EF%BC%89/)
+- [webpack 源码学习系列](https://github[.com/youngwind/blog/issues/99)](webpack 各个击破)
+- [webpack 各个击破](https://bbs.huaweicloud.com/blogs/1c0ca278a42611e89fc57ca23e93a89f)
+- [diving-into-webpack](https://github.com/lihongxun945/diving-into-webpack/blob/master/2-babel-loader.md)
+- [webpack 源码分析](https://zhuanlan.zhihu.com/p/29551683)
