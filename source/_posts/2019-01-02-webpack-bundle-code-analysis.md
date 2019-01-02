@@ -377,7 +377,13 @@ _webpack_require__
   .catch(__webpack_require__.oe);
 ```
 
-很明显`require.ensure`转化为了一个`Promise`，这符合我们的直觉毕竟是异步加载。`__webpack_require__.oe`就是一个很简单的打印错误不贴出来了，我们重点是`_webpack_require__.e`的实现方式。
+很明显`require.ensure`转化为了一个`Promise`，这符合我们的直觉毕竟是异步加载。另外，如果`require.ensure`的参数数组有多个元素，打包后代码稍微有一点不一样：
+
+```js
+Promise.all(/*! require.ensure */ [__webpack_require__.e(0), __webpack_require__.e(1)]).then(/**/);
+```
+
+`__webpack_require__.oe`就是一个很简单的打印错误不贴出来了，我们重点是`_webpack_require__.e`的实现方式。
 
 ```js
 // 已加载的chunk缓存
