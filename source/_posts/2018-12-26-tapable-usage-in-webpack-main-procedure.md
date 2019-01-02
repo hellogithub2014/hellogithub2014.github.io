@@ -584,6 +584,70 @@ constructor(context, resolverFactory, options) {
 
 `RuleSet`的解析过程比较复杂，主要是因为`rules`配置很灵活，还要兼容一些过时的配置方式，具体过程大家自行了解。
 
+`runLoaders`在内部主要是读取`module`内容，再迭代`loaders`的处理方法，关键的代码有：
+
+```js
+// loader-runner/lib/LoaderRunner.js
+
+function processResource(options, loaderContext, callback) {
+  // set loader index to last loader
+  loaderContext.loaderIndex = loaderContext.loaders.length - 1;
+
+  var resourcePath = loaderContext.resourcePath;
+  if (resourcePath) {
+    loaderContext.addDependency(resourcePath);
+    // 读取module内容
+    options.readResource(resourcePath, function(err, buffer) {
+      if (err) return callback(err);
+      options.resourceBuffer = buffer;
+      iterateNormalLoaders(options, loaderContext, [buffer], callback);
+    });
+  } else {
+    iterateNormalLoaders(options, loaderContext, [null], callback);
+  }
+}
+
+function iterateNormalLoaders(options, loaderContext, args, callback) {
+  if (loaderContext.loaderIndex < 0) return callback(null, args);
+
+  //当前的loader
+  var currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];
+
+  // iterate
+  if (currentLoaderObject.normalExecuted) {
+    loaderContext.loaderIndex--;
+    return iterateNormalLoaders(options, loaderContext, args, callback);
+  }
+
+  var fn = currentLoaderObject.normal;
+  currentLoaderObject.normalExecuted = true;
+  if (!fn) {
+    return iterateNormalLoaders(options, loaderContext, args, callback);
+  }
+
+  convertArgs(args, currentLoaderObject.raw);
+
+  // fn: function ( source, inputSourceMap ) { … }
+  // 此处执行loader逻辑
+  runSyncOrAsync(fn, loaderContext, args, function(err) {
+    if (err) return callback(err);
+
+    var args = Array.prototype.slice.call(arguments, 1);
+    iterateNormalLoaders(options, loaderContext, args, callback);
+  });
+}
+```
+
+注释中也有写到，一个`loader`其实就是一个函数：`(source: string, inputSourceMap) => string`，比如`babel-loader`：
+
+```js
+function (source, inputSourceMap) {
+    // Make the loader async
+    const callback = this.async();
+    loader.call(this, source, inputSourceMap, overrides).then(args => callback(null, ...args), err => callback(err));
+  };
+```
+
 `doBuild`方法结束后会拿到`module`转化后的`js`代码，并在接下来使用`Parser.prototype.parse`方法将`js`转为`AST`。
 
 ```js
