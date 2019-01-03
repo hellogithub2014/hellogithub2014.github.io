@@ -12,7 +12,7 @@ tags: [webpack, loader]
 - pitch、normal execution
 - context
 
-本文会从源码角度解释`webpack`是如何处理这些特性的,并在最后举一些实际的例子帮助大家理解如何写一个`loader`。
+本文会从源码角度解释`webpack`是如何处理这些特性的,并在最后举一些实际的例子帮助大家理解如何写一个`loader`,所用的`webpack`版本是`4.28.2`.
 
 # 入口
 
