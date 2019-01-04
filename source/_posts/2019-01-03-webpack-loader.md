@@ -529,3 +529,78 @@ __webpack_require__
 ```
 
 可以看到真正的`util.bundle.js`被替换为使用`__webpack_require__.e`加载，也就是模拟的`jsonp`。我们在`index.js`中传入的回调被塞到`cbs`数组，直到真正的`bundle`被加载完才能执行`__webpack_require__`，之后会将`bundle`的导出内容依次传给`cbs`每个元素，整个逻辑还是比较清晰的。
+
+# 自定义 loader
+
+看了上面这些，我们也可以自己尝试写一个最简单的`loader`试一试，作为一个探索我们就针对后缀名为`ttt`（随便想的 😄）的文件吧。
+
+我们的自定义`loader`什么事也不做，就只在文件内容前加上一串标记，`loader`代码如下：
+
+```js
+// my-loader.js
+
+module.exports = function(source) {
+  return `
+    export default "Convert by my custom loader:  ${source}"
+  `;
+};
+```
+
+注意`loader`的返回值需要是合法的`js`代码。然后修改`webpack config`，使得`ttt`后缀的文件使用`my-loader`, 使用`resolveLoader`配置来修改`loader`的指向:
+
+```js
+module.exports = {
+  // ...
+  module: {
+    rules: [
+      {
+        test: /\.ttt$/,
+        use: 'my-loader',
+      },
+    ],
+  },
+  resolveLoader: {
+    alias: {
+      'my-loader': path.resolve(__dirname, './my-loader.js'),
+    },
+  },
+};
+```
+
+接下来自定义一个`strange.ttt`的文件，然后在入口文件`index.js`中导入它：
+
+```js
+// strange.ttt
+
+this is strange ttt
+```
+
+细心的人会发现`strange.ttt`的内容并不是字符串~~
+
+```js
+// index.js
+
+import strange from './strange.ttt';
+console.log(strange);
+```
+
+运行`webpack`可以看到打包产物的关键代码如下：
+
+```js
+// main.js
+
+(function(modules) {
+  // 模板代码略 ...
+})({
+  './index.js': function(module, __webpack_exports__, __webpack_require__) {
+    var _strange_ttt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./strange.ttt */ '.strange.ttt');
+    console.log(_strange_ttt__WEBPACK_IMPORTED_MODULE_0__[/* default */ 'a']);
+  },
+
+  './strange.ttt': function(module, __webpack_exports__, __webpack_require__) {
+    __webpack_exports__['a'] = 'Convert by my custom loader:  this is strange ttt';
+  },
+});
+```
+
+很明显`strange.ttt`的内容被转化为了`js`代码并包含了`my-loader`添加的前缀，如果我们将`main.js`跑起来，控制台就会打印出`Convert by my custom loader: this is strange ttt`。
