@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="vscode,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="看到很多同事都在用 vscode，但一些人没有体会到它的威力，只把它当做普通的编辑器来用，忽略了它最大的特性：插件。 事实上配合一些插件，可以让开发效率得到很大提升。 本文总结个人在使用vscode时用的最多的那些插件和快捷键，希望可以帮助到大家 😄。 快捷键mac 上的快捷键 每个人习惯的快捷键都不同，这里列举一些个人在平时工作中用的最多的，它们都帮助我提高了开发效率。  Command+\">
+<meta name="keywords" content="vscode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vscode使用经验">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/10/31/vscode-experience/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="看到很多同事都在用 vscode，但一些人没有体会到它的威力，只把它当做普通的编辑器来用，忽略了它最大的特性：插件。 事实上配合一些插件，可以让开发效率得到很大提升。 本文总结个人在使用vscode时用的最多的那些插件和快捷键，希望可以帮助到大家 😄。 快捷键mac 上的快捷键 每个人习惯的快捷键都不同，这里列举一些个人在平时工作中用的最多的，它们都帮助我提高了开发效率。  Command+\">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/formulahendry/vscode-auto-close-tag/raw/master/images/usage.gif">
+<meta property="og:image" content="https://github.com/formulahendry/vscode-auto-rename-tag/raw/master/images/usage.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/complete-jsdoc-tag-1.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/complete-jsdoc-tag-2.png">
+<meta property="og:image" content="https://github.com/joelday/vscode-docthis/raw/master/images/demo.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/eslint-auto-fix.png">
+<meta property="og:image" content="https://github.com/drKnoxy/eslint-disable-snippets/raw/master/images/disable-block.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/built-in-git.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/fileHistoryCommand.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/fileHistoryCommandMore.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/lineHistoryCommand.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/compare.gif">
+<meta property="og:image" content="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/gitlens-preview.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/git-lens-icon.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/ss-gitlens-explorer-repository.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/ss-gitlens-explorer-history.png">
+<meta property="og:image" content="https://i.imgur.com/VOhBvHb.gif">
+<meta property="og:image" content="https://file-wkbcnlcvbn.now.sh/import-cost.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/import-cost.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/js(es6">
+<meta property="og:image" content="https://github.com/ritwickdey/vscode-live-server/raw/master/images/Screenshot/vscode-live-server-animated-demo.gif">
+<meta property="og:image" content="https://github.com/ritwickdey/vscode-live-server/raw/master/images/Screenshot/vscode-live-server-statusbar-3.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/ionutvmi/path-autocomplete/master/demo/path-autocomplete.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/project-manage-1.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/project-manage-2.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/project-manage-3.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/setting-sync.png">
+<meta property="og:image" content="https://github.com/wayou/vscode-todo-highlight/raw/master/assets/material-night-eighties.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/images/screenshot.gif">
+<meta property="og:image" content="https://s3-us-west-2.amazonaws.com/s.cdpn.io/28963/SnippetDemo.gif">
+<meta property="og:image" content="https://github.com/fussinatto/vscode-vue-peek/raw/master/images/vue-peek-demo.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-experience/vscode-debug.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.508Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="vscode使用经验">
+<meta name="twitter:description" content="看到很多同事都在用 vscode，但一些人没有体会到它的威力，只把它当做普通的编辑器来用，忽略了它最大的特性：插件。 事实上配合一些插件，可以让开发效率得到很大提升。 本文总结个人在使用vscode时用的最多的那些插件和快捷键，希望可以帮助到大家 😄。 快捷键mac 上的快捷键 每个人习惯的快捷键都不同，这里列举一些个人在平时工作中用的最多的，它们都帮助我提高了开发效率。  Command+\">
+<meta name="twitter:image" content="https://github.com/formulahendry/vscode-auto-close-tag/raw/master/images/usage.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/10/31/vscode-experience/">
+
+
+
+
+
+  <title>vscode使用经验 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/10/31/vscode-experience/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">vscode使用经验</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-31T15:20:00+08:00">
+                2018-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>看到很多同事都在用 vscode，但一些人没有体会到它的威力，只把它当做普通的编辑器来用，忽略了它最大的特性：插件。 事实上配合一些插件，可以让开发效率得到很大提升。 本文总结个人在使用<code>vscode</code>时用的最多的那些插件和快捷键，希望可以帮助到大家 😄。</p>
+<h1 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h1><p><a href="https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf" target="_blank" rel="noopener">mac 上的快捷键</a></p>
+<p>每个人习惯的快捷键都不同，这里列举一些个人在平时工作中用的最多的，它们都帮助我提高了开发效率。</p>
+<ol>
+<li><code>Command+\</code> 编辑器分栏，个人认为这个快捷键可以让工作效率大大提升，适合在宽屏幕上使用</li>
+<li><code>Command+P</code> 快速跳转到任意文件，有了它完全可以解放侧边栏，让代码编辑器更大，而且查找文件的效率快得多！</li>
+<li><code>Command+Shift+P</code> 调用命令板，各种插件和 vscode 自带的命令，都会放在这里，例如实用的<code>Transform To UpperCase</code>将变量转为全大写</li>
+<li><code>Command+Shift+F</code> 在所有文件中查找/替换，可以设置<code>include</code>和<code>exclude</code></li>
+<li><code>Option+Command+F</code> 在当前文件中执行查找/替换</li>
+<li><code>Command+,</code> 打开编辑器配置</li>
+<li><code>Option+Command+←</code> 打开左侧 tab（chrome 也是这个快捷键打开左侧 tab）</li>
+<li><code>Option+Command+→</code> 打开右侧 tab</li>
+<li><code>Control+ -</code> 返回，例如从函数名跳转到定义后，可以使用此快捷键快速返回到函数名</li>
+<li><code>Command+B</code> 收起侧边栏</li>
+</ol>
+<h1 id="插件"><a href="#插件" class="headerlink" title="插件"></a>插件</h1><p>点击插件名会跳转至插件市场，vscode 中使用快捷键<code>Command+Shift+X</code>打开所有已安装插件。</p>
+<h4 id="Auto-Close-Tag"><a href="#Auto-Close-Tag" class="headerlink" title="Auto Close Tag"></a><a href="https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-close-tag" target="_blank" rel="noopener">Auto Close Tag</a></h4><p>自动添加<code>html</code>标签的结束标签,这样只用写一个开始标签就行，省一些打字时间。</p>
+<p><img src="https://github.com/formulahendry/vscode-auto-close-tag/raw/master/images/usage.gif" alt=""></p>
+<h4 id="Auto-Rename-Tag"><a href="#Auto-Rename-Tag" class="headerlink" title="Auto Rename Tag"></a><a href="https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag" target="_blank" rel="noopener">Auto Rename Tag</a></h4><p>自动重命名<code>html</code>标签，只用修改起始、闭合标签的其中一个，另一个会自动修改。</p>
+<p><img src="https://github.com/formulahendry/vscode-auto-rename-tag/raw/master/images/usage.gif" alt=""></p>
+<h4 id="Beautify-css-sass-scss-less"><a href="#Beautify-css-sass-scss-less" class="headerlink" title="Beautify css/sass/scss/less"></a><a href="https://marketplace.visualstudio.com/items?itemName=michelemelluso.code-beautifier" target="_blank" rel="noopener">Beautify css/sass/scss/less</a></h4><p>自动格式化<code>css/sass/scss/less</code>，默认情况下例如<code>.scss</code>文件，vscode 是不能格式化的，此插件可以在保存时自动帮我们格式化。</p>
+<h4 id="Complete-JSDoc-Tags"><a href="#Complete-JSDoc-Tags" class="headerlink" title="Complete JSDoc Tags"></a><a href="https://marketplace.visualstudio.com/items?itemName=HookyQR.JSDocTagComplete" target="_blank" rel="noopener">Complete JSDoc Tags</a></h4><p>自动生成符合<code>JS Doc</code>规范的注释，在函数名上方输入<code>/** */</code>即可触发。</p>
+<p>若同时安装<a href="https://marketplace.visualstudio.com/items?itemName=joelday.docthis" target="_blank" rel="noopener">Document This</a>这个插件，就可以结合<code>TypeScript</code>使用，会将参数类型也自动填充到注释中。之后在使用到函数的地方，鼠标悬浮上去会显示具体注释。支持快捷键： 连续按两次<code>Ctrl+Alt+D</code></p>
+<p><img src="/images/vscode-experience/complete-jsdoc-tag-1.png" alt=""></p>
+<p><img src="/images/vscode-experience/complete-jsdoc-tag-2.png" alt=""></p>
+<p><img src="https://github.com/joelday/vscode-docthis/raw/master/images/demo.gif" alt=""></p>
+<p>不过发现只能在<code>.js</code>、<code>.ts</code>文件中有作用，在<code>.vue</code>文件中会报错，暂时没有找到别的插件可以在<code>.vue</code>替代。</p>
+<h4 id="eslint"><a href="#eslint" class="headerlink" title="eslint"></a><a href="https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint" target="_blank" rel="noopener">eslint</a></h4><p>具体配置见插件官网即可。它可以帮助自动检查 eslint 的错误并标红，同时提供了命令自动修复大部分错误，若项目中使用的是 eslint 来进行代码检查，强力推荐此插件。</p>
+<p>默认情况下不会对<code>.vue</code>文件进行检查，需要进行一下配置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"eslint.validate"</span>: [</span><br><span class="line">    <span class="string">"javascript"</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"language"</span>: <span class="string">"vue"</span>,</span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br></pre></td></tr></table></figure>
+<p>另外还提供了一个<code>autoFixOnSave</code>配置，可以在保存时自动修复 eslint 错误，不过个人使用了一段时间觉得不大好，频繁自动修复会导致<code>cpu</code>占用变的很高，然后出现卡顿。替代方案是使用提供的命令：先快捷键<code>Command+Shift+P</code>调出命令板，然后选择<code>Eslint: Fix all auto-fixable problems</code>，它会尽力帮我们修复所有的错误，不过有时候需要多按几次才能全部修复完。。。</p>
+<p><img src="/images/vscode-experience/eslint-auto-fix.png" alt=""></p>
+<h4 id="eslint-disable-snippets"><a href="#eslint-disable-snippets" class="headerlink" title="eslint-disable-snippets"></a><a href="https://marketplace.visualstudio.com/items?itemName=drKnoxy.eslint-disable-snippets" target="_blank" rel="noopener">eslint-disable-snippets</a></h4><p>配合<code>eslint</code>使用的，没有这个插件，在需要禁用一些<code>eslint</code>规则时就得手动 copy，有了它就可以使用它提供的<code>snippets</code>自动填充这些重复的字母了。</p>
+<p><img src="https://github.com/drKnoxy/eslint-disable-snippets/raw/master/images/disable-block.gif" alt=""></p>
+<h4 id="Git-相关"><a href="#Git-相关" class="headerlink" title="Git 相关"></a>Git 相关</h4><h5 id="自带-git-功能"><a href="#自带-git-功能" class="headerlink" title="自带 git 功能"></a>自带 git 功能</h5><p>vscode 已经内置 git，可以完成的功能有：</p>
+<blockquote>
+<p>Review diffs, stage files, and make commits right from the editor. Push and pull from any hosted SCM service.</p>
+</blockquote>
+<p><img src="/images/vscode-experience/built-in-git.png" alt=""></p>
+<p>从个人使用体验来说，确实已经满足了绝大部分需求。<strong>在遇到代码冲突时，也会在左侧面板展示所有存在冲突的文件，不用费力一个个去查找。</strong></p>
+<p>再借助一些强大的插件，完全不需要其他的<code>GUI</code>了，至少我的<code>sourcetree</code>已经几个月没有打开了 😄~~~</p>
+<h5 id="Git-History"><a href="#Git-History" class="headerlink" title="Git History"></a><a href="https://marketplace.visualstudio.com/items?itemName=donjayamanne.githistory" target="_blank" rel="noopener">Git History</a></h5><p>借助这个插件可以很方便的浏览仓库的提交历史、某个文件的历史以及某一行的提交历史，浏览每一个 commit 的变更。</p>
+<p><img src="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/fileHistoryCommand.gif" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/fileHistoryCommandMore.gif" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/lineHistoryCommand.gif" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/DonJayamanne/gitHistoryVSCode/master/images/compare.gif" alt=""></p>
+<h5 id="GitLens-—-Git-supercharged"><a href="#GitLens-—-Git-supercharged" class="headerlink" title="GitLens — Git supercharged"></a><a href="https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens" target="_blank" rel="noopener">GitLens — Git supercharged</a></h5><p>这个插件让 vscode 对 git 的支持更强大，一个实用的功能是会在每一行代码旁边提示它的历史变更：</p>
+<p><img src="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/gitlens-preview.gif" alt=""></p>
+<p>另外，它会在编辑器侧边栏添加一个图标，点开可以浏览仓库、查看文件变更记录等等一系列功能，具体可以参考插件的官网介绍，个人也只是使用了其中很小一部分功能。</p>
+<p><img src="/images/vscode-experience/git-lens-icon.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/ss-gitlens-explorer-repository.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/eamodio/vscode-gitlens/master/images/ss-gitlens-explorer-history.png" alt=""></p>
+<h4 id="HTML-Snippets"><a href="#HTML-Snippets" class="headerlink" title="HTML Snippets"></a><a href="https://marketplace.visualstudio.com/items?itemName=abusaidm.html-snippets" target="_blank" rel="noopener">HTML Snippets</a></h4><p>提供了很多常见的<code>html</code>代码片段，可以在日常开发中少敲很多代码。另外，<code>vscode</code>已经内置了对<a href="https://docs.emmet.io/" target="_blank" rel="noopener">Emmet</a>的支持，所以对这俩熟悉了之后，可以省很多力气。</p>
+<p><img src="https://i.imgur.com/VOhBvHb.gif" alt=""></p>
+<h4 id="Import-Cost"><a href="#Import-Cost" class="headerlink" title="Import Cost"></a><a href="https://marketplace.visualstudio.com/items?itemName=wix.vscode-import-cost" target="_blank" rel="noopener">Import Cost</a></h4><p>一个小插件，可以在<code>import</code>一个第三方包时显示这个包的大小。</p>
+<p><img src="https://file-wkbcnlcvbn.now.sh/import-cost.gif" alt=""></p>
+<p><img src="/images/vscode-experience/import-cost.png" alt=""></p>
+<h4 id="JavaScript-ES6-code-snippets"><a href="#JavaScript-ES6-code-snippets" class="headerlink" title="JavaScript (ES6) code snippets"></a><a href="https://marketplace.visualstudio.com/items?itemName=xabikos.JavaScriptSnippets" target="_blank" rel="noopener">JavaScript (ES6) code snippets</a></h4><p>提供了一些常见的 js 代码片段，代码片段<code>snippets</code>类似于快捷键的作用，可以让你敲很少的几个字母后再按<code>tab</code>键，然后自动变成对应的长段代码。</p>
+<p>例如此插件对于<code>console.log(object)</code>这段代码的<code>trigger</code>是<code>clg</code>，那我们就可以在输入<code>clg</code>之后按<code>tab</code>，<code>clg</code>这 3 个字母自动会变成<code>console.log(object)</code>。 可以想像，在知道了很多的<code>snippets</code>后，我们能少敲很多键盘。</p>
+<p>列举这个插件支持的一部分<code>snippets</code>：</p>
+<p><img src="/images/vscode-experience/js(es6" alt="">-code-snippets.png&gt;)</p>
+<h4 id="Live-Server"><a href="#Live-Server" class="headerlink" title="Live Server"></a><a href="https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer" target="_blank" rel="noopener">Live Server</a></h4><p>类似<code>CodePen</code>或<code>Js Bin</code>，只不过是开启了一个可以实时更新的本地<code>server</code>。</p>
+<p><img src="https://github.com/ritwickdey/vscode-live-server/raw/master/images/Screenshot/vscode-live-server-animated-demo.gif" alt=""></p>
+<p>支持快捷图标启动：</p>
+<p><img src="https://github.com/ritwickdey/vscode-live-server/raw/master/images/Screenshot/vscode-live-server-statusbar-3.jpg" alt=""></p>
+<h4 id="Path-Autocomplete"><a href="#Path-Autocomplete" class="headerlink" title="Path Autocomplete"></a><a href="https://marketplace.visualstudio.com/items?itemName=ionutvmi.path-autocomplete" target="_blank" rel="noopener">Path Autocomplete</a></h4><p>自动提示文件路径，可以避免手动敲出来的错误。</p>
+<p><img src="https://raw.githubusercontent.com/ionutvmi/path-autocomplete/master/demo/path-autocomplete.gif" alt=""></p>
+<h4 id="Prettier-Code-formatter"><a href="#Prettier-Code-formatter" class="headerlink" title="Prettier - Code formatter"></a><a href="https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode" target="_blank" rel="noopener">Prettier - Code formatter</a></h4><p>代码格式化插件，它的优点是可以和<code>eslint</code>结合，这样我们在<code>.vue</code>文件中也能自动格式化，略爽。</p>
+<p>和<code>eslint</code>结合需要做一些设置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"prettier.eslintIntegration"</span>: <span class="literal">true</span>,</span><br></pre></td></tr></table></figure>
+<p>另外<code>prettier</code>自身也可以配置格式化的一些细节，在项目根目录建一个<code>.prettierrc</code>文件，然后在里面加上自定义规则，目前插件提供的规则还不多，下面是我自己配的规则：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"parser"</span>: <span class="string">"babylon"</span>,</span><br><span class="line">  <span class="string">"useTabs"</span>: <span class="literal">false</span>,</span><br><span class="line">  <span class="string">"printWidth"</span>: <span class="number">150</span>,</span><br><span class="line">  <span class="string">"tabWidth"</span>: <span class="number">2</span>,</span><br><span class="line">  <span class="string">"trailingComma"</span>: <span class="string">"all"</span>,</span><br><span class="line">  <span class="string">"singleQuote"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="string">"disableLanguages"</span>: [],</span><br><span class="line">  <span class="string">"eslintIntegration"</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="string">"arrowParens"</span>: <span class="string">"avoid"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的<code>arrowParens</code>有点恶心，它只能配置始终有还是始终没有，而<code>eslint</code>中关于这一点的规则更灵活，导致有时候可能冲突。</p>
+<h4 id="Project-Manager"><a href="#Project-Manager" class="headerlink" title="Project Manager"></a><a href="https://marketplace.visualstudio.com/items?itemName=alefragnani.project-manager" target="_blank" rel="noopener">Project Manager</a></h4><p>大家平时很可能会在多个项目之间切换，当从 A 切换到 B 时，<code>vscode</code>不是很方便，个人想到的最快方式是<code>Command+O</code>在文件选择器中找到 B 项目的根文件夹。</p>
+<p>这个插件可以让切换变得非常简单，它会在侧边栏添加一个图标，里面有保存的所有项目名，点击文件名即可切换。</p>
+<p><img src="/images/vscode-experience/project-manage-1.png" alt=""></p>
+<p>唯一不是很方便的是保存项目需要使用插件提供的命令，而不能自动保存。具体方法是：</p>
+<ol>
+<li>调用命令板<code>Command+Shift+P</code></li>
+<li>输入<code>Project Manager: Save Project</code>, 不要感觉命令太长了，输入前几个字母会自动筛选的</li>
+</ol>
+<p><img src="/images/vscode-experience/project-manage-2.png" alt=""></p>
+<p>编辑器底部也提供了图标来快捷切换项目：</p>
+<p><img src="/images/vscode-experience/project-manage-3.png" alt=""></p>
+<h4 id="Settings-Sync"><a href="#Settings-Sync" class="headerlink" title="Settings Sync"></a><a href="https://marketplace.visualstudio.com/items?itemName=Shan.code-settings-sync" target="_blank" rel="noopener">Settings Sync</a></h4><p>如果你有多个电脑都安装 vscode，那么肯定有一个问题困扰着你：怎么让 A 电脑上 vscode 安装的插件自动同步到 B 电脑上呢？</p>
+<p>此插件就是解决这个问题的！ 它可以在多设备间同步 vscode 的设置，不仅仅包括安装的插件，还包括个人的编辑器配置。需要利用个人的<code>github</code>账户生成一个<code>token</code>，然后在每个设备的<code>vscode</code>上安装这个插件在遵循文档配置好<code>token</code>，就可以自动进行同步了！</p>
+<p>具体配置步骤见插件文档即可，这里展示一下在 A 电脑上修改一个配置，然后自动同步上传到服务器的日志：</p>
+<p><img src="/images/vscode-experience/setting-sync.png" alt=""></p>
+<h4 id="TODO-Highlight"><a href="#TODO-Highlight" class="headerlink" title="TODO Highlight"></a><a href="https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight" target="_blank" rel="noopener">TODO Highlight</a></h4><p>用于高亮<code>TODO</code>, <code>FIXME</code>关键词的，有时候代码里有一些<code>TODO</code>，但是又不起眼很容易忽略，这个插件可以让这两个词散发耀眼的光芒有如夜空中最亮的星。</p>
+<p><img src="https://github.com/wayou/vscode-todo-highlight/raw/master/assets/material-night-eighties.png" alt=""></p>
+<p>看文档介绍应该可以定制高亮的单词，但个人目前还没有试过。</p>
+<h4 id="Vetur"><a href="#Vetur" class="headerlink" title="Vetur"></a><a href="https://marketplace.visualstudio.com/items?itemName=octref.vetur" target="_blank" rel="noopener">Vetur</a></h4><p>在插件市场搜<code>Vue</code>相关的应该就是这个插件最火了，它提供了茫茫多的配置项并专门有一个官网，各位自行按口味配置就好。可以做的事情有：</p>
+<ol>
+<li><code>Syntax-highlighting</code></li>
+<li><code>Snippet</code></li>
+<li><code>Emmet</code></li>
+<li><code>Linting / Error Checking</code></li>
+<li><code>Formatting</code></li>
+<li><code>Auto Completion</code></li>
+<li><code>Debugging</code></li>
+</ol>
+<h4 id="vscode-icons"><a href="#vscode-icons" class="headerlink" title="vscode-icons"></a><a href="https://marketplace.visualstudio.com/items?itemName=robertohuertasm.vscode-icons" target="_blank" rel="noopener">vscode-icons</a></h4><p>一个装饰性的插件，可以让文件、文件夹的图标更好看。</p>
+<p><img src="https://raw.githubusercontent.com/vscode-icons/vscode-icons/master/images/screenshot.gif" alt=""></p>
+<h4 id="Vue-2-Snippets、Vue-VSCode-Snippets、VueHelper"><a href="#Vue-2-Snippets、Vue-VSCode-Snippets、VueHelper" class="headerlink" title="Vue 2 Snippets、Vue VSCode Snippets、VueHelper"></a><a href="https://marketplace.visualstudio.com/items?itemName=hollowtree.vue-snippets" target="_blank" rel="noopener">Vue 2 Snippets</a>、<a href="https://marketplace.visualstudio.com/items?itemName=sdras.vue-vscode-snippets" target="_blank" rel="noopener">Vue VSCode Snippets</a>、<a href="https://marketplace.visualstudio.com/items?itemName=oysun.vuehelper" target="_blank" rel="noopener">VueHelper</a></h4><p>这三个都是提供一些<code>Vue</code>相关的<code>snippets</code>，个人自行按口味选择即可。<code>snippets</code>最大的问题就是需要花时间去记，根据编码习惯可能会选择不同的<code>snippets</code>组合。</p>
+<p>例如<code>Vue VSCode Snippets</code>的示范：</p>
+<p><img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/28963/SnippetDemo.gif" alt=""></p>
+<h4 id="Vue-Peek"><a href="#Vue-Peek" class="headerlink" title="Vue Peek"></a><a href="https://marketplace.visualstudio.com/items?itemName=dariofuzinato.vue-peek" target="_blank" rel="noopener">Vue Peek</a></h4><p>很实用的小插件，用于跳转定义。默认在<code>vscode</code>里的<code>.vue</code>文件，无法在<code>template</code>中从自定义组件标签跳转到组件的定义文件；也无法从<code>import xxx from &#39;xxx.vue&#39;</code>直接跳转到组件定义。</p>
+<p>有了此插件，可以在<code>template</code>的组件标签名上直接按<code>F12</code>跳转，也可以右键菜单选择<code>Goto definition</code>跳转，或者按住<code>Command</code>再单击即可。</p>
+<p><img src="https://github.com/fussinatto/vscode-vue-peek/raw/master/images/vue-peek-demo.gif" alt=""></p>
+<p><strong>与<code>webpack alias</code> 结合的问题</strong></p>
+<p><code>webpack</code>可以让我们定义路径别名，很遗憾即使是<code>vscode</code>+<code>Vue peek</code>也无法让我们从带有别名的路径跳转定义。需要进行一组特定配置：</p>
+<ol>
+<li>在项目根目录建一个<code>jsconfig.json</code>，如果使用的开发语言是<code>typescript</code>，则需要建的是<code>tsconfig.json</code></li>
+<li><p>在其中添加对应配置，最关键的是<code>compilerOptions.baseUrl</code>，经过一些试探发现如下一组配置可用：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"compilerOptions"</span>: &#123;</span><br><span class="line">    <span class="string">"baseUrl"</span>: <span class="string">"."</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"exclude"</span>: [</span><br><span class="line">    <span class="string">"node_modules"</span>,</span><br><span class="line">    <span class="string">"npm-offline-mirror"</span>,</span><br><span class="line">    <span class="string">"dist"</span>,</span><br><span class="line">    <span class="string">"script"</span>,</span><br><span class="line">    <span class="string">"server"</span>,</span><br><span class="line">    <span class="string">"statics"</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>关于这个问题的一些参考文档：</p>
+<ol>
+<li><a href="https://blog.andrewray.me/autocomplete-es-modules-webpack-vscode/" target="_blank" rel="noopener">autocomplete-es-modules-webpack-vscode</a></li>
+<li><a href="https://code.visualstudio.com/docs/languages/jsconfig" target="_blank" rel="noopener">jsconfig</a></li>
+<li><a href="https://medium.com/@justintulk/solve-module-import-aliasing-for-webpack-jest-and-vscode-74007ce4adc9" target="_blank" rel="noopener">solve-module-import-aliasing-for-webpack-jest-and-vscode</a></li>
+<li><a href="https://github.com/Microsoft/vscode/issues/14907" target="_blank" rel="noopener">vscode/issues/14907</a></li>
+</ol>
+<h4 id="markdown-相关"><a href="#markdown-相关" class="headerlink" title="markdown 相关"></a>markdown 相关</h4><p>个人用 vscode 写 markdown 不是很多，更多的是用<code>MWeb Lite</code>这款专门的 APP，不过安装了 2 个<code>markdown</code>相关的热门插件，大家自取~~</p>
+<ol>
+<li><p><a href="https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one" target="_blank" rel="noopener">Markdown All in One</a>，支持的功能有</p>
+<ol>
+<li>Keyboard shortcuts (toggle bold, italic, code span, strikethrough and heading)</li>
+<li>生成目录</li>
+<li>有序列表、无序列表</li>
+<li>Print Markdown to HTML</li>
+<li>formatter</li>
+<li>Auto completions</li>
+</ol>
+</li>
+<li><p><a href="https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint" target="_blank" rel="noopener">markdownlint</a> 规则检查</p>
+</li>
+</ol>
+<h1 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h1><p>vscode 也是可以进行代码调试的，官网专门提供了一个<a href="https://code.visualstudio.com/docs/editor/debugging" target="_blank" rel="noopener">教程</a>来演示如何调试，文档非常详细，我就不再搬运了。</p>
+<p>说来惭愧，目前用到这个功能最多的地方还是在调试单元测试代码，截个图。。。</p>
+<p><img src="/images/vscode-experience/vscode-debug.png" alt=""></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vscode/" rel="tag"># vscode</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/27/vue-sourcecode-5-template-parse/" rel="next" title="Vue源码解析5-模板解析parse">
+                <i class="fa fa-chevron-left"></i> Vue源码解析5-模板解析parse
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/01/vue-sourcecode-6-optimizer/" rel="prev" title="Vue源码解析6-静态AST优化">
+                Vue源码解析6-静态AST优化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#快捷键"><span class="nav-number">1.</span> <span class="nav-text">快捷键</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#插件"><span class="nav-number">2.</span> <span class="nav-text">插件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Auto-Close-Tag"><span class="nav-number">2.0.0.1.</span> <span class="nav-text">Auto Close Tag</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Auto-Rename-Tag"><span class="nav-number">2.0.0.2.</span> <span class="nav-text">Auto Rename Tag</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Beautify-css-sass-scss-less"><span class="nav-number">2.0.0.3.</span> <span class="nav-text">Beautify css/sass/scss/less</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Complete-JSDoc-Tags"><span class="nav-number">2.0.0.4.</span> <span class="nav-text">Complete JSDoc Tags</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#eslint"><span class="nav-number">2.0.0.5.</span> <span class="nav-text">eslint</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#eslint-disable-snippets"><span class="nav-number">2.0.0.6.</span> <span class="nav-text">eslint-disable-snippets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Git-相关"><span class="nav-number">2.0.0.7.</span> <span class="nav-text">Git 相关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#自带-git-功能"><span class="nav-number">2.0.0.7.1.</span> <span class="nav-text">自带 git 功能</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Git-History"><span class="nav-number">2.0.0.7.2.</span> <span class="nav-text">Git History</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#GitLens-—-Git-supercharged"><span class="nav-number">2.0.0.7.3.</span> <span class="nav-text">GitLens — Git supercharged</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HTML-Snippets"><span class="nav-number">2.0.0.8.</span> <span class="nav-text">HTML Snippets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Import-Cost"><span class="nav-number">2.0.0.9.</span> <span class="nav-text">Import Cost</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#JavaScript-ES6-code-snippets"><span class="nav-number">2.0.0.10.</span> <span class="nav-text">JavaScript (ES6) code snippets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Live-Server"><span class="nav-number">2.0.0.11.</span> <span class="nav-text">Live Server</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Path-Autocomplete"><span class="nav-number">2.0.0.12.</span> <span class="nav-text">Path Autocomplete</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Prettier-Code-formatter"><span class="nav-number">2.0.0.13.</span> <span class="nav-text">Prettier - Code formatter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Project-Manager"><span class="nav-number">2.0.0.14.</span> <span class="nav-text">Project Manager</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Settings-Sync"><span class="nav-number">2.0.0.15.</span> <span class="nav-text">Settings Sync</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TODO-Highlight"><span class="nav-number">2.0.0.16.</span> <span class="nav-text">TODO Highlight</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vetur"><span class="nav-number">2.0.0.17.</span> <span class="nav-text">Vetur</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#vscode-icons"><span class="nav-number">2.0.0.18.</span> <span class="nav-text">vscode-icons</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vue-2-Snippets、Vue-VSCode-Snippets、VueHelper"><span class="nav-number">2.0.0.19.</span> <span class="nav-text">Vue 2 Snippets、Vue VSCode Snippets、VueHelper</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Vue-Peek"><span class="nav-number">2.0.0.20.</span> <span class="nav-text">Vue Peek</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#markdown-相关"><span class="nav-number">2.0.0.21.</span> <span class="nav-text">markdown 相关</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#调试"><span class="nav-number">3.</span> <span class="nav-text">调试</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

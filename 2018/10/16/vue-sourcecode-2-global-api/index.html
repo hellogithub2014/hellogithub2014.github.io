@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,Vue,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上篇文章有提到在core/index.js中会调用initGlobalAPI来给Vue上挂载全局 api，也就是各种静态函数。这些静态函数是在我们业务代码调用new Vue之前就执行的了。 这里就来记录具体有哪些全局 api。 函数定义为： 12345678910111213141516171819202122232425262728293031323334353637export functio">
+<meta name="keywords" content="javascript,Vue">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析2-全局api">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/10/16/vue-sourcecode-2-global-api/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="上篇文章有提到在core/index.js中会调用initGlobalAPI来给Vue上挂载全局 api，也就是各种静态函数。这些静态函数是在我们业务代码调用new Vue之前就执行的了。 这里就来记录具体有哪些全局 api。 函数定义为： 12345678910111213141516171819202122232425262728293031323334353637export functio">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.504Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析2-全局api">
+<meta name="twitter:description" content="上篇文章有提到在core/index.js中会调用initGlobalAPI来给Vue上挂载全局 api，也就是各种静态函数。这些静态函数是在我们业务代码调用new Vue之前就执行的了。 这里就来记录具体有哪些全局 api。 函数定义为： 12345678910111213141516171819202122232425262728293031323334353637export functio">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/10/16/vue-sourcecode-2-global-api/">
+
+
+
+
+
+  <title>Vue源码解析2-全局api | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/10/16/vue-sourcecode-2-global-api/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析2-全局api</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-10-16T22:20:00+08:00">
+                2018-10-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上篇文章有提到在<code>core/index.js</code>中会调用<code>initGlobalAPI</code>来给<code>Vue</code>上挂载全局 api，也就是各种静态函数。这些静态函数是在我们业务代码调用<code>new Vue</code>之前就执行的了。 这里就来记录具体有哪些全局 api。</p>
+<p>函数定义为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">initGlobalAPI</span>(<span class="params">Vue: GlobalAPI</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// config</span></span><br><span class="line">  <span class="keyword">const</span> configDef = &#123;&#125;;</span><br><span class="line">  configDef.get = <span class="function"><span class="params">()</span> =&gt;</span> config;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="built_in">Object</span>.defineProperty(Vue, <span class="string">'config'</span>, configDef);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// exposed util methods.</span></span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> these are not considered part of the public API - avoid relying on</span></span><br><span class="line">  <span class="comment">// them unless you are aware of the risk.</span></span><br><span class="line">  Vue.util = &#123;</span><br><span class="line">    warn,</span><br><span class="line">    extend,</span><br><span class="line">    mergeOptions,</span><br><span class="line">    defineReactive,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  Vue.set = set;</span><br><span class="line">  Vue.delete = del;</span><br><span class="line">  Vue.nextTick = nextTick;</span><br><span class="line"></span><br><span class="line">  Vue.options = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  ASSET_TYPES.forEach(<span class="function"><span class="params">type</span> =&gt;</span> &#123;</span><br><span class="line">    Vue.options[type + <span class="string">'s'</span>] = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// this is used to identify the "base" constructor to extend all plain-object</span></span><br><span class="line">  <span class="comment">// components with in Weex's multi-instance scenarios.</span></span><br><span class="line">  Vue.options._base = Vue;</span><br><span class="line"></span><br><span class="line">  extend(Vue.options.components, builtInComponents);</span><br><span class="line"></span><br><span class="line">  initUse(Vue);</span><br><span class="line">  initMixin(Vue);</span><br><span class="line">  initExtend(Vue);</span><br><span class="line">  initAssetRegisters(Vue);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先定义<code>Vue.config</code>，之后会在这上面添加各种全局配置。</p>
+<p><code>ASSET_TYPES</code>数组中含有<code>component</code>、<code>directive</code>和<code>filter</code>，所以之后就有了<code>Vue.options .components</code>、<code>Vue.options.directives</code>和<code>Vue.options.filter</code>3 个空对象。</p>
+<p><code>builtInComponents</code>中只含有一个<code>KeepAlive</code>组件,所以经过</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extend(Vue.options.components, builtInComponents);</span><br></pre></td></tr></table></figure>
+<p>就有了第一个全局组件<code>&lt;keep-alive&gt;</code>.</p>
+<h2 id="initUse"><a href="#initUse" class="headerlink" title="initUse"></a><code>initUse</code></h2><p>定义了<code>Vue.use</code>，此函数就是用来安装各种 Vue 插件的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">Vue.use = <span class="function"><span class="keyword">function</span>(<span class="params">plugin: Function | Object</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> installedPlugins = <span class="keyword">this</span>._installedPlugins || (<span class="keyword">this</span>._installedPlugins = []);</span><br><span class="line">  <span class="comment">// 若此前以安装过此插件</span></span><br><span class="line">  <span class="keyword">if</span> (installedPlugins.indexOf(plugin) &gt; <span class="number">-1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// additional parameters</span></span><br><span class="line">  <span class="keyword">const</span> args = toArray(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">  args.unshift(<span class="keyword">this</span>);</span><br><span class="line">  <span class="comment">// 调用插件函数</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> plugin.install === <span class="string">'function'</span>) &#123;</span><br><span class="line">    plugin.install.apply(plugin, args);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> plugin === <span class="string">'function'</span>) &#123;</span><br><span class="line">    plugin.apply(<span class="literal">null</span>, args);</span><br><span class="line">  &#125;</span><br><span class="line">  installedPlugins.push(plugin);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看到插件安装的代码非常简洁，然后<code>Vue.installedPlugins</code>会存放所有已安装过的插件。</p>
+<h2 id="initMixin"><a href="#initMixin" class="headerlink" title="initMixin"></a><code>initMixin</code></h2><p>定义了<code>Vue.mixin</code>方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Vue.mixin = <span class="function"><span class="keyword">function</span>(<span class="params">mixin: Object</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.options = mergeOptions(<span class="keyword">this</span>.options, mixin);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>经过<code>mergeOptions</code>的处理，mixin 的选项就会和<code>Vue.options</code>混合到一起了，效果是全局性的。</p>
+<p><code>mergeOptions</code>涉及到各种合并策略，在另一篇博客<a href="https://github.com/hellogithub2014/hellogithub2014.github.io/blob/master/_posts/2018-07-17-vue-i18n-source-code.md" target="_blank" rel="noopener">vue-i18n</a>中有详细的介绍，这里就不再重复。</p>
+<h2 id="initExtend"><a href="#initExtend" class="headerlink" title="initExtend"></a><code>initExtend</code></h2><p>定义了<code>Vue.extend</code>方法，<code>Vue.extend</code>会返回一个<code>VueComponent</code>构造函数，它会继承<code>Vue</code>函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">Vue.cid = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">let</span> cid = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Class inheritance</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">Vue.extend = <span class="function"><span class="keyword">function</span>(<span class="params">extendOptions: Object</span>): <span class="title">Function</span> </span>&#123;</span><br><span class="line">  extendOptions = extendOptions || &#123;&#125;;</span><br><span class="line">  <span class="keyword">const</span> Super = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">const</span> SuperId = Super.cid; <span class="comment">// 每个构造函数会有唯一的cid</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = &#123;&#125;); <span class="comment">// 构造函数缓存池，以cid为key</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 如果缓存中已有目标子构造函数</span></span><br><span class="line">  <span class="keyword">if</span> (cachedCtors[SuperId]) &#123;</span><br><span class="line">    <span class="keyword">return</span> cachedCtors[SuperId];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> name = extendOptions.name || Super.options.name;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 校验逻辑略去...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> Sub = <span class="function"><span class="keyword">function</span> <span class="title">VueComponent</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>._init(options);</span><br><span class="line">  &#125;;</span><br><span class="line">  Sub.prototype = <span class="built_in">Object</span>.create(Super.prototype);</span><br><span class="line">  Sub.prototype.constructor = Sub;</span><br><span class="line">  Sub.cid = cid++; <span class="comment">// 每个id都是递增的</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 这里调用了和Vue.mixin相同的核心函数来合并两个options</span></span><br><span class="line">  Sub.options = mergeOptions(Super.options, extendOptions);</span><br><span class="line">  Sub[<span class="string">'super'</span>] = Super;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// For props and computed properties, we define the proxy getters on</span></span><br><span class="line">  <span class="comment">// the Vue instances at extension time, on the extended prototype. This</span></span><br><span class="line">  <span class="comment">// avoids Object.defineProperty calls for each instance created.</span></span><br><span class="line">  <span class="keyword">if</span> (Sub.options.props) &#123;</span><br><span class="line">    initProps(Sub);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (Sub.options.computed) &#123;</span><br><span class="line">    initComputed(Sub);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// allow further extension/mixin/plugin usage</span></span><br><span class="line">  Sub.extend = Super.extend;</span><br><span class="line">  Sub.mixin = Super.mixin;</span><br><span class="line">  Sub.use = Super.use;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// create asset registers, so extended classes</span></span><br><span class="line">  <span class="comment">// can have their private assets too.</span></span><br><span class="line">  ASSET_TYPES.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">type</span>) </span>&#123;</span><br><span class="line">    Sub[type] = Super[type];</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="comment">// enable recursive self-lookup</span></span><br><span class="line">  <span class="keyword">if</span> (name) &#123;</span><br><span class="line">    Sub.options.components[name] = Sub;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// keep a reference to the super options at extension time.</span></span><br><span class="line">  <span class="comment">// later at instantiation we can check if Super's options have</span></span><br><span class="line">  <span class="comment">// been updated.</span></span><br><span class="line">  Sub.superOptions = Super.options;</span><br><span class="line">  Sub.extendOptions = extendOptions;</span><br><span class="line">  Sub.sealedOptions = extend(&#123;&#125;, Sub.options);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// cache constructor</span></span><br><span class="line">  cachedCtors[SuperId] = Sub;</span><br><span class="line">  <span class="keyword">return</span> Sub;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>大部分代码都很简单，就是典型的 js 继承，然后设置了一堆变量各种引用。 其中的<code>initProps</code>和<code>initComputed</code>单独说下。</p>
+<h3 id="initProps"><a href="#initProps" class="headerlink" title="initProps"></a>initProps</h3><p>用于初始化<code>Comp.prototype</code>的<code>props</code>。在<code>Sub.prototype._props</code>对象中存储每一个<code>Sub.options.props</code>上每一个<code>prop</code>，以便在<code>Sub.prototype</code>进行代理访问.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initProps</span>(<span class="params">Comp</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> props = Comp.options.props;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> props) &#123;</span><br><span class="line">    proxy(Comp.prototype, <span class="string">`_props`</span>, key);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">proxy</span>(<span class="params">target: Object, sourceKey: string, key: string</span>) </span>&#123;</span><br><span class="line">  sharedPropertyDefinition.get = <span class="function"><span class="keyword">function</span> <span class="title">proxyGetter</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>[sourceKey][key];</span><br><span class="line">  &#125;;</span><br><span class="line">  sharedPropertyDefinition.set = <span class="function"><span class="keyword">function</span> <span class="title">proxySetter</span>(<span class="params">val</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>[sourceKey][key] = val;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="built_in">Object</span>.defineProperty(target, key, sharedPropertyDefinition);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样之后，访问<code>Comp.prototype[key]</code>会实际访问<code>Comp.prototype._props[key]</code>,而<code>vm._props</code>会在<code>src/core/instance/state.js</code>的<code>initState</code>中得到初始化，<code>vm._props[key]</code>指向一个组件的具体<code>prop</code>。</p>
+<h3 id="initComputed"><a href="#initComputed" class="headerlink" title="initComputed"></a>initComputed</h3><p>用于初始化<code>Comp.prototype</code>的响应式<code>computed</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initComputed</span>(<span class="params">Comp</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> computed = Comp.options.computed;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> computed) &#123;</span><br><span class="line">    defineComputed(Comp.prototype, key, computed[key]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">defineComputed</span>(<span class="params">target: any, key: string, userDef: Object | Function</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> shouldCache = !isServerRendering();</span><br><span class="line">  <span class="comment">// 定义computed的get和set</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> userDef === <span class="string">'function'</span>) &#123;</span><br><span class="line">    sharedPropertyDefinition.get = shouldCache ? createComputedGetter(key) : userDef;</span><br><span class="line">    sharedPropertyDefinition.set = noop;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    sharedPropertyDefinition.get = userDef.get ? (shouldCache &amp;&amp; userDef.cache !== <span class="literal">false</span> ? createComputedGetter(key) : userDef.get) : noop;</span><br><span class="line">    sharedPropertyDefinition.set = userDef.set ? userDef.set : noop;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">Object</span>.defineProperty(target, key, sharedPropertyDefinition);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createComputedGetter</span>(<span class="params">key</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">computedGetter</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> watcher = <span class="keyword">this</span>._computedWatchers &amp;&amp; <span class="keyword">this</span>._computedWatchers[key];</span><br><span class="line">    <span class="keyword">if</span> (watcher) &#123;</span><br><span class="line">      <span class="keyword">if</span> (watcher.dirty) &#123;</span><br><span class="line">        watcher.evaluate(); <span class="comment">// 涉及到Dep和Watcher，这是Vue响应式的两个核心类，后续专门说</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (Dep.target) &#123;</span><br><span class="line">        watcher.depend();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> watcher.value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="initAssetRegisters"><a href="#initAssetRegisters" class="headerlink" title="initAssetRegisters"></a>initAssetRegisters</h2><p>用于定义<code>Vue.component</code>、<code>Vue.directive</code>和<code>Vue.filter</code>，它们都是定义全局的 options 的，成功后会把结果放到<code>Vue.options.xxxx</code>上。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ASSET_TYPES =&gt; [component, directive, filter]</span></span><br><span class="line">ASSET_TYPES.forEach(<span class="function"><span class="params">type</span> =&gt;</span> &#123;</span><br><span class="line">  Vue[type] = <span class="function"><span class="keyword">function</span>(<span class="params">id: string, definition: Function | Object</span>): <span class="title">Function</span> | <span class="title">Object</span> | <span class="title">void</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 如没有提供定义则尝试返回已有的匹配项</span></span><br><span class="line">    <span class="keyword">if</span> (!definition) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.options[type + <span class="string">'s'</span>][id];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 定义全局组件</span></span><br><span class="line">      <span class="keyword">if</span> (type === <span class="string">'component'</span> &amp;&amp; isPlainObject(definition)) &#123;</span><br><span class="line">        definition.name = definition.name || id;</span><br><span class="line">        <span class="comment">// initGlobalAPI定义了this.options._base就是Vue</span></span><br><span class="line">        definition = <span class="keyword">this</span>.options._base.extend(definition); <span class="comment">//返回VueComponent函数</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 定义全局指令</span></span><br><span class="line">      <span class="keyword">if</span> (type === <span class="string">'directive'</span> &amp;&amp; <span class="keyword">typeof</span> definition === <span class="string">'function'</span>) &#123;</span><br><span class="line">        definition = &#123; <span class="attr">bind</span>: definition, <span class="attr">update</span>: definition &#125;;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">this</span>.options[type + <span class="string">'s'</span>][id] = definition;</span><br><span class="line">      <span class="keyword">return</span> definition;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>至此，所有的 Vue 静态函数就全局介绍完了~~~ 最终我们得到的全局 api 有</p>
+<ul>
+<li><code>Vue.config</code></li>
+<li><code>Vue.util.warn/extend/mergeOptions/defineReactive</code></li>
+<li><code>Vue.set</code></li>
+<li><code>Vue.delete</code></li>
+<li><code>Vue.nextTick</code></li>
+<li><code>Vue.options</code>，内部包含<code>components</code>、<code>directives</code>、<code>filters</code>、<code>_base</code></li>
+<li><code>Vue.use</code></li>
+<li><code>Vue.mixin</code></li>
+<li><code>Vue.extend</code></li>
+<li><code>Vue.component</code></li>
+<li><code>Vue.directive</code></li>
+<li><code>Vue.filter</code></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/14/vue-sourcecode-1-entry/" rel="next" title="Vue源码解析1-入口">
+                <i class="fa fa-chevron-left"></i> Vue源码解析1-入口
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/10/20/vue-sourcecode-3-init/" rel="prev" title="Vue源码解析3-初始化流程">
+                Vue源码解析3-初始化流程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#initUse"><span class="nav-number">1.</span> <span class="nav-text">initUse</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#initMixin"><span class="nav-number">2.</span> <span class="nav-text">initMixin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#initExtend"><span class="nav-number">3.</span> <span class="nav-text">initExtend</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#initProps"><span class="nav-number">3.1.</span> <span class="nav-text">initProps</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#initComputed"><span class="nav-number">3.2.</span> <span class="nav-text">initComputed</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#initAssetRegisters"><span class="nav-number">4.</span> <span class="nav-text">initAssetRegisters</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

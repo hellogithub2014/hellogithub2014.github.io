@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="webpack,loader,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="对于webpack loader相信大家都知道它是用于将一个模块转为js代码的，但估计不是每个人都知道webpack对于loader的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个loader，前一个loader的结果会传递给下一个loader。 loader有一些主要的特性：  同步、异步 pitch、normal execution context  本文会从源码角度解释webp">
+<meta name="keywords" content="webpack,loader">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpack loader机制源码解析">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/01/03/webpack-loader/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="对于webpack loader相信大家都知道它是用于将一个模块转为js代码的，但估计不是每个人都知道webpack对于loader的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个loader，前一个loader的结果会传递给下一个loader。 loader有一些主要的特性：  同步、异步 pitch、normal execution context  本文会从源码角度解释webp">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:13:22.968Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="webpack loader机制源码解析">
+<meta name="twitter:description" content="对于webpack loader相信大家都知道它是用于将一个模块转为js代码的，但估计不是每个人都知道webpack对于loader的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个loader，前一个loader的结果会传递给下一个loader。 loader有一些主要的特性：  同步、异步 pitch、normal execution context  本文会从源码角度解释webp">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/01/03/webpack-loader/">
+
+
+
+
+
+  <title>webpack loader机制源码解析 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/01/03/webpack-loader/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">webpack loader机制源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-01-03T11:15:58+08:00">
+                2019-01-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>对于<code>webpack loader</code>相信大家都知道它是用于将一个模块转为<code>js</code>代码的，但估计不是每个人都知道<code>webpack</code>对于<code>loader</code>的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个<code>loader</code>，前一个<code>loader</code>的结果会传递给下一个<code>loader</code>。</p>
+<p><code>loader</code>有一些主要的特性：</p>
+<ul>
+<li>同步、异步</li>
+<li>pitch、normal execution</li>
+<li>context</li>
+</ul>
+<p>本文会从源码角度解释<code>webpack</code>是如何处理这些特性的,并在最后举一些实际的例子帮助大家理解如何写一个<code>loader</code>,所用的<code>webpack</code>版本是<code>4.28.2</code>.</p>
+<h1 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h1><p><code>webpack</code>在处理<code>Module</code>时就会先用<code>loader</code>，每个<code>module</code>可以配置多个<code>loader</code>，然后再将<code>js</code>代码转为<code>AST</code>，这部分的逻辑在<code>webpack</code>源码的<code>lib/NormalModule.js</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">doBuild(options, compilation, resolver, fs, callback) &#123;</span><br><span class="line">		<span class="keyword">const</span> loaderContext = <span class="keyword">this</span>.createLoaderContext(</span><br><span class="line">			resolver,</span><br><span class="line">			options,</span><br><span class="line">			compilation,</span><br><span class="line">			fs</span><br><span class="line">		);</span><br><span class="line"></span><br><span class="line">		runLoaders(</span><br><span class="line">			&#123;</span><br><span class="line">				resource: <span class="keyword">this</span>.resource, <span class="comment">// 模块路径</span></span><br><span class="line">				loaders: <span class="keyword">this</span>.loaders, <span class="comment">// options中配置的loader</span></span><br><span class="line">				context: loaderContext,</span><br><span class="line">				readResource: fs.readFile.bind(fs)</span><br><span class="line">			&#125;,</span><br><span class="line">			(err, result) =&gt; &#123;</span><br><span class="line">        <span class="comment">// result即处理完的js代码，剩余逻辑略...</span></span><br><span class="line">      &#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>runLoaders</code>是专门抽取出去的库<code>loader-runner</code>，所有逻辑都在这个库中，接下来我们重点放在这里。</p>
+<h1 id="loader-runner"><a href="#loader-runner" class="headerlink" title="loader-runner"></a>loader-runner</h1><p>先看看入口函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">exports.runLoaders = <span class="function"><span class="keyword">function</span> <span class="title">runLoaders</span>(<span class="params">options, callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// prepare loader objects</span></span><br><span class="line">  <span class="keyword">var</span> loaders = options.loaders || [];</span><br><span class="line">  loaders = loaders.map(createLoaderObject);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// loaderContext的各种初始化赋值...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> processOptions = &#123;</span><br><span class="line">    resourceBuffer: <span class="literal">null</span>,</span><br><span class="line">    readResource: readResource,</span><br><span class="line">  &#125;;</span><br><span class="line">  iteratePitchingLoaders(processOptions, loaderContext, <span class="function"><span class="keyword">function</span>(<span class="params">err, result</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) &#123;</span><br><span class="line">      <span class="keyword">return</span> callback(err, &#123;</span><br><span class="line">        cacheable: requestCacheable,</span><br><span class="line">        fileDependencies: fileDependencies,</span><br><span class="line">        contextDependencies: contextDependencies,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">    callback(<span class="literal">null</span>, &#123;</span><br><span class="line">      result: result,</span><br><span class="line">      resourceBuffer: processOptions.resourceBuffer,</span><br><span class="line">      cacheable: requestCacheable,</span><br><span class="line">      fileDependencies: fileDependencies,</span><br><span class="line">      contextDependencies: contextDependencies,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>入口函数其实做的事情比较简单，除了初始化外就是调用<code>iteratePitchingLoaders</code>了，这个函数执行完就触发<code>webpack</code>传递的回调函数。接下来看看这个函数。</p>
+<h2 id="iteratePitchingLoaders"><a href="#iteratePitchingLoaders" class="headerlink" title="iteratePitchingLoaders"></a>iteratePitchingLoaders</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iteratePitchingLoaders</span>(<span class="params">options, loaderContext, callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// abort after last loader， loaderIndex初始为0，当所有loader pitch都执行完后，if条件成立</span></span><br><span class="line">  <span class="keyword">if</span> (loaderContext.loaderIndex &gt;= loaderContext.loaders.length) <span class="keyword">return</span> processResource(options, loaderContext, callback);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 当前loader</span></span><br><span class="line">  <span class="keyword">var</span> currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// iterate，如果当前loader的pitch已经执行过，继续递归下一个loader</span></span><br><span class="line">  <span class="keyword">if</span> (currentLoaderObject.pitchExecuted) &#123;</span><br><span class="line">    loaderContext.loaderIndex++;</span><br><span class="line">    <span class="keyword">return</span> iteratePitchingLoaders(options, loaderContext, callback);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// load loader module，加载loader的实现,</span></span><br><span class="line">  <span class="comment">// loader默认导出函数赋值给normal属性，pitch函数赋值给pitch属性</span></span><br><span class="line">  loadLoader(currentLoaderObject, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line">    <span class="keyword">var</span> fn = currentLoaderObject.pitch; <span class="comment">// pitch函数</span></span><br><span class="line">    currentLoaderObject.pitchExecuted = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 没有pitch函数则递归下一个</span></span><br><span class="line">    <span class="keyword">if</span> (!fn) <span class="keyword">return</span> iteratePitchingLoaders(options, loaderContext, callback);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行pitch函数，同步或者异步的</span></span><br><span class="line">    runSyncOrAsync(fn, loaderContext, [loaderContext.remainingRequest, loaderContext.previousRequest, (currentLoaderObject.data = &#123;&#125;)], <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">      err,</span></span></span><br><span class="line"><span class="function"><span class="params">    </span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 执行完fn后的回调</span></span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line">      <span class="comment">// args表示pitch函数的返回值，如果存在则跳过后续的递归处理流程，直接掉头处理loader的normal函数</span></span><br><span class="line">      <span class="comment">// 在官网文档中也有专门的描述： https://webpack.js.org/api/loaders/#pitching-loader</span></span><br><span class="line">      <span class="keyword">var</span> args = <span class="built_in">Array</span>.prototype.slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">      <span class="keyword">if</span> (args.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        loaderContext.loaderIndex--;</span><br><span class="line">        iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        iteratePitchingLoaders(options, loaderContext, callback);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>初看很容易懵逼，到处都有递归，但仔细配合注释看下来会发现其实就是递归执行每个<code>loader</code>的<code>pitch</code>函数，并在所有<code>pitch</code>执行完后调用<code>processResource</code>。那么问题来了，<code>pitch</code>是个什么鬼？</p>
+<p>参照<a href="https://webpack.js.org/api/loaders/#pitching-loader" target="_blank" rel="noopener">官网的<code>api</code>解释</a>，每个<code>loader</code>除了默认的处理函数外（我们可以称之为<code>normal</code>函数），还可以配置一个<code>pitch</code>函数，这两个函数的关系类似于浏览器的<code>dom</code>事件处理流程：<strong>先从前往后执行<code>pitch</code>，接着处理<code>module</code>自身一些逻辑，再从后往前执行<code>normal</code>，类似于先触发<code>dom</code>事件的捕获阶段，接着执行事件回调，再触发冒泡阶段。</strong></p>
+<p>如果我们给一个<code>module</code>配置了 3 个<code>loader</code>，这三个<code>loader</code>都配置了<code>pitch</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="comment">//...</span></span><br><span class="line">        use: [<span class="string">'a-loader'</span>, <span class="string">'b-loader'</span>, <span class="string">'c-loader'</span>],</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>那么处理这个<code>module</code>的流程如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">|- a-loader <span class="string">`pitch`</span></span><br><span class="line">  |- b-loader <span class="string">`pitch`</span></span><br><span class="line">    |- c-loader <span class="string">`pitch`</span></span><br><span class="line">      |- requested <span class="built_in">module</span> is picked up <span class="keyword">as</span> a dependency</span><br><span class="line">    |- c-loader <span class="string">`normal`</span></span><br><span class="line">  |- b-loader <span class="string">`normal`</span></span><br><span class="line">|- a-loader <span class="string">`normal`</span></span><br></pre></td></tr></table></figure>
+<p>顺序执行<code>normal</code>函数的代码位于<code>iterateNormalLoaders</code>，稍后会描述。</p>
+<p><code>loadLoader</code>函数用于加载一个<code>loader</code>的实现，会尝试使用<code>System.import</code>或<code>require</code>来加载，我不怎么熟悉<code>System.import</code>就不细讲了。<code>loader</code>默认导出函数会赋值给<code>currentLoaderObject</code>的<code>normal</code>属性，<code>pitch</code>函数会赋值给<code>pitch</code>属性。</p>
+<p><code>runSyncOrAsync</code>用于执行一个同步或异步的<code>fn</code>，执行完后触发传入的回调函数。这个函数比较有意思，仔细看看：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fn可能是同步也可能是异步的</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">runSyncOrAsync</span>(<span class="params">fn, context, args, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> isSync = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">var</span> isDone = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">var</span> isError = <span class="literal">false</span>; <span class="comment">// internal error</span></span><br><span class="line">  <span class="keyword">var</span> reportedError = <span class="literal">false</span>;</span><br><span class="line">  <span class="comment">// context.async就是loader函数内部可以执行的this.async</span></span><br><span class="line">  <span class="comment">// 用于告知context，此fn是异步的</span></span><br><span class="line">  context.async = <span class="function"><span class="keyword">function</span> <span class="title">async</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isDone) &#123;</span><br><span class="line">      <span class="keyword">if</span> (reportedError) <span class="keyword">return</span>; <span class="comment">// ignore</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'async(): The callback was already called.'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    isSync = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> innerCallback;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// context.callback就是loader函数内部可以执行的this.callback</span></span><br><span class="line">  <span class="comment">// 用于告知context，异步的fn已经执行完成</span></span><br><span class="line">  <span class="keyword">var</span> innerCallback = (context.callback = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (isDone) &#123;</span><br><span class="line">      <span class="keyword">if</span> (reportedError) <span class="keyword">return</span>; <span class="comment">// ignore</span></span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'callback(): The callback was already called.'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    isDone = <span class="literal">true</span>;</span><br><span class="line">    isSync = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      callback.apply(<span class="literal">null</span>, <span class="built_in">arguments</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">      isError = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">throw</span> e;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> result = (<span class="function"><span class="keyword">function</span> <span class="title">LOADER_EXECUTION</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 调用fn</span></span><br><span class="line">      <span class="keyword">return</span> fn.apply(context, args);</span><br><span class="line">    &#125;)();</span><br><span class="line">    <span class="comment">// 异步loader fn应该在开头执行this.async, 以保证修改isSync为false，从而不会执行此处逻辑</span></span><br><span class="line">    <span class="keyword">if</span> (isSync) &#123;</span><br><span class="line">      isDone = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">if</span> (result === <span class="literal">undefined</span>) <span class="keyword">return</span> callback();</span><br><span class="line">      <span class="keyword">if</span> (result &amp;&amp; <span class="keyword">typeof</span> result === <span class="string">'object'</span> &amp;&amp; <span class="keyword">typeof</span> result.then === <span class="string">'function'</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> result.catch(callback).then(<span class="function"><span class="keyword">function</span>(<span class="params">r</span>) </span>&#123;</span><br><span class="line">          callback(<span class="literal">null</span>, r);</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> callback(<span class="literal">null</span>, result);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isError) <span class="keyword">throw</span> e;</span><br><span class="line">    <span class="keyword">if</span> (isDone) &#123;</span><br><span class="line">      <span class="comment">// loader is already "done", so we cannot use the callback function</span></span><br><span class="line">      <span class="comment">// for better debugging we print the error on the console</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> e === <span class="string">'object'</span> &amp;&amp; e.stack) <span class="built_in">console</span>.error(e.stack);</span><br><span class="line">      <span class="keyword">else</span> <span class="built_in">console</span>.error(e);</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    isDone = <span class="literal">true</span>;</span><br><span class="line">    reportedError = <span class="literal">true</span>;</span><br><span class="line">    callback(e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>往<code>context</code>上添加了<code>async</code>和<code>callback</code>函数，它俩是给异步<code>loader</code>使用的，前者告诉<code>context</code>自己是异步的，后者告诉<code>context</code>自己处理完成了。所以在<code>loader</code>内部可以调用<code>this.async</code>以及<code>this.callback</code>. 同步的<code>loader</code>不需要用到这俩，执行完直接<code>return</code>即可。后面我们会分别举一个例子。</p>
+<p>细心点会发现，<code>loader</code>内部的<code>this</code>是<code>context</code>，也就是最外层的<code>loaderContext</code>，如果想知道<code>context</code>上有哪些成员，可以直接看<code>runLoaders</code>内部的初始化逻辑，或者直接去<a href="https://webpack.js.org/api/loaders/" target="_blank" rel="noopener">webpack 官网 api</a>查阅即可。</p>
+<p>注意：执行完一个<code>pitch</code>后，会判断<code>pitch</code>是否有返回值，如果没有则继续递归执行下一个<code>pitch</code>；如果有返回值，那么<code>pitch</code>的递归就此结束，开始从当前位置从后往前执行<code>normal</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> args = <span class="built_in">Array</span>.prototype.slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line"><span class="keyword">if</span> (args.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">  loaderContext.loaderIndex--; <span class="comment">// 从前一个loader的normal开始执行</span></span><br><span class="line">  iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  iteratePitchingLoaders(options, loaderContext, callback);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个逻辑在官网也有描述，继续用我们上面的例子，如果<code>b-loader</code>的<code>pitch</code>有返回值，那么处理这个<code>module</code>的流程如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">|- a-loader <span class="string">`pitch`</span></span><br><span class="line">  |- b-loader <span class="string">`pitch`</span> returns a <span class="built_in">module</span></span><br><span class="line">|- a-loader <span class="string">`normal`</span></span><br></pre></td></tr></table></figure>
+<p>以上就是<code>pitch</code>的递归过程，下面看看<code>processResource</code>函数，它用于将目标<code>module</code>当做<code>loaderContext</code>的一个依赖。这个函数的逻辑还是比较简单的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 处理模块自身的资源，主要是读取及添加为context的依赖</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processResource</span>(<span class="params">options, loaderContext, callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// set loader index to last loader</span></span><br><span class="line">  loaderContext.loaderIndex = loaderContext.loaders.length - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> resourcePath = loaderContext.resourcePath;</span><br><span class="line">  <span class="keyword">if</span> (resourcePath) &#123;</span><br><span class="line">    <span class="comment">// requested module is picked up as a dependency</span></span><br><span class="line">    loaderContext.addDependency(resourcePath);</span><br><span class="line">    <span class="comment">// 读取module内容</span></span><br><span class="line">    options.readResource(resourcePath, <span class="function"><span class="keyword">function</span>(<span class="params">err, buffer</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line">      options.resourceBuffer = buffer;</span><br><span class="line">      <span class="comment">// 迭代loader的normal函数</span></span><br><span class="line">      iterateNormalLoaders(options, loaderContext, [buffer], callback);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    iterateNormalLoaders(options, loaderContext, [<span class="literal">null</span>], callback);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> fileDependencies = [];</span><br><span class="line"></span><br><span class="line">loaderContext.addDependency = <span class="function"><span class="keyword">function</span> <span class="title">addDependency</span>(<span class="params">file</span>) </span>&#123;</span><br><span class="line">  fileDependencies.push(file);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="iterateNormalLoaders"><a href="#iterateNormalLoaders" class="headerlink" title="iterateNormalLoaders"></a>iterateNormalLoaders</h2><p>递归迭代<code>normal</code>函数，和<code>pitch</code>的流程大同小异，需要注意的是顺序是反过来的，从后往前。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 与iteratePitchingLoaders类似，只不过是从后往前执行每个loader的normal函数</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iterateNormalLoaders</span>(<span class="params">options, loaderContext, args, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (loaderContext.loaderIndex &lt; <span class="number">0</span>) <span class="keyword">return</span> callback(<span class="literal">null</span>, args);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// iterate</span></span><br><span class="line">  <span class="keyword">if</span> (currentLoaderObject.normalExecuted) &#123;</span><br><span class="line">    loaderContext.loaderIndex--;</span><br><span class="line">    <span class="keyword">return</span> iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 在loadLoader中加载loader的实现，</span></span><br><span class="line">  <span class="comment">// loader默认导出函数赋值给normal属性，pitch函数赋值给pitch属性</span></span><br><span class="line">  <span class="keyword">var</span> fn = currentLoaderObject.normal;</span><br><span class="line">  currentLoaderObject.normalExecuted = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">if</span> (!fn) &#123;</span><br><span class="line">    <span class="keyword">return</span> iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 根据raw来转换args， https://webpack.js.org/api/loaders/#-raw-loader</span></span><br><span class="line">  convertArgs(args, currentLoaderObject.raw);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// fn: function ( source, inputSourceMap ) &#123; … &#125;</span></span><br><span class="line">  runSyncOrAsync(fn, loaderContext, args, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 将前一个loader的处理结果传递给下一个loader</span></span><br><span class="line">    <span class="keyword">var</span> args = <span class="built_in">Array</span>.prototype.slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">    iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>convertArgs</code>用于根据<code>raw</code>来转换<code>args</code>，<code>raw</code>属性在<a href="https://webpack.js.org/api/loaders/#-raw-loader" target="_blank" rel="noopener">官网有专门描述</a>：</p>
+<blockquote>
+<p>By default, the resource file is converted to a UTF-8 string and passed to the loader.By setting the raw flag, the loader will receive the raw Buffer.Every loader is allowed to deliver its result as String or as Buffer.</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">convertArgs</span>(<span class="params">args, raw</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!raw &amp;&amp; Buffer.isBuffer(args[<span class="number">0</span>])) args[<span class="number">0</span>] = utf8BufferToString(args[<span class="number">0</span>]);</span><br><span class="line">  <span class="keyword">else</span> <span class="keyword">if</span> (raw &amp;&amp; <span class="keyword">typeof</span> args[<span class="number">0</span>] === <span class="string">'string'</span>) args[<span class="number">0</span>] = <span class="keyword">new</span> Buffer(args[<span class="number">0</span>], <span class="string">'utf-8'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>例如<code>file-loader</code>就会将<code>raw</code>设置为<code>true</code>，具体原因<a href="https://github.com/lihongxun945/diving-into-webpack/blob/master/4-file-loader-and-url-loader.md" target="_blank" rel="noopener">参考这里</a></p>
+<p>以上就是整个<code>loader-runner</code>库的核心逻辑了，接下来举几个例子。</p>
+<h1 id="同步的-style-loader"><a href="#同步的-style-loader" class="headerlink" title="同步的 style-loader"></a>同步的 style-loader</h1><p>它的逻辑从整体上看比较简单，就是做了一些同步的处理并在最后<code>return</code>了一个<code>js</code>字符串。注意他只有<code>pitch</code>函数而没有<code>normal</code>函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports.pitch = <span class="function"><span class="keyword">function</span>(<span class="params">request</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">//  一些数组元素...</span></span><br><span class="line">  ].join(<span class="string">'\n'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>为啥<code>style-loader</code>要有<code>pitch</code>呢？ 参考<a href="https://github.com/lihongxun945/diving-into-webpack/blob/master/3-style-loader-and-css-loader.md" target="_blank" rel="noopener"><code>这篇博客</code></a>的说法，是为了避免受到<code>css-loader</code>的影响：</p>
+<blockquote>
+<p>因为我们要把 CSS 文件的内容插入 DOM，所以我们要获取 CSS 文件的样式。如果按照默认的从右往左的顺序，我们使用 css-loader ，它返回的结果是一段 JS 字符串，这样我们就取不到 CSS 样式了。为了获取 CSS 样式，我们会在 style-loader 中直接通过 require 来获取，这样返回的 JS 就不是字符串而是一段代码了。也就是我们是先执行 style-loader，在它里面再执行 css-loader。</p>
+</blockquote>
+<h1 id="异步的-less-loader"><a href="#异步的-less-loader" class="headerlink" title="异步的 less-loader"></a>异步的 less-loader</h1><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 调用less第三方库来处理less代码，返回值为promise</span></span><br><span class="line"><span class="keyword">var</span> render = (<span class="number">0</span>, _pify2.default)(_less2.default.render.bind(_less2.default));</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">lessLoader</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> loaderContext = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">var</span> options = (<span class="number">0</span>, _getOptions2.default)(loaderContext);</span><br><span class="line">  <span class="comment">// loaderContext.async()告知webpack当前loader是异步的</span></span><br><span class="line">  <span class="keyword">var</span> done = loaderContext.async();</span><br><span class="line">  <span class="keyword">var</span> isSync = <span class="keyword">typeof</span> done !== <span class="string">'function'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isSync) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Synchronous compilation is not supported anymore. See https://github.com/webpack-contrib/less-loader/issues/84'</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 调用_processResult2</span></span><br><span class="line">  (<span class="number">0</span>, _processResult2.default)(loaderContext, render(source, options));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">exports.default = lessLoader;</span><br></pre></td></tr></table></figure>
+<p><code>less-loader</code>的核心是利用<code>less</code>这个库来解析<code>less</code>代码，<code>less</code>会返回一个<code>Promise</code>，所以<code>less-loader</code>是异步的。</p>
+<p>我们可以看到在开头就调用了<code>this.async()</code>方法，正好符合我们的预期，接下来如果猜的没错会在<code>_processResult2</code>里调用<code>this.callback</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processResult</span>(<span class="params">loaderContext, resultPromise</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> callback = loaderContext.callback;</span><br><span class="line"></span><br><span class="line">  resultPromise</span><br><span class="line">    .then(</span><br><span class="line">      <span class="function"><span class="keyword">function</span>(<span class="params">_ref</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> css = _ref.css,</span><br><span class="line">          map = _ref.map,</span><br><span class="line">          imports = _ref.imports;</span><br><span class="line"></span><br><span class="line">        imports.forEach(loaderContext.addDependency, loaderContext);</span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">          <span class="comment">// Removing the sourceMappingURL comment.</span></span><br><span class="line">          <span class="comment">// See removeSourceMappingUrl.js for the reasoning behind this.</span></span><br><span class="line">          css: removeSourceMappingUrl(css),</span><br><span class="line">          map: <span class="keyword">typeof</span> map === <span class="string">'string'</span> ? <span class="built_in">JSON</span>.parse(map) : map,</span><br><span class="line">        &#125;;</span><br><span class="line">      &#125;,</span><br><span class="line">      <span class="function"><span class="keyword">function</span>(<span class="params">lessError</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> formatLessError(lessError);</span><br><span class="line">      &#125;,</span><br><span class="line">    )</span><br><span class="line">    .then(<span class="function"><span class="keyword">function</span>(<span class="params">_ref2</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">var</span> css = _ref2.css,</span><br><span class="line">        map = _ref2.map;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 调用loaderContext.callback表示当前loader的处理已经完成，转交给下一个loader处理</span></span><br><span class="line">      callback(<span class="literal">null</span>, css, map);</span><br><span class="line">    &#125;, callback);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>bingo!!</p>
+<p>实际上官网也推荐将<code>loader</code>变成异步的：</p>
+<blockquote>
+<p>since expensive synchronous computations are a bad idea in a single-threaded environment like Node.js, we advise to make your loader asynchronously if possible. Synchronous loaders are ok if the amount of computation is trivial.</p>
+</blockquote>
+<h1 id="bundle-loader"><a href="#bundle-loader" class="headerlink" title="bundle-loader"></a>bundle-loader</h1><p>最后再看这个使用<code>pitch</code>的例子<a href="https://github.com/webpack-contrib/bundle-loader" target="_blank" rel="noopener"><code>bundle-loader</code></a>，也是官网推荐的<code>loader</code>。它用于分离代码和延迟加载生成的<code>bundle</code>。</p>
+<p>原理: 正常情况下假如我们在<code>entry</code>中<code>require</code>了一个普通<code>js</code>文件，这个目标文件是和<code>entry</code>一起打包到主<code>chunk</code>了，那么在执行时就是同步加载。 使用<code>bundle-loader</code>我们的代码不用做任何修改，就可以让目标<code>js</code>文件分离到独立<code>chunk</code>中，执行时通过模拟<code>jsonp</code>的方式异步加载这个<code>js</code>。</p>
+<p>看看<code>loader</code>的源码实现：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"><span class="built_in">module</span>.exports.pitch = <span class="function"><span class="keyword">function</span>(<span class="params">remainingRequest</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">var</span> result;</span><br><span class="line">  <span class="keyword">if</span> (query.lazy) &#123;</span><br><span class="line">    result = [</span><br><span class="line">      <span class="string">'module.exports = function(cb) &#123;\n'</span>,</span><br><span class="line">      <span class="string">'	require.ensure([], function(require) &#123;\n'</span>,</span><br><span class="line">      <span class="string">'		cb(require('</span>,</span><br><span class="line">      loaderUtils.stringifyRequest(<span class="keyword">this</span>, <span class="string">'!!'</span> + remainingRequest),</span><br><span class="line">      <span class="string">'));\n'</span>,</span><br><span class="line">      <span class="string">'	&#125;'</span> + chunkNameParam + <span class="string">');\n'</span>,</span><br><span class="line">      <span class="string">'&#125;'</span>,</span><br><span class="line">    ];</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    result = [</span><br><span class="line">      <span class="string">'var cbs = [], \n'</span>,</span><br><span class="line">      <span class="string">'	data;\n'</span>,</span><br><span class="line">      <span class="string">'module.exports = function(cb) &#123;\n'</span>,</span><br><span class="line">      <span class="string">'	if(cbs) cbs.push(cb);\n'</span>,</span><br><span class="line">      <span class="string">'	else cb(data);\n'</span>,</span><br><span class="line">      <span class="string">'&#125;\n'</span>,</span><br><span class="line">      <span class="string">'require.ensure([], function(require) &#123;\n'</span>,</span><br><span class="line">      <span class="string">'	data = require('</span>,</span><br><span class="line">      loaderUtils.stringifyRequest(<span class="keyword">this</span>, <span class="string">'!!'</span> + remainingRequest), <span class="comment">// 此处require真正的目标module</span></span><br><span class="line">      <span class="string">');\n'</span>,</span><br><span class="line">      <span class="string">'	var callbacks = cbs;\n'</span>,</span><br><span class="line">      <span class="string">'	cbs = null;\n'</span>,</span><br><span class="line">      <span class="string">'	for(var i = 0, l = callbacks.length; i &lt; l; i++) &#123;\n'</span>,</span><br><span class="line">      <span class="string">'		callbacks[i](data);\n'</span>,</span><br><span class="line">      <span class="string">'	&#125;\n'</span>,</span><br><span class="line">      <span class="string">'&#125;'</span> + chunkNameParam + <span class="string">');'</span>,</span><br><span class="line">    ];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result.join(<span class="string">''</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以看到只有<code>pitch</code>函数，为保证目标<code>module</code>分离到独立<code>chunk</code>，使用了<a href="https://webpack.docschina.org/api/module-methods#require-ensure" target="_blank" rel="noopener"><code>require.ensure</code></a>这种动态导入。另外将整个<code>module</code>替换成了自己的实现，<code>module</code>真正的加载时机在<code>require.ensure</code>的回调中。</p>
+<p>为了加深理解，我参照官网利用一个小<code>demo</code>测试：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// webpack entry: index.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> bundle <span class="keyword">from</span> <span class="string">'./util.bundle.js'</span>;</span><br><span class="line">bundle(<span class="function"><span class="params">file</span> =&gt;</span> <span class="built_in">console</span>.log(file));</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// util.bundle.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">bundle</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'bundle'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>打包后会生成两个文件，一个主<code>chunk</code>文件<code>main.xxx.js</code>，另一个是分离出去的<code>bundle chunk</code>文件<code>0.xxx.js</code>。在分析打包代码前，如果对<code>webpack</code>打包产物不熟悉的，可以参考我之前的<a href="https://hellogithub2014.github.io/2019/01/02/webpack-bundle-code-analysis/#more">博客</a>，这里我只分析关键的部分。</p>
+<p><code>index.js</code>这个<code>module</code>对于<code>util.bundle</code>的引入方式没有什么值得注意的,精简如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> _util_bundle_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(<span class="string">'./util.bundle.js'</span>);</span><br><span class="line"><span class="keyword">var</span> _util_bundle_js__WEBPACK_IMPORTED_MODULE_0___default = __webpack_require__.n(_util_bundle_js__WEBPACK_IMPORTED_MODULE_0__);</span><br><span class="line"></span><br><span class="line">_util_bundle_js__WEBPACK_IMPORTED_MODULE_0___default()(<span class="function"><span class="keyword">function</span>(<span class="params">file</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">console</span>.log(file);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>变化的是<code>util.bundle.js</code>这个<code>module</code>，它被替换成了<code>bundle-loader</code>的返回值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cbs = [],</span><br><span class="line">  data;</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (cbs) cbs.push(cb);</span><br><span class="line">  <span class="keyword">else</span> cb(data);</span><br><span class="line">&#125;;</span><br><span class="line">__webpack_require__</span><br><span class="line">  .e(<span class="comment">/*! require.ensure */</span> <span class="number">0</span>) <span class="comment">// jsonp加载分离的chunk</span></span><br><span class="line">  .then(</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">require</span>) </span>&#123;</span><br><span class="line">      data = __webpack_require__(</span><br><span class="line">        <span class="comment">/*! !../node_modules/babel-loader/lib??ref--5!./util.bundle.js */</span> <span class="string">'./node_modules/babel-loader/lib/index.js?!./util.bundle.js'</span>,</span><br><span class="line">      );</span><br><span class="line">      <span class="keyword">var</span> callbacks = cbs;</span><br><span class="line">      cbs = <span class="literal">null</span>;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = callbacks.length; i &lt; l; i++) &#123;</span><br><span class="line">        callbacks[i](data);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;.bind(<span class="literal">null</span>, __webpack_require__),</span><br><span class="line">  )</span><br><span class="line">  .catch(__webpack_require__.oe);</span><br></pre></td></tr></table></figure>
+<p>可以看到真正的<code>util.bundle.js</code>被替换为使用<code>__webpack_require__.e</code>加载，也就是模拟的<code>jsonp</code>。我们在<code>index.js</code>中传入的回调被塞到<code>cbs</code>数组，直到真正的<code>bundle</code>被加载完才能执行<code>__webpack_require__</code>，之后会将<code>bundle</code>的导出内容依次传给<code>cbs</code>每个元素，整个逻辑还是比较清晰的。</p>
+<h1 id="自定义-loader"><a href="#自定义-loader" class="headerlink" title="自定义 loader"></a>自定义 loader</h1><p>看了上面这些，我们也可以自己尝试写一个最简单的<code>loader</code>试一试，作为一个探索我们就针对后缀名为<code>ttt</code>（随便想的 😄）的文件吧。</p>
+<p>我们的自定义<code>loader</code>什么事也不做，就只在文件内容前加上一串标记，<code>loader</code>代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// my-loader.js</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">`</span></span><br><span class="line"><span class="string">    export default "Convert by my custom loader:  <span class="subst">$&#123;source&#125;</span>"</span></span><br><span class="line"><span class="string">  `</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注意<code>loader</code>的返回值需要是合法的<code>js</code>代码。然后修改<code>webpack config</code>，使得<code>ttt</code>后缀的文件使用<code>my-loader</code>, 使用<code>resolveLoader</code>配置来修改<code>loader</code>的指向:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.ttt$/</span>,</span><br><span class="line">        use: <span class="string">'my-loader'</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">  resolveLoader: &#123;</span><br><span class="line">    alias: &#123;</span><br><span class="line">      <span class="string">'my-loader'</span>: path.resolve(__dirname, <span class="string">'./my-loader.js'</span>),</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下来自定义一个<code>strange.ttt</code>的文件，然后在入口文件<code>index.js</code>中导入它：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// strange.ttt</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">this</span> is strange ttt</span><br></pre></td></tr></table></figure>
+<p>细心的人会发现<code>strange.ttt</code>的内容并不是字符串~~</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// index.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> strange <span class="keyword">from</span> <span class="string">'./strange.ttt'</span>;</span><br><span class="line"><span class="built_in">console</span>.log(strange);</span><br></pre></td></tr></table></figure>
+<p>运行<code>webpack</code>可以看到打包产物的关键代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main.js</span></span><br><span class="line"></span><br><span class="line">(<span class="function"><span class="keyword">function</span>(<span class="params">modules</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 模板代码略 ...</span></span><br><span class="line">&#125;)(&#123;</span><br><span class="line">  <span class="string">'./index.js'</span>: <span class="function"><span class="keyword">function</span>(<span class="params">module, __webpack_exports__, __webpack_require__</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> _strange_ttt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(<span class="comment">/*! ./strange.ttt */</span> <span class="string">'.strange.ttt'</span>);</span><br><span class="line">    <span class="built_in">console</span>.log(_strange_ttt__WEBPACK_IMPORTED_MODULE_0__[<span class="comment">/* default */</span> <span class="string">'a'</span>]);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="string">'./strange.ttt'</span>: <span class="function"><span class="keyword">function</span>(<span class="params">module, __webpack_exports__, __webpack_require__</span>) </span>&#123;</span><br><span class="line">    __webpack_exports__[<span class="string">'a'</span>] = <span class="string">'Convert by my custom loader:  this is strange ttt'</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>很明显<code>strange.ttt</code>的内容被转化为了<code>js</code>代码并包含了<code>my-loader</code>添加的前缀，如果我们将<code>main.js</code>跑起来，控制台就会打印出<code>Convert by my custom loader: this is strange ttt</code>。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/webpack/" rel="tag"># webpack</a>
+          
+            <a href="/tags/loader/" rel="tag"># loader</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/02/webpack-bundle-code-analysis/" rel="next" title="webpack打包产物代码分析">
+                <i class="fa fa-chevron-left"></i> webpack打包产物代码分析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#入口"><span class="nav-number">1.</span> <span class="nav-text">入口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#loader-runner"><span class="nav-number">2.</span> <span class="nav-text">loader-runner</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#iteratePitchingLoaders"><span class="nav-number">2.1.</span> <span class="nav-text">iteratePitchingLoaders</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#iterateNormalLoaders"><span class="nav-number">2.2.</span> <span class="nav-text">iterateNormalLoaders</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#同步的-style-loader"><span class="nav-number">3.</span> <span class="nav-text">同步的 style-loader</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#异步的-less-loader"><span class="nav-number">4.</span> <span class="nav-text">异步的 less-loader</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bundle-loader"><span class="nav-number">5.</span> <span class="nav-text">bundle-loader</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义-loader"><span class="nav-number">6.</span> <span class="nav-text">自定义 loader</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

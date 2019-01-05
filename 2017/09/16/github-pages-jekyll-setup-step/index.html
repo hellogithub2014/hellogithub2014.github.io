@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="TOOL,Jekyll,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前提要求首先需要有一系列的前提工具要求 1. GIT用来在本地创建仓库，并与远程仓库连接。具体步骤参见 github pages 官网入门教程 2. Ruby需要2.1以上版本，在 mac 上一般会预装ruby,但是可能版本不够高，此时推荐使用RVM来更新ruby的版本。具体步骤也可以参见简书上的一个 教程. 提醒: 使用RVM安装ruby时还需要提前安装好xcode，这个直接在 App Stor">
+<meta name="keywords" content="TOOL,Jekyll">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MAC 搭建GITHUB PAGES + Jekyll 步骤">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/09/16/github-pages-jekyll-setup-step/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前提要求首先需要有一系列的前提工具要求 1. GIT用来在本地创建仓库，并与远程仓库连接。具体步骤参见 github pages 官网入门教程 2. Ruby需要2.1以上版本，在 mac 上一般会预装ruby,但是可能版本不够高，此时推荐使用RVM来更新ruby的版本。具体步骤也可以参见简书上的一个 教程. 提醒: 使用RVM安装ruby时还需要提前安装好xcode，这个直接在 App Stor">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.475Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MAC 搭建GITHUB PAGES + Jekyll 步骤">
+<meta name="twitter:description" content="前提要求首先需要有一系列的前提工具要求 1. GIT用来在本地创建仓库，并与远程仓库连接。具体步骤参见 github pages 官网入门教程 2. Ruby需要2.1以上版本，在 mac 上一般会预装ruby,但是可能版本不够高，此时推荐使用RVM来更新ruby的版本。具体步骤也可以参见简书上的一个 教程. 提醒: 使用RVM安装ruby时还需要提前安装好xcode，这个直接在 App Stor">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/09/16/github-pages-jekyll-setup-step/">
+
+
+
+
+
+  <title>MAC 搭建GITHUB PAGES + Jekyll 步骤 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/09/16/github-pages-jekyll-setup-step/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MAC 搭建GITHUB PAGES + Jekyll 步骤</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-16T12:55:00+08:00">
+                2017-09-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前提要求"><a href="#前提要求" class="headerlink" title="前提要求"></a>前提要求</h1><p>首先需要有一系列的前提工具要求</p>
+<h4 id="1-GIT"><a href="#1-GIT" class="headerlink" title="1. GIT"></a>1. GIT</h4><p>用来在本地创建仓库，并与远程仓库连接。具体步骤参见 <a href="https://pages.github.com/" target="_blank" rel="noopener">github pages 官网入门教程</a></p>
+<h4 id="2-Ruby"><a href="#2-Ruby" class="headerlink" title="2. Ruby"></a>2. Ruby</h4><p>需要<strong>2.1</strong>以上版本，在 mac 上一般会预装<code>ruby</code>,但是可能版本不够高，此时推荐使用<code>RVM</code>来更新<code>ruby</code>的版本。具体步骤也可以参见简书上的一个 <a href="http://www.jianshu.com/p/d99b5662d8a0" target="_blank" rel="noopener">教程</a>.</p>
+<p><strong>提醒</strong>: 使用<code>RVM</code>安装<code>ruby</code>时还需要提前安装好<code>xcode</code>，这个直接在 App Store 上傻瓜安装就好。</p>
+<h4 id="3-Bundle"><a href="#3-Bundle" class="headerlink" title="3. Bundle"></a>3. Bundle</h4><blockquote>
+<p>Using Bundler to install and run Jekyll. Bundler manages Ruby gem dependencies, reduces Jekyll build errors, and prevents environment-related bugs.</p>
+</blockquote>
+<p>运行以下代码</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gem install bundler</span><br></pre></td></tr></table></figure>
+<h4 id="4-Jekyll"><a href="#4-Jekyll" class="headerlink" title="4. Jekyll"></a>4. Jekyll</h4><p>这个可以不用提前安装，在接下来的步骤中会说明如何安装。</p>
+<h1 id="搭建博客站点的远程仓库"><a href="#搭建博客站点的远程仓库" class="headerlink" title="搭建博客站点的远程仓库"></a>搭建博客站点的远程仓库</h1><p>仍然是按照 github pages 的<a href="https://pages.github.com/" target="_blank" rel="noopener">官网</a>教程来就行。</p>
+<h1 id="搭建本地-Jekyll-站点仓库"><a href="#搭建本地-Jekyll-站点仓库" class="headerlink" title="搭建本地 Jekyll 站点仓库"></a>搭建本地 Jekyll 站点仓库</h1><h4 id="1-Clone-远程-github-博客仓库到本地"><a href="#1-Clone-远程-github-博客仓库到本地" class="headerlink" title="1. Clone 远程 github 博客仓库到本地"></a>1. Clone 远程 github 博客仓库到本地</h4><p>在此不赘述，使用<code>git clone</code>命令即可</p>
+<h4 id="2-安装-Jekyll"><a href="#2-安装-Jekyll" class="headerlink" title="2. 安装 Jekyll"></a>2. 安装 Jekyll</h4><p>按照 github pages 的<a href="https://help.github.com/articles/setting-up-your-github-pages-site-locally-with-jekyll/" target="_blank" rel="noopener">帮助文档</a>里面的<strong>Step 2</strong>,一切顺利，就可以安装好 Jekyll.</p>
+<h4 id="3-寻找模板"><a href="#3-寻找模板" class="headerlink" title="3. 寻找模板"></a>3. 寻找模板</h4><p>我们最终的博客站点肯定是希望很漂亮，如果按照帮助文档的建议一步步往下，是没有那么漂亮的。所以推荐直接到<code>Jekyll</code>的一个<a href="http://jekyllthemes.org/" target="_blank" rel="noopener">主题汇集站点</a>，寻找自己喜欢的自己，然后<code>fork</code>到自己的 github 中。最后再将文件都拷贝到自己本地的 Jekyll 站点仓库里。</p>
+<h4 id="4-本地预览博客"><a href="#4-本地预览博客" class="headerlink" title="4. 本地预览博客"></a>4. 本地预览博客</h4><p>如果一切顺利，在本地 Jekyll 仓库根目录运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bundle exec jekyll serve</span><br></pre></td></tr></table></figure>
+<p>它会启动一个本地的服务器，部署我们的博客站点，在我们修改了仓库中的文件时它还会自动重新构建，可以说是比较方便的了。<br>然后在浏览器中打开<code>localhost:4000</code>，就可以预览我们的站点长什么样了~~~</p>
+<h1 id="上传本地修改到远程仓库"><a href="#上传本地修改到远程仓库" class="headerlink" title="上传本地修改到远程仓库"></a>上传本地修改到远程仓库</h1><p>没什么好说的，就是常用的<code>git push</code>。不过有一些要注意的：</p>
+<p>有些你<code>fork</code>下来的模板，在本地跑的时候，所有的资源都可能会有一个<strong><code>baseUrl</code></strong>,这个在项目根目录的<code>_config.yml</code>中可以发现相应配置：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">baseurl： &apos;xxx&apos; # the subpath of your site, e.g. /blog</span><br></pre></td></tr></table></figure>
+<p>如果不修改 baseurl，你会发现 push 上去后，真正打开你的线上博客站点时，所有的样式全部丢失，功能也不正常了。<br>这是因为所有的资源都是相对于 baseurl 的，而线上找不到那些资源。解决办法就是在<code>_config.yml</code>中将<code>baseurl</code>设置为空字符串即可。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">baseurl： &apos;&apos;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/TOOL/" rel="tag"># TOOL</a>
+          
+            <a href="/tags/Jekyll/" rel="tag"># Jekyll</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/09/17/how-to-customer-style-of-post/" rel="prev" title="如何定制Jekyll文章中的样式">
+                如何定制Jekyll文章中的样式 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前提要求"><span class="nav-number">1.</span> <span class="nav-text">前提要求</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-GIT"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">1. GIT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Ruby"><span class="nav-number">1.0.0.2.</span> <span class="nav-text">2. Ruby</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-Bundle"><span class="nav-number">1.0.0.3.</span> <span class="nav-text">3. Bundle</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-Jekyll"><span class="nav-number">1.0.0.4.</span> <span class="nav-text">4. Jekyll</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#搭建博客站点的远程仓库"><span class="nav-number">2.</span> <span class="nav-text">搭建博客站点的远程仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#搭建本地-Jekyll-站点仓库"><span class="nav-number">3.</span> <span class="nav-text">搭建本地 Jekyll 站点仓库</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Clone-远程-github-博客仓库到本地"><span class="nav-number">3.0.0.1.</span> <span class="nav-text">1. Clone 远程 github 博客仓库到本地</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-安装-Jekyll"><span class="nav-number">3.0.0.2.</span> <span class="nav-text">2. 安装 Jekyll</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-寻找模板"><span class="nav-number">3.0.0.3.</span> <span class="nav-text">3. 寻找模板</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-本地预览博客"><span class="nav-number">3.0.0.4.</span> <span class="nav-text">4. 本地预览博客</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#上传本地修改到远程仓库"><span class="nav-number">4.</span> <span class="nav-text">上传本地修改到远程仓库</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

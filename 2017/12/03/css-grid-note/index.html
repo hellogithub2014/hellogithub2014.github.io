@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CSS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="浏览器支持率在 Can I Use中搜索结果：  一些术语网格线、行、列、单元格 在上图中，各数字表示的是：  网格线 列 行 单元格  间隙gutters 很多时候行与行、列与列之间并不是紧挨着的，中间会留有一些间隔。在上图中的加深区域就是这些间隙。 网格区域 表示由任意4条网格线围起来的区域，内部可以包含任意数量的单元格。 CSS GRID属性以下均用这段html结构作为示意 12345678">
+<meta name="keywords" content="CSS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="css grid网格布局学习笔记">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/12/03/css-grid-note/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="浏览器支持率在 Can I Use中搜索结果：  一些术语网格线、行、列、单元格 在上图中，各数字表示的是：  网格线 列 行 单元格  间隙gutters 很多时候行与行、列与列之间并不是紧挨着的，中间会留有一些间隔。在上图中的加深区域就是这些间隙。 网格区域 表示由任意4条网格线围起来的区域，内部可以包含任意数量的单元格。 CSS GRID属性以下均用这段html结构作为示意 12345678">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/css-grid-layout/browser-support.png">
+<meta property="og:image" content="https://cms-assets.tutsplus.com/uploads/users/30/posts/27238/image/grid-terms-lines-rows-columns-cells-.svg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/css-grid-layout/gutters.png">
+<meta property="og:image" content="https://cms-assets.tutsplus.com/uploads/users/30/posts/27238/image/grid-terms-area.svg">
+<meta property="og:image" content="https://cms-assets.tutsplus.com/uploads/users/30/posts/27264/image/grid-lines.svg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/css-grid-layout/sparse.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/css-grid-layout/auto-flow-column.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/css-grid-layout/dense.png">
+<meta property="og:image" content="http://img.mukewang.com/53b0f9c000018b9305540282.jpg">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.483Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="css grid网格布局学习笔记">
+<meta name="twitter:description" content="浏览器支持率在 Can I Use中搜索结果：  一些术语网格线、行、列、单元格 在上图中，各数字表示的是：  网格线 列 行 单元格  间隙gutters 很多时候行与行、列与列之间并不是紧挨着的，中间会留有一些间隔。在上图中的加深区域就是这些间隙。 网格区域 表示由任意4条网格线围起来的区域，内部可以包含任意数量的单元格。 CSS GRID属性以下均用这段html结构作为示意 12345678">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/css-grid-layout/browser-support.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/12/03/css-grid-note/">
+
+
+
+
+
+  <title>css grid网格布局学习笔记 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/12/03/css-grid-note/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">css grid网格布局学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-03T11:25:00+08:00">
+                2017-12-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="浏览器支持率"><a href="#浏览器支持率" class="headerlink" title="浏览器支持率"></a>浏览器支持率</h1><p>在 <code>Can I Use</code>中搜索结果：</p>
+<p><img src="/images/css-grid-layout/browser-support.png" alt=""></p>
+<h1 id="一些术语"><a href="#一些术语" class="headerlink" title="一些术语"></a>一些术语</h1><h2 id="网格线、行、列、单元格"><a href="#网格线、行、列、单元格" class="headerlink" title="网格线、行、列、单元格"></a>网格线、行、列、单元格</h2><p><img src="https://cms-assets.tutsplus.com/uploads/users/30/posts/27238/image/grid-terms-lines-rows-columns-cells-.svg" alt=""></p>
+<p>在上图中，各数字表示的是：</p>
+<ol>
+<li>网格线</li>
+<li>列</li>
+<li>行</li>
+<li>单元格</li>
+</ol>
+<h2 id="间隙gutters"><a href="#间隙gutters" class="headerlink" title="间隙gutters"></a>间隙<code>gutters</code></h2><p><img src="/images/css-grid-layout/gutters.png" alt=""></p>
+<p>很多时候行与行、列与列之间并不是紧挨着的，中间会留有一些间隔。在上图中的加深区域就是这些间隙。</p>
+<h2 id="网格区域"><a href="#网格区域" class="headerlink" title="网格区域"></a>网格区域</h2><p><img src="https://cms-assets.tutsplus.com/uploads/users/30/posts/27238/image/grid-terms-area.svg" alt=""></p>
+<p>表示由任意4条网格线围起来的区域，内部可以包含任意数量的单元格。</p>
+<h1 id="CSS-GRID属性"><a href="#CSS-GRID属性" class="headerlink" title="CSS GRID属性"></a>CSS GRID属性</h1><p>以下均用这段<code>html</code>结构作为示意</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">section</span> <span class="attr">class</span>=<span class="string">"grid-1"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-1"</span>&gt;</span>1<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-2"</span>&gt;</span>2<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-3"</span>&gt;</span>3<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-4"</span>&gt;</span>4<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-5"</span>&gt;</span>5<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-6"</span>&gt;</span>6<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-7"</span>&gt;</span>7<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-8"</span>&gt;</span>8<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-9"</span>&gt;</span>9<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="display-grid"><a href="#display-grid" class="headerlink" title="display: grid;"></a><code>display: grid;</code></h3><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>表明是网格布局。</p>
+<h3 id="grid-template-columns、grid-template-rows"><a href="#grid-template-columns、grid-template-rows" class="headerlink" title="grid-template-columns、grid-template-rows"></a><code>grid-template-columns</code>、<code>grid-template-rows</code></h3><p>用于定义有多少行、多少列。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">  <span class="attribute">grid-template-columns</span>: <span class="number">150px</span> <span class="number">20px</span> <span class="number">150px</span> <span class="number">20px</span> <span class="number">150px</span>;</span><br><span class="line">  <span class="attribute">grid-template-rows</span>: auto <span class="number">20px</span> auto <span class="number">20px</span> auto;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第一列宽度<code>150px</code>,第二列宽度<code>20px</code>，以此类推，每一行也是类似。<code>auto</code>值表示行的高度由内容决定。</p>
+<p>这里的值也可以用百分比表示:</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grid-template-columns: 33.33% 33.33% 33.33%; // 加起来需要为100%</span><br><span class="line"><span class="selector-tag">grid-template-rows</span>: <span class="selector-tag">auto</span> <span class="selector-tag">auto</span> <span class="selector-tag">auto</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="grid-column、grid-row"><a href="#grid-column、grid-row" class="headerlink" title="grid-column、grid-row"></a><code>grid-column</code>、<code>grid-row</code></h3><p>定义单元格的位置</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item-2</span> &#123;</span><br><span class="line">  <span class="attribute">grid-column</span>: <span class="number">3</span>;</span><br><span class="line">  <span class="attribute">grid-row</span>: <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>表示此单元格处于第一行第三列。</p>
+<h3 id="repeat"><a href="#repeat" class="headerlink" title="repeat()"></a><code>repeat()</code></h3><p>用于消除重复劳动的便利函数：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grid-template-columns: 33.33% 33.33% 33.33%; // 加起来需要为100%</span><br></pre></td></tr></table></figure>
+<p>可以改写为</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">grid-template-columns</span>: <span class="selector-tag">repeat</span>(3, 33<span class="selector-class">.33</span>%);</span><br></pre></td></tr></table></figure>
+<h3 id="grid-column-gap、grid-row-gap、grid-gap"><a href="#grid-column-gap、grid-row-gap、grid-gap" class="headerlink" title="grid-column-gap、grid-row-gap、grid-gap"></a><code>grid-column-gap</code>、<code>grid-row-gap</code>、<code>grid-gap</code></h3><p>定义间隙的属性，如</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grid-gap: 20px; // 简写属性</span><br></pre></td></tr></table></figure>
+<p>表示行和列的间隙都是<code>20px</code>；</p>
+<h3 id="fr"><a href="#fr" class="headerlink" title="fr"></a><code>fr</code></h3><p>表示分数，用于定义每一行或列占总数的多少。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">grid-template-columns: 1fr 1fr 1fr; //表示每一列占`1/3`</span><br><span class="line"></span><br><span class="line">// 或者使用repeat函数</span><br><span class="line">// grid-template-columns: repeat(3, 1fr);</span><br></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grid-template-columns: 2fr 1fr 1fr; // 第一列占1/2，其余各占1/4</span><br></pre></td></tr></table></figure>
+<p>可以和其他单位混合使用</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">grid-template-columns</span>: 300<span class="selector-tag">px</span> 1<span class="selector-tag">fr</span> 3<span class="selector-tag">fr</span> 20%;</span><br></pre></td></tr></table></figure>
+<p>第一列固定300px； 最后一列占总宽度的20%，剩下的宽度中，先减去3条间隙的总宽度，然后第二列占剩下的1/4，第三列占3/4.</p>
+<h1 id="定义网格区域"><a href="#定义网格区域" class="headerlink" title="定义网格区域"></a>定义网格区域</h1><p>网格布局中每一个并不是只能占据一个单元格，其实可以把它定义成任意的<code>网格区域</code>。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item-1</span> &#123;</span><br><span class="line">  grid-column: 1 / 3; // 占据第一、二列</span><br><span class="line">  // 或者</span><br><span class="line">  // grid-column-start:1;</span><br><span class="line">  // grid-column-end:3;</span><br><span class="line">  </span><br><span class="line">  <span class="selector-tag">grid-row</span>: 1;</span><br><span class="line">  // 同样的，也可以占据多行</span><br><span class="line">  // grid-row: 1 / 3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="https://cms-assets.tutsplus.com/uploads/users/30/posts/27264/image/grid-lines.svg" alt=""></p>
+<p>上面的数字1、3指的是每一条网格线的索引，有时候变换了布局时，重新计算开始和结束的索引可能不大方便，可以使用<strong><code>span</code></strong>,这样只用计算开始索引即可。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item-1</span> &#123;</span><br><span class="line">  grid-column: 1 / span 2; // 第一列开始，占据2列</span><br><span class="line">  grid-row: 1 / span 2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以不用定义索引起点，直接定义<code>span</code>，这样表示此单元在它本来的位置上占据多少：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item-7</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#e03f3f</span>;</span><br><span class="line">  <span class="attribute">grid-column</span>: span <span class="number">2</span>;</span><br><span class="line">  <span class="attribute">grid-row</span>: span <span class="number">2</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="命名网格区域grid-template-areas、grid-area"><a href="#命名网格区域grid-template-areas、grid-area" class="headerlink" title="命名网格区域grid-template-areas、grid-area"></a>命名网格区域<code>grid-template-areas</code>、<code>grid-area</code></h2><p>每一个区域都可以有一个名字，这样在总体布局时就能直接使用这些名字，效率更高。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">    <span class="comment">/* ..existing styles */</span></span><br><span class="line">     </span><br><span class="line">    <span class="attribute">grid-template-areas</span>:    <span class="string">"header header header"</span></span><br><span class="line">                            <span class="string">"main main sidebar"</span></span><br><span class="line">                            <span class="string">"footer footer footer"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.item-1</span> &#123;</span><br><span class="line">  <span class="attribute">grid-area</span>: header;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item-2</span> &#123;</span><br><span class="line">  <span class="attribute">grid-area</span>: main;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item-3</span> &#123;</span><br><span class="line">  <span class="attribute">grid-area</span>: sidebar;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item-4</span> &#123;</span><br><span class="line">  <span class="attribute">grid-area</span>: footer;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="嵌套网格布局"><a href="#嵌套网格布局" class="headerlink" title="嵌套网格布局"></a>嵌套网格布局</h2><p>默认情况下，网格布局只会影响到直接的子元素，而不会影响到更深层次的后代元素。</p>
+<p>但是每一个网格区域本身也可以定义成网格布局，这样它内部的元素就能使用所有的网格布局属性了。</p>
+<p>例如以下结构：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">section</span> <span class="attr">class</span>=<span class="string">"grid-1"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-1"</span>&gt;</span>1<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">   </span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-2"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-5"</span>&gt;</span>5<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-6"</span>&gt;</span>6<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-7"</span>&gt;</span>7<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">   </span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-3"</span>&gt;</span>3<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"item-4"</span>&gt;</span>4<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>可以把item2弄成嵌套的网格布局</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.item-2</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#33a8a5</span>;</span><br><span class="line">  <span class="attribute">grid-area</span>: main;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-template-columns</span>: <span class="number">1</span>fr <span class="number">30%</span>;</span><br><span class="line">  <span class="attribute">grid-template-rows</span>: auto auto;</span><br><span class="line">  <span class="attribute">grid-gap</span>: <span class="number">20px</span>;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-template-areas</span>: <span class="string">"header header"</span></span><br><span class="line">                       <span class="string">"article sidebar"</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.item-5</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#da6f2b</span>;</span><br><span class="line">  <span class="attribute">grid-area</span>: header;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item-6</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#3d8bb1</span>;</span><br><span class="line">  <span class="attribute">grid-area</span>: article;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.item-7</span> &#123;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#e03f3f</span>;</span><br><span class="line">  <span class="attribute">grid-area</span>: sidebar;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="响应式的网格布局"><a href="#响应式的网格布局" class="headerlink" title="响应式的网格布局"></a>响应式的网格布局</h1><p>需要借助媒体查询：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">    <span class="comment">/* 在此处定义最常用的设备上的网格样式 */</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">@<span class="keyword">media</span> only screen and (min-width: <span class="number">500px</span>) &#123;</span><br><span class="line"> </span><br><span class="line">    <span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">        <span class="comment">/* 此处定义需要特殊处理的设备上的样式 */</span></span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>例如</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> auto;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-template-columns</span>: <span class="number">1</span>fr;</span><br><span class="line">  <span class="attribute">grid-template-rows</span>: <span class="number">80px</span> auto auto <span class="number">80px</span>;</span><br><span class="line">  <span class="attribute">grid-gap</span>: <span class="number">10px</span>;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-template-areas</span>: <span class="string">"header"</span></span><br><span class="line">                       <span class="string">"main"</span></span><br><span class="line">                       <span class="string">"sidebar"</span></span><br><span class="line">                       <span class="string">"footer"</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@<span class="keyword">media</span> only screen and (min-width: <span class="number">500px</span>) &#123;</span><br><span class="line"></span><br><span class="line">	<span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  		<span class="attribute">max-width</span>: <span class="number">800px</span>;</span><br><span class="line"></span><br><span class="line">	  <span class="attribute">grid-template-columns</span>: <span class="built_in">repeat</span>(3, 1fr);</span><br><span class="line">	  <span class="attribute">grid-template-rows</span>: <span class="number">80px</span> auto <span class="number">80px</span>;</span><br><span class="line">	  <span class="attribute">grid-gap</span>: <span class="number">20px</span>;</span><br><span class="line"></span><br><span class="line">	  <span class="attribute">grid-template-areas</span>: <span class="string">"header   header   header"</span></span><br><span class="line">	                       <span class="string">"main     main     sidebar"</span></span><br><span class="line">	                       <span class="string">"footer   footer   footer"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这些布局不会影响到嵌套的网格区域，所以如果嵌套的网格区域也需要响应式，同时要像上面一样分开写。</p>
+<h2 id="auto-fill"><a href="#auto-fill" class="headerlink" title="auto-fill"></a><code>auto-fill</code></h2><p>用于告诉网格处理器每一个单元格有多宽，让网格处理自己去决定每一行放多少个单元格。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#222</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">max-width</span>: <span class="number">750px</span>;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> auto;</span><br><span class="line"></span><br><span class="line">  grid-template-columns: repeat(auto-fill, 9em); // 每一列9em宽，每行尽量多放</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">grid-gap</span>: 20<span class="selector-tag">px</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在算每行能放多少个单元格时，会把间隙的宽度也考虑进去的。</p>
+<h2 id="minmax"><a href="#minmax" class="headerlink" title="minmax()"></a><code>minmax()</code></h2><p>告诉网格处理器每一个单元格的尺寸是在一个范围之内的。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">  <span class="attribute">background</span>: <span class="number">#222</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">max-width</span>: <span class="number">750px</span>;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> auto;</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-template-columns</span>: <span class="number">1</span>fr <span class="number">1</span>fr <span class="built_in">minmax</span>(160px, 1fr);</span><br><span class="line"></span><br><span class="line">  <span class="attribute">grid-gap</span>: <span class="number">20px</span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>表示第一列占1/3，第二列占1/3，第三列最少160px，最多1/3.在缩放浏览器的尺寸时，每一列都会跟着缩放，但是第三列最低只能缩到<code>160px</code>。</p>
+<h1 id="网格布局的自动布局机制"><a href="#网格布局的自动布局机制" class="headerlink" title="网格布局的自动布局机制"></a>网格布局的自动布局机制</h1><h2 id="grid-auto-flow"><a href="#grid-auto-flow" class="headerlink" title="grid-auto-flow"></a><code>grid-auto-flow</code></h2><p>默认的，网格布局会将每个单元格从左到右依次排列，如</p>
+<p><img src="/images/css-grid-layout/sparse.png" alt=""></p>
+<p>可以改变这个顺序，让它从上到下排列：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.grid-1</span> &#123;</span><br><span class="line">  <span class="attribute">padding-top</span>: <span class="number">40px</span>;</span><br><span class="line">  <span class="attribute">display</span>: grid;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">100%</span>;</span><br><span class="line">  <span class="attribute">max-width</span>: <span class="number">750px</span>;</span><br><span class="line">  <span class="attribute">margin</span>: <span class="number">0</span> auto;</span><br><span class="line">  <span class="attribute">grid-template-columns</span>: <span class="built_in">repeat</span>(5, 1fr);</span><br><span class="line">  <span class="attribute">grid-template-rows</span>: <span class="built_in">repeat</span>(5, 1fr);</span><br><span class="line">  <span class="attribute">grid-gap</span>: <span class="number">2px</span>;</span><br><span class="line">  grid-auto-flow: column; // 默认为row</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/css-grid-layout/auto-flow-column.png" alt=""></p>
+<p><strong>dense/sparse</strong></p>
+<p>告诉网格布局器是否应该将单元格紧密排列</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grid-auto-flow: row dense; // 默认是sparse稀疏</span><br></pre></td></tr></table></figure>
+<p>设置成dense，会自动调整布局，尽量占据在稀疏布局下不会占据的空间。</p>
+<p><img src="/images/css-grid-layout/dense.png" alt=""></p>
+<p>不过这样可能会导致DOM结构和页面展示的顺序不一致。</p>
+<h2 id="网格布局机制"><a href="#网格布局机制" class="headerlink" title="网格布局机制"></a>网格布局机制</h2><blockquote>
+<ol>
+<li>If we haven’t specifically defined an item’s location, Grid’s auto-placement algorithm will place it in the next available (and large enough) slot.<ol start="2">
+<li>Where there’s no available slot in the current row, it will begin searching the following row, even if that leaves gaps.</li>
+<li>We can switch this search order by altering grid-auto-flow from row to column.</li>
+<li>grid-auto-flow accepts a keyword to describe the “packing” approach. By default this value is sparse, but we can alter this to dense which attempts to fill in all available gaps.</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<h1 id="bootstrap的网格系统"><a href="#bootstrap的网格系统" class="headerlink" title="bootstrap的网格系统"></a>bootstrap的网格系统</h1><h2 id="实现原理"><a href="#实现原理" class="headerlink" title="实现原理"></a>实现原理</h2><p>通过定义容器大小，平分12份(也有平分成24份或32份，但12份是最常见的)，再调整内外边距，最后结合媒体查询，就制作出了强大的响应式网格系统。Bootstrap框架中的网格系统就是将容器平分成<strong>12份</strong>。</p>
+<h2 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h2><ol>
+<li><p>原理</p>
+<ol>
+<li><p>数据行(.row)必须包含在容器（.container）中，以便为其赋予合适的对齐方式和内距(padding)。如：</p>
+ <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在行(.row)中可以添加列(.column)，但列数之和不能超过平分的总列数，比如12.</p>
+ <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"row"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col-md-4"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"col-md-8"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>具体内容应当放置在列容器（column）之内，而且只有列（column）才可以作为行容器(.row)的直接子元素</p>
+</li>
+<li>通过设置内距（padding）从而创建列与列之间的间距。然后通过为第一列和最后一列设置负值的外距（margin）来抵消内距(padding)的影响</li>
+</ol>
+</li>
+<li><p>示范图<br><img src="http://img.mukewang.com/53b0f9c000018b9305540282.jpg" alt=""></p>
+<ol>
+<li>最外边框，带有一大片白色区域，就是相当于浏览器的可视区域。在Bootstrap框架的网格系统中带有响应式效果，其带有四种类型的浏览器（超小屏，小屏，中屏和大屏），其断点（像素的分界点）是768px、992px和1220px。</li>
+<li><p>第二个边框(1)相当于容器(.container)。针对不同的浏览器分辨率，其宽度也不一样：自动、750px、970px和1170px。</p>
+ <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.container</span> &#123;</span><br><span class="line">	  <span class="attribute">padding-right</span>: <span class="number">15px</span>;</span><br><span class="line">	  <span class="attribute">padding-left</span>: <span class="number">15px</span>;</span><br><span class="line">	  <span class="attribute">margin-right</span>: auto;</span><br><span class="line">	  <span class="attribute">margin-left</span>: auto;</span><br><span class="line">  	@media (min-width: 768px) &#123;</span><br><span class="line">	  <span class="selector-class">.container</span> &#123;</span><br><span class="line">	    <span class="attribute">width</span>: <span class="number">750px</span>;</span><br><span class="line">	  &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  @<span class="keyword">media</span> (min-width: <span class="number">992px</span>) &#123;</span><br><span class="line">	  <span class="selector-class">.container</span> &#123;</span><br><span class="line">	    <span class="attribute">width</span>: <span class="number">970px</span>;</span><br><span class="line">	  &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  @<span class="keyword">media</span> (min-width: <span class="number">1200px</span>) &#123;</span><br><span class="line">	  <span class="selector-class">.container</span> &#123;</span><br><span class="line">	    <span class="attribute">width</span>: <span class="number">1170px</span>;</span><br><span class="line">	  &#125;</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>２号横条阐述的是，将容器的行（.row）平分了12等份，也就是列。每个列都有一个“padding-left:15px”(图中粉红色部分)和一个“padding-right:15px”(图中紫色部分)。这样也导致了第一个列的padding-left和最后一列的padding-right占据了总宽度的30px，从而致使页面不美观</p>
+ <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.col-xs-1</span>, <span class="selector-class">.col-sm-1</span>, <span class="selector-class">.col-md-1</span>, <span class="selector-class">.col-lg-1</span>, <span class="selector-class">.col-xs-2</span>, <span class="selector-class">.col-sm-2</span>, <span class="selector-class">.col-md-2</span>, <span class="selector-class">.col-lg-2</span>, <span class="selector-class">.col-xs-3</span>, <span class="selector-class">.col-sm-3</span>, <span class="selector-class">.col-md-3</span>, <span class="selector-class">.col-lg-3</span>, <span class="selector-class">.col-xs-4</span>, <span class="selector-class">.col-sm-4</span>, <span class="selector-class">.col-md-4</span>, <span class="selector-class">.col-lg-4</span>, <span class="selector-class">.col-xs-5</span>, <span class="selector-class">.col-sm-5</span>, <span class="selector-class">.col-md-5</span>, <span class="selector-class">.col-lg-5</span>, <span class="selector-class">.col-xs-6</span>, <span class="selector-class">.col-sm-6</span>, <span class="selector-class">.col-md-6</span>, <span class="selector-class">.col-lg-6</span>, <span class="selector-class">.col-xs-7</span>, <span class="selector-class">.col-sm-7</span>, <span class="selector-class">.col-md-7</span>, <span class="selector-class">.col-lg-7</span>, <span class="selector-class">.col-xs-8</span>, <span class="selector-class">.col-sm-8</span>, <span class="selector-class">.col-md-8</span>, <span class="selector-class">.col-lg-8</span>, <span class="selector-class">.col-xs-9</span>, <span class="selector-class">.col-sm-9</span>, <span class="selector-class">.col-md-9</span>, <span class="selector-class">.col-lg-9</span>, <span class="selector-class">.col-xs-10</span>, <span class="selector-class">.col-sm-10</span>, <span class="selector-class">.col-md-10</span>, <span class="selector-class">.col-lg-10</span>, <span class="selector-class">.col-xs-11</span>, <span class="selector-class">.col-sm-11</span>, <span class="selector-class">.col-md-11</span>, <span class="selector-class">.col-lg-11</span>, <span class="selector-class">.col-xs-12</span>, <span class="selector-class">.col-sm-12</span>, <span class="selector-class">.col-md-12</span>, <span class="selector-class">.col-lg-12</span> &#123;</span><br><span class="line">		  <span class="attribute">position</span>: relative;</span><br><span class="line">		  <span class="attribute">min-height</span>: <span class="number">1px</span>;</span><br><span class="line">		  <span class="attribute">padding-right</span>: <span class="number">15px</span>;</span><br><span class="line">		  <span class="attribute">padding-left</span>: <span class="number">15px</span>;</span><br><span class="line">	  &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>３号横条就是行容器(.row),其定义了“margin-left”和”margin-right”值为”-15px”，用来抵消第一个列的左内距和最后一列的右内距。</p>
+ <figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.row</span> &#123;</span><br><span class="line">  <span class="attribute">margin-right</span>: -<span class="number">15px</span>;</span><br><span class="line">  <span class="attribute">margin-left</span>: -<span class="number">15px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将行与列给合在一起就能看到横条4的效果。也就是我们期望看到的效果，第一列和最后一列与容器（.container）之间没有间距</p>
+</li>
+<li>横条５只是想向大家展示，你可以根据需要，任意组合列与列，只是他们的组合数之和不要超过总列数</li>
+</ol>
+</li>
+</ol>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p>css grid一个系列文章</p>
+<ul>
+<li><a href="https://webdesign.tutsplus.com/tutorials/css-grid-layout-quick-start-guide--cms-27238" target="_blank" rel="noopener">CSS Grid Layout: A Quick Start Guide</a></li>
+<li><a href="https://webdesign.tutsplus.com/tutorials/css-grid-layout-units-of-measurement-and-basic-keywords--cms-27259" target="_blank" rel="noopener">CSS Grid Layout: Fluid Columns and Better Gutters</a></li>
+<li><a href="https://webdesign.tutsplus.com/tutorials/css-grid-layout-using-grid-areas--cms-27264" target="_blank" rel="noopener">CSS Grid Layout: Using Grid Areas</a></li>
+<li><a href="https://webdesign.tutsplus.com/tutorials/css-grid-layout-going-responsive--cms-27270" target="_blank" rel="noopener">CSS Grid Layout: Going Responsive</a></li>
+<li><a href="https://webdesign.tutsplus.com/tutorials/understanding-the-css-grid-auto-placement-algorithm--cms-27563" target="_blank" rel="noopener">Understanding the CSS Grid “Auto-Placement Algorithm”</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CSS/" rel="tag"># CSS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/21/mock-js-study/" rel="next" title="mock.js学习笔记">
+                <i class="fa fa-chevron-left"></i> mock.js学习笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/03/css-flex-note/" rel="prev" title="css flex布局学习笔记">
+                css flex布局学习笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#浏览器支持率"><span class="nav-number">1.</span> <span class="nav-text">浏览器支持率</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#一些术语"><span class="nav-number">2.</span> <span class="nav-text">一些术语</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#网格线、行、列、单元格"><span class="nav-number">2.1.</span> <span class="nav-text">网格线、行、列、单元格</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#间隙gutters"><span class="nav-number">2.2.</span> <span class="nav-text">间隙gutters</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网格区域"><span class="nav-number">2.3.</span> <span class="nav-text">网格区域</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CSS-GRID属性"><span class="nav-number">3.</span> <span class="nav-text">CSS GRID属性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#display-grid"><span class="nav-number">3.0.1.</span> <span class="nav-text">display: grid;</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#grid-template-columns、grid-template-rows"><span class="nav-number">3.0.2.</span> <span class="nav-text">grid-template-columns、grid-template-rows</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#grid-column、grid-row"><span class="nav-number">3.0.3.</span> <span class="nav-text">grid-column、grid-row</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#repeat"><span class="nav-number">3.0.4.</span> <span class="nav-text">repeat()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#grid-column-gap、grid-row-gap、grid-gap"><span class="nav-number">3.0.5.</span> <span class="nav-text">grid-column-gap、grid-row-gap、grid-gap</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#fr"><span class="nav-number">3.0.6.</span> <span class="nav-text">fr</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#定义网格区域"><span class="nav-number">4.</span> <span class="nav-text">定义网格区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#命名网格区域grid-template-areas、grid-area"><span class="nav-number">4.1.</span> <span class="nav-text">命名网格区域grid-template-areas、grid-area</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#嵌套网格布局"><span class="nav-number">4.2.</span> <span class="nav-text">嵌套网格布局</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#响应式的网格布局"><span class="nav-number">5.</span> <span class="nav-text">响应式的网格布局</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#auto-fill"><span class="nav-number">5.1.</span> <span class="nav-text">auto-fill</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#minmax"><span class="nav-number">5.2.</span> <span class="nav-text">minmax()</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网格布局的自动布局机制"><span class="nav-number">6.</span> <span class="nav-text">网格布局的自动布局机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#grid-auto-flow"><span class="nav-number">6.1.</span> <span class="nav-text">grid-auto-flow</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网格布局机制"><span class="nav-number">6.2.</span> <span class="nav-text">网格布局机制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bootstrap的网格系统"><span class="nav-number">7.</span> <span class="nav-text">bootstrap的网格系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#实现原理"><span class="nav-number">7.1.</span> <span class="nav-text">实现原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#工作原理"><span class="nav-number">7.2.</span> <span class="nav-text">工作原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

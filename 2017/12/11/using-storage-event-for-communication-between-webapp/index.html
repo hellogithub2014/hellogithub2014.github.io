@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="StorageEvent,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近项目中有一个功能，需要在两个 webview 中运行的同域 web app 间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询 localstorage 的方式完成的。即一个 webview 中的页面把数据放到 localstorage 里，然后另一个 webview 中的页面使用定时器不断查询想要的数据是否已改变。 后来看到说 localstorage 其实有一个 storage 事">
+<meta name="keywords" content="StorageEvent">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用StorageEvent在web app间通信">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/12/11/using-storage-event-for-communication-between-webapp/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="最近项目中有一个功能，需要在两个 webview 中运行的同域 web app 间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询 localstorage 的方式完成的。即一个 webview 中的页面把数据放到 localstorage 里，然后另一个 webview 中的页面使用定时器不断查询想要的数据是否已改变。 后来看到说 localstorage 其实有一个 storage 事">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.484Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用StorageEvent在web app间通信">
+<meta name="twitter:description" content="最近项目中有一个功能，需要在两个 webview 中运行的同域 web app 间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询 localstorage 的方式完成的。即一个 webview 中的页面把数据放到 localstorage 里，然后另一个 webview 中的页面使用定时器不断查询想要的数据是否已改变。 后来看到说 localstorage 其实有一个 storage 事">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/12/11/using-storage-event-for-communication-between-webapp/">
+
+
+
+
+
+  <title>使用StorageEvent在web app间通信 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/12/11/using-storage-event-for-communication-between-webapp/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用StorageEvent在web app间通信</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-11T20:10:00+08:00">
+                2017-12-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近项目中有一个功能，需要在两个 webview 中运行的同域 web app 间通信。其实老早之前就碰到了这个问题，只不过当时是采用轮询 localstorage 的方式完成的。即一个 webview 中的页面把数据放到 localstorage 里，然后另一个 webview 中的页面使用定时器不断查询想要的数据是否已改变。</p>
+<p>后来看到说 localstorage 其实有一个 storage 事件，可以在其中的数据发生改变时触发，事件对象中可以获取是哪个键的值改变了，以及最新的值，这个特性很符合我们的需求。</p>
+<p>背景：我们的两个 webview 页面中都会有一个浮动图标，图标的位置需要同步。</p>
+<h1 id="HTML"><a href="#HTML" class="headerlink" title="HTML"></a>HTML</h1><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ion-icon</span> #<span class="attr">feedbackBadge</span> <span class="attr">crmMoveable</span> (<span class="attr">moveEnd</span>)=<span class="string">"storePosition($event)"</span>&gt;</span> <span class="tag">&lt;/<span class="name">ion-icon</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上面是 Angular 的模板语法， <code>crmMoveable</code>是一个指令，可以让宿主元素具备拖拽能力，它在停止拖拽时会出发一个<code>moveEnd</code>事件，事件对象<code>$event</code>包含图标最新的位置</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$event: &#123; <span class="attr">x</span>: string, <span class="attr">y</span>: string &#125;; <span class="comment">// x和y都是形如 100px这样的字符串</span></span><br></pre></td></tr></table></figure>
+<h1 id="localstorage-存储"><a href="#localstorage-存储" class="headerlink" title="localstorage 存储"></a>localstorage 存储</h1><p>我们需要在停止时把最新位置数据存到 localstorage 去：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 记录当前图标的位置</span></span><br><span class="line"><span class="comment">*</span></span><br><span class="line"><span class="comment">* @param &#123; &#123; x: string, y: string &#125; &#125; position x和y都是例如 100px这种</span></span><br><span class="line"><span class="comment">* @memberof FeedbackFloatButtonComponent</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">public storePosition( position: &#123; <span class="attr">x</span>: string, <span class="attr">y</span>: string &#125; ) &#123;</span><br><span class="line">localStorage.setItem( POSITION_X, position.x );</span><br><span class="line">localStorage.setItem( POSITION_Y, position.y );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="注册-storage-事件"><a href="#注册-storage-事件" class="headerlink" title="注册 storage 事件"></a>注册 storage 事件</h1><p>这里注意的是<strong>要在 window 对象上注册事件处理</strong>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public ngAfterViewInit() &#123;</span><br><span class="line">    <span class="comment">// 写成document.addEventListener不起作用</span></span><br><span class="line">    <span class="built_in">window</span>.addEventListener( <span class="string">"storage"</span>, <span class="keyword">this</span>.storageHandler.bind( <span class="keyword">this</span> ), <span class="literal">false</span> );</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<h1 id="事件处理函数"><a href="#事件处理函数" class="headerlink" title="事件处理函数"></a>事件处理函数</h1><p>逻辑同样不难， 就是拿到最新的数据，然后改变图标的位置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"> @ViewChild( <span class="string">"feedbackBadge"</span> ) public badge: any;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * 绑定localstorage的storage事件。</span></span><br><span class="line"><span class="comment">  * 在其他页面改变了有话说浮动图标位置时，当前页面随之更改位置</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * @author 80374787 刘斌</span></span><br><span class="line"><span class="comment">  * @param &#123;StorageEvent&#125; e</span></span><br><span class="line"><span class="comment">  * @memberof CrmMoveableDirective</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> public storageHandler( e: StorageEvent ) &#123;</span><br><span class="line">   <span class="keyword">if</span> ( e.key === POSITION_X ) &#123;</span><br><span class="line">     <span class="keyword">this</span>.badge.nativeElement.style.left = e.newValue;</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> ( e.key === POSITION_Y ) &#123;</span><br><span class="line">     <span class="keyword">this</span>.badge.nativeElement.style.top = e.newValue;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<h1 id="遇到的坑"><a href="#遇到的坑" class="headerlink" title="遇到的坑"></a>遇到的坑</h1><p>写完后测一测，在 pc chrome、安卓 webview 上均没有问题，运行的很好。但是发现在我们 ios 上就死活不行，又偏偏我不知道怎么调试 ios webview 里的 web app~</p>
+<p>后来经过我们 ios 的同事提醒，他问我们是在 UI webview 还是 WK webview 测试的，我才知道一直不行的是在 UI webview 上。然后又在 WK 上做了个测试，发现是可以的。🙄🙄🙄</p>
+<p>在 google 上搜了下，发现很多人也在问，貌似这是 UI webview 的一个 BUG。 <a href="https://bugs.webkit.org/show_bug.cgi?id=145565" target="_blank" rel="noopener">BUG 地址</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/StorageEvent/" rel="tag"># StorageEvent</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/11/uglify-js-quirk-at-linux/" rel="next" title="uglify.js在linux下的填坑经验">
+                <i class="fa fa-chevron-left"></i> uglify.js在linux下的填坑经验
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/11/throttle-click/" rel="prev" title="移动端点击元素重复跳转同一页面BUG解决方案">
+                移动端点击元素重复跳转同一页面BUG解决方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HTML"><span class="nav-number">1.</span> <span class="nav-text">HTML</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#localstorage-存储"><span class="nav-number">2.</span> <span class="nav-text">localstorage 存储</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#注册-storage-事件"><span class="nav-number">3.</span> <span class="nav-text">注册 storage 事件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#事件处理函数"><span class="nav-number">4.</span> <span class="nav-text">事件处理函数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#遇到的坑"><span class="nav-number">5.</span> <span class="nav-text">遇到的坑</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

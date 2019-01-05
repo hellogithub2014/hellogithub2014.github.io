@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="vue,Sentry,Raven,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="目前的项目中很早前就引入了Sentry进行错误监控，自己以前也零零散散看过一些错误监控的博客，但都没有深入到源码层面。很好奇Sentry是怎么抓取错误的，能够获取到那么多的错误信息。于是花了几天的闲暇时间加上周末，把它的源码撸了一遍，虽然没有仔细阅读每一行代码，但还是学到了很多，这篇文章就是用于记录自己的学习笔记。注意，这里不会介绍如何安装Sentry，因为网上的教程很多。 配置及主入口 inst">
+<meta name="keywords" content="vue,Sentry,Raven">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sentry源码解析">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/07/22/sentry-source-code/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="目前的项目中很早前就引入了Sentry进行错误监控，自己以前也零零散散看过一些错误监控的博客，但都没有深入到源码层面。很好奇Sentry是怎么抓取错误的，能够获取到那么多的错误信息。于是花了几天的闲暇时间加上周末，把它的源码撸了一遍，虽然没有仔细阅读每一行代码，但还是学到了很多，这篇文章就是用于记录自己的学习笔记。注意，这里不会介绍如何安装Sentry，因为网上的教程很多。 配置及主入口 inst">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.501Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sentry源码解析">
+<meta name="twitter:description" content="目前的项目中很早前就引入了Sentry进行错误监控，自己以前也零零散散看过一些错误监控的博客，但都没有深入到源码层面。很好奇Sentry是怎么抓取错误的，能够获取到那么多的错误信息。于是花了几天的闲暇时间加上周末，把它的源码撸了一遍，虽然没有仔细阅读每一行代码，但还是学到了很多，这篇文章就是用于记录自己的学习笔记。注意，这里不会介绍如何安装Sentry，因为网上的教程很多。 配置及主入口 inst">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/07/22/sentry-source-code/">
+
+
+
+
+
+  <title>Sentry源码解析 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/07/22/sentry-source-code/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Sentry源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-22T22:20:00+08:00">
+                2018-07-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>目前的项目中很早前就引入了<a href="https://github.com/getsentry/raven-js" target="_blank" rel="noopener">Sentry</a>进行错误监控，自己以前也零零散散看过一些错误监控的博客，但都没有深入到源码层面。很好奇<code>Sentry</code>是怎么抓取错误的，能够获取到那么多的错误信息。于是花了几天的闲暇时间加上周末，把它的源码撸了一遍，虽然没有仔细阅读每一行代码，但还是学到了很多，这篇文章就是用于记录自己的学习笔记。注意，这里不会介绍如何安装<code>Sentry</code>，因为网上的教程很多。</p>
+<h1 id="配置及主入口-install-方法"><a href="#配置及主入口-install-方法" class="headerlink" title="配置及主入口 install 方法"></a>配置及主入口 install 方法</h1><p>配置很简单，几行代码就可以完成：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Raven <span class="keyword">from</span> <span class="string">'raven-js'</span>;</span><br><span class="line"><span class="keyword">import</span> RavenVue <span class="keyword">from</span> <span class="string">'raven-js/plugins/vue'</span>;</span><br><span class="line"></span><br><span class="line">Raven.config(<span class="string">'http://user@host:port/path'</span>, &#123;</span><br><span class="line">  environment: <span class="string">'prod'</span>,</span><br><span class="line">&#125;)</span><br><span class="line">  .addPlugin(RavenVue, Vue)</span><br><span class="line">  .install();</span><br></pre></td></tr></table></figure>
+<p>可能很好奇为啥是<code>Raven</code>而不是<code>Sentry</code>，这个我也不知道，不去深究。。。</p>
+<p>可以看到一个<code>config</code>+<code>addPlugin</code>+<code>install</code>就 ok 了，<code>addPlugin</code>是用于安装<code>Raven</code>专门给<code>Vue</code>写的一个插件，<code>install</code>就是整个<code>Raven</code>的主入口了。</p>
+<p><code>addPlugin</code>很简单，其实就是把参数放到自己内部的一个插件数组中，等待合适时机安装每个插件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">addPlugin: <span class="function"><span class="keyword">function</span>(<span class="params">plugin <span class="regexp">/*arg1, arg2, ... argN*/</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> pluginArgs = [].slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">  <span class="keyword">this</span>._plugins.push([plugin, pluginArgs]);</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>我们的<code>RavenVue</code>老哥其实也很简单，就是实现了<code>Vue.config.errorHandler</code>，这是 Vue 的<a href="https://cn.vuejs.org/v2/api/#errorHandler" target="_blank" rel="noopener">全局错误处理钩子</a>， 然后把抓到的错误交给<code>Raven</code>处理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// vuePlugin就是RavenVue</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">vuePlugin</span>(<span class="params">Raven, Vue</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">var</span> _oldOnError = Vue.config.errorHandler;</span><br><span class="line">  Vue.config.errorHandler = <span class="function"><span class="keyword">function</span> <span class="title">VueErrorHandler</span>(<span class="params">error, vm, info</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> metaData = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// vm and lifecycleHook are not always available</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">Object</span>.prototype.toString.call(vm) === <span class="string">'[object Object]'</span>) &#123;</span><br><span class="line">      metaData.componentName = formatComponentName(vm);</span><br><span class="line">      metaData.propsData = vm.$options.propsData;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> info !== <span class="string">'undefined'</span>) &#123;</span><br><span class="line">      metaData.lifecycleHook = info;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// captureException手动把异常发送给Sentry服务器</span></span><br><span class="line">    Raven.captureException(error, &#123;</span><br><span class="line">      extra: metaData,</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> _oldOnError === <span class="string">'function'</span>) &#123;</span><br><span class="line">      _oldOnError.call(<span class="keyword">this</span>, error, vm, info);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到主要逻辑就是捕捉到错误时先获取<code>vue</code>实例或组件的一些信息，最后发送到服务器。至于<code>captureException</code>是怎么实现的我们后面再看。</p>
+<p>接下来就是我们的重点<code>install</code>了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">install: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">if</span> (self.isSetup() &amp;&amp; !self._isRavenInstalled) &#123;</span><br><span class="line">      TraceKit.report.subscribe(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        self._handleOnErrorStackInfo.apply(self, <span class="built_in">arguments</span>);</span><br><span class="line">      &#125;);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (self._globalOptions.captureUnhandledRejections) &#123;</span><br><span class="line">        self._attachPromiseRejectionHandler();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      self._patchFunctionToString();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (self._globalOptions.instrument &amp;&amp; self._globalOptions.instrument.tryCatch) &#123;</span><br><span class="line">        self._instrumentTryCatch();</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (self._globalOptions.autoBreadcrumbs) self._instrumentBreadcrumbs();</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Install all of the plugins</span></span><br><span class="line">      self._drainPlugins();</span><br><span class="line"></span><br><span class="line">      self._isRavenInstalled = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">Error</span>.stackTraceLimit = self._globalOptions.stackTraceLimit;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>我们不去管各种 if 条件，无非是判断各种配置，先假设他们全部成立。那么我们的注意力就很清晰了：</p>
+<ul>
+<li><code>TraceKit.report.subscribe</code></li>
+<li><code>_handleOnErrorStackInfo</code></li>
+<li><code>_attachPromiseRejectionHandler</code></li>
+<li><code>_patchFunctionToString</code></li>
+<li><code>_instrumentTryCatch</code></li>
+<li><code>_instrumentBreadcrumbs</code></li>
+<li><code>_drainPlugins</code></li>
+</ul>
+<p>余下所有篇幅都是解析他们的实现过程，挨个来看。</p>
+<h1 id="TraceKit-report-subscribe"><a href="#TraceKit-report-subscribe" class="headerlink" title="TraceKit.report.subscribe"></a>TraceKit.report.subscribe</h1><p><code>TraceKit</code>是个啥呢？在源码中有大段注释，摘来看一下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> TraceKit - Cross brower stack traces</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"> This was originally forked from github.com/occ/TraceKit, but has since been</span></span><br><span class="line"><span class="comment"> largely re-written and is now maintained as part of raven-js.  Tests for</span></span><br><span class="line"><span class="comment"> this are in test/vendor.</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment"> MIT license</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>它是一个跨浏览器的错误堆栈处理库，因为堆栈信息在不同浏览器上的细节都不尽相同，<code>Raven</code>把<code>Trackit</code>的相关代码专门放到一个文件了。</p>
+<p><code>TraceKit.report</code>有关于堆栈更详细的注释，对于理解代码很有帮助：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Supports:</span></span><br><span class="line"><span class="comment"> *   - Firefox: full stack trace with line numbers, plus column number</span></span><br><span class="line"><span class="comment"> *              on top frame; column number is not guaranteed</span></span><br><span class="line"><span class="comment"> *   - Opera:   full stack trace with line and column numbers</span></span><br><span class="line"><span class="comment"> *   - Chrome:  full stack trace with line and column numbers</span></span><br><span class="line"><span class="comment"> *   - Safari:  line and column number for the top frame only; some frames</span></span><br><span class="line"><span class="comment"> *              may be missing, and column number is not guaranteed</span></span><br><span class="line"><span class="comment"> *   - IE:      line and column number for the top frame only; some frames</span></span><br><span class="line"><span class="comment"> *              may be missing, and column number is not guaranteed</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * In theory, TraceKit should work on all of the following versions:</span></span><br><span class="line"><span class="comment"> *   - IE5.5+ (only 8.0 tested)</span></span><br><span class="line"><span class="comment"> *   - Firefox 0.9+ (only 3.5+ tested)</span></span><br><span class="line"><span class="comment"> *   - Opera 7+ (only 10.50 tested; versions 9 and earlier may require</span></span><br><span class="line"><span class="comment"> *     Exceptions Have Stacktrace to be enabled in opera:config)</span></span><br><span class="line"><span class="comment"> *   - Safari 3+ (only 4+ tested)</span></span><br><span class="line"><span class="comment"> *   - Chrome 1+ (only 5+ tested)</span></span><br><span class="line"><span class="comment"> *   - Konqueror 3.5+ (untested)</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Requires TraceKit.computeStackTrace.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Tries to catch all unhandled exceptions and report them to the</span></span><br><span class="line"><span class="comment"> * subscribed handlers. Please note that TraceKit.report will rethrow the</span></span><br><span class="line"><span class="comment"> * exception. This is REQUIRED in order to get a useful stack trace in IE.</span></span><br><span class="line"><span class="comment"> * If the exception does not reach the top of the browser, you will only</span></span><br><span class="line"><span class="comment"> * get a stack trace from the point where TraceKit.report was called.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Handlers receive a stackInfo object as described in the</span></span><br><span class="line"><span class="comment"> * TraceKit.computeStackTrace docs.</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>类似<code>Raven</code>的<code>plugins</code>数组，<code>TraceKit.report</code>也有一个<code>handlers</code>数组，我们的<code>TraceKit.report.subscribe</code>就是把自己注册到这个数组里：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">TraceKit.report = (<span class="function"><span class="keyword">function</span> <span class="title">reportModuleWrapper</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> handlers = [],</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">subscribe</span>(<span class="params">handler</span>) </span>&#123;</span><br><span class="line">    installGlobalHandler();</span><br><span class="line">    handlers.push(handler);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+<p><strong><code>installGlobalHandler</code>会拦截<code>window.onrror</code>，对错误对象进行一系列处理，最后交由每个<code>handler</code>处理。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">installGlobalHandler</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  _oldOnerrorHandler = _window.onerror;</span><br><span class="line">  _window.onerror = traceKitWindowOnError;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">traceKitWindowOnError</span>(<span class="params">msg, url, lineNo, colNo, ex</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> stack = <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ... 此处省略一坨逻辑</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// non-string `exception` arg; attempt to extract stack trace</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// New chrome and blink send along a real error object</span></span><br><span class="line">  <span class="comment">// Let's just report that like a normal error.</span></span><br><span class="line">  <span class="comment">// See: https://mikewest.org/2013/08/debugging-runtime-errors-with-window-onerror</span></span><br><span class="line">  stack = TraceKit.computeStackTrace(exception);</span><br><span class="line">  notifyHandlers(stack, <span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ... 此处省略一坨逻辑</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (_oldOnerrorHandler) &#123;</span><br><span class="line">    <span class="keyword">return</span> _oldOnerrorHandler.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>把上面的<code>traceKitWindowOnError</code>逻辑略去了很多，只看关键的<code>TraceKit.computeStackTrace</code>和<code>notifyHandlers</code>。 前者的逻辑很多，是用来帮助调用方屏蔽跨浏览器的堆栈处理细节，后者很简单，就是挨个调用每个<code>handler</code>处理<code>stack</code>信息。</p>
+<p>我们先看简单的<code>notifyHandlers</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Dispatch stack information to all handlers.</span></span><br><span class="line"><span class="comment"> * @param &#123;Object.&lt;string, *&gt;&#125; stack</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">notifyHandlers</span>(<span class="params">stack, isWindowError</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> exception = <span class="literal">null</span>;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i <span class="keyword">in</span> handlers) &#123;</span><br><span class="line">    <span class="keyword">if</span> (handlers.hasOwnProperty(i)) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        handlers[i].apply(<span class="literal">null</span>, [stack].concat(_slice.call(<span class="built_in">arguments</span>, <span class="number">2</span>)));</span><br><span class="line">      &#125; <span class="keyword">catch</span> (inner) &#123;</span><br><span class="line">        exception = inner;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (exception) &#123;</span><br><span class="line">    <span class="keyword">throw</span> exception;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到确实很简单。再来看看复杂的<code>TraceKit.computeStackTrace</code>。</p>
+<h2 id="TraceKit-computeStackTrace"><a href="#TraceKit-computeStackTrace" class="headerlink" title="TraceKit.computeStackTrace"></a>TraceKit.computeStackTrace</h2><p>这个函数首先给了一大坨注释用于描述跨浏览器堆栈信息的混乱，此函数的目的就是返回一个统一格式的堆栈信息。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * TraceKit.computeStackTrace: cross-browser stack traces in JavaScript</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Syntax:</span></span><br><span class="line"><span class="comment"> *   s = TraceKit.computeStackTrace(exception) // consider using TraceKit.report instead (see below)</span></span><br><span class="line"><span class="comment"> * Returns:</span></span><br><span class="line"><span class="comment"> *   s.name              - exception name</span></span><br><span class="line"><span class="comment"> *   s.message           - exception message</span></span><br><span class="line"><span class="comment"> *   s.stack[i].url      - JavaScript or HTML file URL</span></span><br><span class="line"><span class="comment"> *   s.stack[i].func     - function name, or empty for anonymous functions (if guessing did not work)</span></span><br><span class="line"><span class="comment"> *   s.stack[i].args     - arguments passed to the function, if known</span></span><br><span class="line"><span class="comment"> *   s.stack[i].line     - line number, if known</span></span><br><span class="line"><span class="comment"> *   s.stack[i].column   - column number, if known</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Supports:</span></span><br><span class="line"><span class="comment"> *   - Firefox:  full stack trace with line numbers and unreliable column</span></span><br><span class="line"><span class="comment"> *               number on top frame</span></span><br><span class="line"><span class="comment"> *   - Opera 10: full stack trace with line and column numbers</span></span><br><span class="line"><span class="comment"> *   - Opera 9-: full stack trace with line numbers</span></span><br><span class="line"><span class="comment"> *   - Chrome:   full stack trace with line and column numbers</span></span><br><span class="line"><span class="comment"> *   - Safari:   line and column number for the topmost stacktrace element</span></span><br><span class="line"><span class="comment"> *               only</span></span><br><span class="line"><span class="comment"> *   - IE:       no line numbers whatsoever</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Tries to guess names of anonymous functions by looking for assignments</span></span><br><span class="line"><span class="comment"> * in the source code. In IE and Safari, we have to guess source file names</span></span><br><span class="line"><span class="comment"> * by searching for function bodies inside all page scripts. This will not</span></span><br><span class="line"><span class="comment"> * work for scripts that are loaded cross-domain.</span></span><br><span class="line"><span class="comment"> * Here be dragons: some function names may be guessed incorrectly, and</span></span><br><span class="line"><span class="comment"> * duplicate functions may be mismatched.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * TraceKit.computeStackTrace should only be used for tracing purposes.</span></span><br><span class="line"><span class="comment"> * Logging of unhandled exceptions should be done with TraceKit.report,</span></span><br><span class="line"><span class="comment"> * which builds on top of TraceKit.computeStackTrace and provides better</span></span><br><span class="line"><span class="comment"> * IE support by utilizing the window.onerror event to retrieve information</span></span><br><span class="line"><span class="comment"> * about the top of the stack.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Note: In IE and Safari, no stack trace is recorded on the Error object,</span></span><br><span class="line"><span class="comment"> * so computeStackTrace instead walks its *own* chain of callers.</span></span><br><span class="line"><span class="comment"> * This means that:</span></span><br><span class="line"><span class="comment"> *  * in Safari, some methods may be missing from the stack trace;</span></span><br><span class="line"><span class="comment"> *  * in IE, the topmost function in the stack trace will always be the</span></span><br><span class="line"><span class="comment"> *    caller of computeStackTrace.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * This is okay for tracing (because you are likely to be calling</span></span><br><span class="line"><span class="comment"> * computeStackTrace from the function you want to be the topmost element</span></span><br><span class="line"><span class="comment"> * of the stack trace anyway), but not okay for logging unhandled</span></span><br><span class="line"><span class="comment"> * exceptions (because your catch block will likely be far away from the</span></span><br><span class="line"><span class="comment"> * inner function that actually caused the exception).</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br></pre></td></tr></table></figure>
+<p>上面的注释大家了解一下就好，接下来看看具体的代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">TraceKit.computeStackTrace = (<span class="function"><span class="keyword">function</span> <span class="title">computeStackTraceWrapper</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Computes stack trace information from the stack property.</span></span><br><span class="line"><span class="comment">   * Chrome and Gecko use this property.</span></span><br><span class="line"><span class="comment">   * @param &#123;Error&#125; ex</span></span><br><span class="line"><span class="comment">   * @return &#123;?Object.&lt;string, *&gt;&#125; Stack trace information.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">computeStackTraceFromStackProp</span>(<span class="params">ex</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Adds information about the first frame to incomplete stack traces.</span></span><br><span class="line"><span class="comment">   * Safari and IE require this to get complete data on the first frame.</span></span><br><span class="line"><span class="comment">   * @param &#123;Object.&lt;string, *&gt;&#125; stackInfo Stack trace information from</span></span><br><span class="line"><span class="comment">   * one of the compute* methods.</span></span><br><span class="line"><span class="comment">   * @param &#123;string&#125; url The URL of the script that caused an error.</span></span><br><span class="line"><span class="comment">   * @param &#123;(number|string)&#125; lineNo The line number of the script that</span></span><br><span class="line"><span class="comment">   * caused an error.</span></span><br><span class="line"><span class="comment">   * @param &#123;string=&#125; message The error generated by the browser, which</span></span><br><span class="line"><span class="comment">   * hopefully contains the name of the object that caused the error.</span></span><br><span class="line"><span class="comment">   * @return &#123;boolean&#125; Whether or not the stack information was</span></span><br><span class="line"><span class="comment">   * augmented.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">augmentStackTraceWithInitialElement</span>(<span class="params">stackInfo, url, lineNo, message</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ..</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Computes stack trace information by walking the arguments.caller</span></span><br><span class="line"><span class="comment">   * chain at the time the exception occurred. This will cause earlier</span></span><br><span class="line"><span class="comment">   * frames to be missed but is the only way to get any stack trace in</span></span><br><span class="line"><span class="comment">   * Safari and IE. The top frame is restored by</span></span><br><span class="line"><span class="comment">   * &#123;@link augmentStackTraceWithInitialElement&#125;.</span></span><br><span class="line"><span class="comment">   * @param &#123;Error&#125; ex</span></span><br><span class="line"><span class="comment">   * @return &#123;?Object.&lt;string, *&gt;&#125; Stack trace information.</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">computeStackTraceByWalkingCallerChain</span>(<span class="params">ex, depth</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * Computes a stack trace for an exception.</span></span><br><span class="line"><span class="comment">   * @param &#123;Error&#125; ex</span></span><br><span class="line"><span class="comment">   * @param &#123;(string|number)=&#125; depth</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">computeStackTrace</span>(<span class="params">ex, depth</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> stack = <span class="literal">null</span>;</span><br><span class="line">    depth = depth == <span class="literal">null</span> ? <span class="number">0</span> : +depth;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      stack = computeStackTraceFromStackProp(ex); <span class="comment">// 适用于Chrome和Gecko</span></span><br><span class="line">      <span class="keyword">if</span> (stack) &#123;</span><br><span class="line">        <span class="keyword">return</span> stack;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">      <span class="keyword">if</span> (TraceKit.debug) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      stack = computeStackTraceByWalkingCallerChain(ex, depth + <span class="number">1</span>); <span class="comment">// 适用于Safari和IE</span></span><br><span class="line">      <span class="keyword">if</span> (stack) &#123;</span><br><span class="line">        <span class="keyword">return</span> stack;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">      <span class="keyword">if</span> (TraceKit.debug) &#123;</span><br><span class="line">        <span class="keyword">throw</span> e;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      name: ex.name,</span><br><span class="line">      message: ex.message,</span><br><span class="line">      url: getLocationHref(),</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  computeStackTrace.augmentStackTraceWithInitialElement = augmentStackTraceWithInitialElement;</span><br><span class="line">  computeStackTrace.computeStackTraceFromStackProp = computeStackTraceFromStackProp;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> computeStackTrace;</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+<p>整个<code>TraceKit.computeStackTrace</code>会挨个尝试用不同方法来解析堆栈，先尝试适用于 Chrome 的套路，不行再尝试适用于 Safari 或 IE 的，如果还是不行就手动构造。我们的重点放在适用于 Chrome 的<code>computeStackTraceFromStackProp</code>。</p>
+<h3 id="computeStackTraceFromStackProp"><a href="#computeStackTraceFromStackProp" class="headerlink" title="computeStackTraceFromStackProp"></a>computeStackTraceFromStackProp</h3><p>说实话这个函数的实现没有怎么看，涉及到奇怪的很多正则，整个函数的代码很多，大致的逻辑是先把错误堆栈信息按换行符切割，然后针对每一行提取各种信息：</p>
+<ul>
+<li><code>url</code> 错误的文件 url</li>
+<li><code>func</code> 错误的函数</li>
+<li><code>args</code> 调用的参数</li>
+<li><code>line</code> 行</li>
+<li><code>column</code> 列</li>
+</ul>
+<p>最后如果<code>url</code>是以<code>blob:</code>开头的，会尝试通过相关链接拉取真正的<code>url</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// <span class="doctag">NOTE:</span> blob urls are now supposed to always have an origin, therefore it's format</span></span><br><span class="line"><span class="comment">// which is `blob:http://url/path/with-some-uuid`, is matched by `blob.*?:\/` as well</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> xhr = <span class="keyword">new</span> XMLHttpRequest();</span><br><span class="line">xhr.open(<span class="string">'GET'</span>, element.url, <span class="literal">false</span>);</span><br><span class="line">xhr.send(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">source = source.slice(<span class="number">-300</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Now we dig out the source map URL</span></span><br><span class="line"><span class="keyword">var</span> sourceMaps = source.match(<span class="regexp">/\/\/# sourceMappingURL=(.*)$/</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// If we don't find a source map comment or we find more than one, continue on to the next element.</span></span><br><span class="line"><span class="keyword">if</span> (sourceMaps) &#123;</span><br><span class="line">  <span class="keyword">var</span> sourceMapAddress = sourceMaps[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Now we check to see if it's a relative URL.</span></span><br><span class="line">  <span class="comment">// If it is, convert it to an absolute one.</span></span><br><span class="line">  <span class="keyword">if</span> (sourceMapAddress.charAt(<span class="number">0</span>) === <span class="string">'~'</span>) &#123;</span><br><span class="line">    sourceMapAddress = getLocationOrigin() + sourceMapAddress.slice(<span class="number">1</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Now we strip the '.map' off of the end of the URL and update the</span></span><br><span class="line">  <span class="comment">// element so that Sentry can match the map to the blob.</span></span><br><span class="line">  element.url = sourceMapAddress.slice(<span class="number">0</span>, <span class="number">-4</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后不管怎么样，我们会拿到一个『归一化』的堆栈信息，最后交由了<code>handler</code>处理，接下来看看我们注册的<code>handler</code>是如何处理的。</p>
+<h1 id="handleOnErrorStackInfo"><a href="#handleOnErrorStackInfo" class="headerlink" title="_handleOnErrorStackInfo"></a>_handleOnErrorStackInfo</h1><p>我们的<code>handler</code>就是这个函数，跟踪这个函数会发现真正调用的是<code>_handleStackInfo</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">_handleStackInfo: <span class="function"><span class="keyword">function</span>(<span class="params">stackInfo, options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> frames = <span class="keyword">this</span>._prepareFrames(stackInfo, options); <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>._triggerEvent(<span class="string">'handle'</span>, &#123;</span><br><span class="line">    stackInfo: stackInfo,</span><br><span class="line">    options: options</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>._processException(</span><br><span class="line">    stackInfo.name,</span><br><span class="line">    stackInfo.message,</span><br><span class="line">    stackInfo.url,</span><br><span class="line">    stackInfo.lineno,</span><br><span class="line">    frames,</span><br><span class="line">    options</span><br><span class="line">  );</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p><code>_processException</code>内部经过一系列处理，最终会调用<code>_send</code>方法，<code>_send</code>会把处理后的信息发送给<code>server</code>，发送时会先尝试使用<code>fetch api</code>，不兼容的话再使用<code>XHR</code>，此处代码不难。</p>
+<p><strong><code>_send</code>中一个重要的步骤就是携带上<code>_breadcrumbs</code>数组，这个数组记录了用户的行为轨迹</strong>，后面会说到轨迹是在什么时候被记录的。</p>
+<p>可能会好奇，<code>server</code>的 url 怎么拿到的呢？是不是就是在<code>config</code>函数传入的那个 url 呢？好吧其实并不是，这个 url 需要经过一些处理才能拿到。</p>
+<p>首先发送的 url 是存储在全局的<code>_globalEndpoint</code>中，他是在<code>setDSN</code>方法中被赋值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">setDSN: <span class="function"><span class="keyword">function</span>(<span class="params">dsn</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> self = <span class="keyword">this</span>,</span><br><span class="line">      uri = self._parseDSN(dsn),</span><br><span class="line">      lastSlash = uri.path.lastIndexOf(<span class="string">'/'</span>),</span><br><span class="line">      path = uri.path.substr(<span class="number">1</span>, lastSlash);</span><br><span class="line"></span><br><span class="line">    self._dsn = dsn;</span><br><span class="line">    self._globalKey = uri.user;</span><br><span class="line">    self._globalSecret = uri.pass &amp;&amp; uri.pass.substr(<span class="number">1</span>);</span><br><span class="line">    self._globalProject = uri.path.substr(lastSlash + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    self._globalServer = self._getGlobalServer(uri);</span><br><span class="line"></span><br><span class="line">    self._globalEndpoint =</span><br><span class="line">      self._globalServer + <span class="string">'/'</span> + path + <span class="string">'api/'</span> + self._globalProject + <span class="string">'/store/'</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Reset backoff state since we may be pointing at a</span></span><br><span class="line">    <span class="comment">// new project/server</span></span><br><span class="line">    <span class="keyword">this</span>._resetBackoff();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>参数中的<code>DSN</code>才是我们传给<code>config</code>的值，如果我们的<code>dsn</code>为<code>http://123456@sentry.io.com/5</code>,那么最终的<code>_globalEndpoint</code>就是<code>http://sentry.io.com/api/5/store</code>。</p>
+<p>好，小结一下，<strong>到目前为止我们知道<code>Raven</code>通过<code>TraceKit</code>这个库监听了<code>window.onerror</code>事件，并由<code>TraceKit</code>处理了复杂的错误信息并最终获得归一化的堆栈信息，然后<code>Raven</code>会拿着这个信息再经过一些处理最后发送给 server 端,发送的地址是由我们传入的配置决定的。</strong></p>
+<h1 id="attachPromiseRejectionHandler"><a href="#attachPromiseRejectionHandler" class="headerlink" title="_attachPromiseRejectionHandler"></a>_attachPromiseRejectionHandler</h1><p>捕捉未<code>catch</code>的<code>Promise</code>错误，然后会调用<code>captrueException</code>处理异常。这里会先调用<code>Tracekit.computeStackTrace</code>处理堆栈信息，然后调用<code>_handleStackInfo</code>.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Installs the global promise rejection handler.</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * @return &#123;raven&#125;</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> _attachPromiseRejectionHandler: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="keyword">this</span>._promiseRejectionHandler = <span class="keyword">this</span>._promiseRejectionHandler.bind(<span class="keyword">this</span>);</span><br><span class="line">   _window.addEventListener &amp;&amp;</span><br><span class="line">     _window.addEventListener(<span class="string">'unhandledrejection'</span>, <span class="keyword">this</span>._promiseRejectionHandler);</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Callback used for `unhandledrejection` event</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * @param &#123;PromiseRejectionEvent&#125; event An object containing</span></span><br><span class="line"><span class="comment">  *   promise: the Promise that was rejected</span></span><br><span class="line"><span class="comment">  *   reason: the value with which the Promise was rejected</span></span><br><span class="line"><span class="comment">  * @return void</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> _promiseRejectionHandler: <span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">   <span class="keyword">this</span>.captureException(event.reason, &#123;</span><br><span class="line">     extra: &#123;</span><br><span class="line">       unhandledPromiseRejection: <span class="literal">true</span></span><br><span class="line">     &#125;</span><br><span class="line">   &#125;);</span><br><span class="line"> &#125;,</span><br></pre></td></tr></table></figure>
+<p>我们来看看<code>captureException</code>，他是用于手动发送错误到<code>server</code>。</p>
+<h2 id="captureException"><a href="#captureException" class="headerlink" title="captureException"></a>captureException</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Manually capture an exception and send it over to Sentry</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param &#123;error&#125; ex An exception to be logged</span></span><br><span class="line"><span class="comment"> * @param &#123;object&#125; options A specific set of options for this error [optional]</span></span><br><span class="line"><span class="comment"> * @return &#123;Raven&#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">captureException: <span class="function"><span class="keyword">function</span>(<span class="params">ex, options</span>) </span>&#123;</span><br><span class="line">  options = objectMerge(&#123;<span class="attr">trimHeadFrames</span>: <span class="number">0</span>&#125;, options ? options : &#123;&#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isErrorEvent(ex) &amp;&amp; ex.error) &#123;</span><br><span class="line">    <span class="comment">// If it is an ErrorEvent with `error` property, extract it to get actual Error</span></span><br><span class="line">    ex = ex.error;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDOMError(ex) || isDOMException(ex)) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isError(ex)) &#123;</span><br><span class="line">    <span class="comment">// we have a real Error object</span></span><br><span class="line">    ex = ex;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isPlainObject(ex)) &#123;</span><br><span class="line">    <span class="comment">// If it is plain Object, serialize it manually and extract options</span></span><br><span class="line">    <span class="comment">// This will allow us to group events based on top-level keys</span></span><br><span class="line">    <span class="comment">// which is much better than creating new group when any key/value change</span></span><br><span class="line">    options = <span class="keyword">this</span>._getCaptureExceptionOptionsFromPlainObject(options, ex);</span><br><span class="line">    ex = <span class="keyword">new</span> <span class="built_in">Error</span>(options.message);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// If none of previous checks were valid, then it means that</span></span><br><span class="line">    <span class="comment">// it's not a DOMError/DOMException</span></span><br><span class="line">    <span class="comment">// it's not a plain Object</span></span><br><span class="line">    <span class="comment">// it's not a valid ErrorEvent (one with an error property)</span></span><br><span class="line">    <span class="comment">// it's not an Error</span></span><br><span class="line">    <span class="comment">// So bail out and capture it as a simple message:</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.captureMessage(</span><br><span class="line">      ex,</span><br><span class="line">      objectMerge(options, &#123;</span><br><span class="line">        stacktrace: <span class="literal">true</span>, <span class="comment">// if we fall back to captureMessage, default to attempting a new trace</span></span><br><span class="line">        trimHeadFrames: options.trimHeadFrames + <span class="number">1</span></span><br><span class="line">      &#125;)</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line"> <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// TraceKit.report will re-raise any exception passed to it,</span></span><br><span class="line">  <span class="comment">// which means you have to wrap it in try/catch. Instead, we</span></span><br><span class="line">  <span class="comment">// can wrap it here and only re-raise if TraceKit.report</span></span><br><span class="line">  <span class="comment">// raises an exception different from the one we asked to</span></span><br><span class="line">  <span class="comment">// report on.</span></span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> stack = TraceKit.computeStackTrace(ex);</span><br><span class="line">    <span class="keyword">this</span>._handleStackInfo(stack, options);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (ex1) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ex !== ex1) &#123;</span><br><span class="line">      <span class="keyword">throw</span> ex1;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码注释很详细了，可以看到<code>captureException</code>有两种出口：</p>
+<ul>
+<li>captureMessage： 与_handleStackInfo 的过程类似，会手动发送一条信息给 server</li>
+<li>_handleStackInfo： 前面已经介绍了，会经过一系列处理后把错误发送给后端</li>
+</ul>
+<h1 id="patchFunctionToString"><a href="#patchFunctionToString" class="headerlink" title="_patchFunctionToString"></a>_patchFunctionToString</h1><p>用于将函数转为字符串：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">_patchFunctionToString: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line">  self._originalFunctionToString = <span class="built_in">Function</span>.prototype.toString;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">Function</span>.prototype.toString = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> <span class="keyword">this</span> === <span class="string">'function'</span> &amp;&amp; <span class="keyword">this</span>.__raven__) &#123;</span><br><span class="line">      <span class="keyword">return</span> self._originalFunctionToString.apply(<span class="keyword">this</span>.__orig__, <span class="built_in">arguments</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> self._originalFunctionToString.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里有个<code>__raven__</code>变量，如果有这个属性说明此函数是一个<code>wrapped function</code>，其<code>__orig__</code>表示原始函数。<code>__raven__</code>属性会在原函数被作用于<code>wrap</code>函数时赋值，<code>wrap</code>函数是一个很重要的函数，后面会说到。</p>
+<h1 id="instrumentTryCatch"><a href="#instrumentTryCatch" class="headerlink" title="_instrumentTryCatch"></a>_instrumentTryCatch</h1><p>这个函数用于包裹各种异步回调，例如<code>setTimeout</code>，将回调函数<code>wrap</code>住，<code>wrap</code>内部会使用<code>try-catch</code>包裹原始函数调用，并在出错时将信息发送给<code>server</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Wrap timer functions and event targets to catch errors and provide</span></span><br><span class="line"><span class="comment"> * better metadata.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">_instrumentTryCatch: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> wrappedBuiltIns = self._wrappedBuiltIns; <span class="comment">// 一个内部数组</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">wrapTimeFn</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">fn, t</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// preserve arity</span></span><br><span class="line">      <span class="comment">// Make a copy of the arguments to prevent deoptimization</span></span><br><span class="line">      <span class="comment">// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments</span></span><br><span class="line">      <span class="keyword">var</span> args = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="built_in">arguments</span>.length);</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; args.length; ++i) &#123;</span><br><span class="line">        args[i] = <span class="built_in">arguments</span>[i];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">var</span> originalCallback = args[<span class="number">0</span>];</span><br><span class="line">      <span class="keyword">if</span> (isFunction(originalCallback)) &#123;</span><br><span class="line">        args[<span class="number">0</span>] = self.wrap(originalCallback);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// IE &lt; 9 doesn't support .call/.apply on setInterval/setTimeout, but it</span></span><br><span class="line">      <span class="comment">// also supports only two arguments and doesn't care what this is, so we</span></span><br><span class="line">      <span class="comment">// can just call the original function directly.</span></span><br><span class="line">      <span class="keyword">if</span> (orig.apply) &#123;</span><br><span class="line">        <span class="keyword">return</span> orig.apply(<span class="keyword">this</span>, args);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> orig(args[<span class="number">0</span>], args[<span class="number">1</span>]);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> autoBreadcrumbs = <span class="keyword">this</span>._globalOptions.autoBreadcrumbs;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">wrapEventTarget</span>(<span class="params">global</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> proto = _window[global] &amp;&amp; _window[global].prototype;</span><br><span class="line">    <span class="keyword">if</span> (proto &amp;&amp; proto.hasOwnProperty &amp;&amp; proto.hasOwnProperty(<span class="string">'addEventListener'</span>)) &#123;</span><br><span class="line">      fill(</span><br><span class="line">        proto,</span><br><span class="line">        <span class="string">'addEventListener'</span>,</span><br><span class="line">        <span class="function"><span class="keyword">function</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">evtName, fn, capture, secure</span>) </span>&#123;</span><br><span class="line">            <span class="comment">// preserve arity</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">              <span class="keyword">if</span> (fn &amp;&amp; fn.handleEvent) &#123;</span><br><span class="line">                fn.handleEvent = self.wrap(fn.handleEvent);</span><br><span class="line">              &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">              <span class="comment">// can sometimes get 'Permission denied to access property "handle Event'</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// More breadcrumb DOM capture ... done here and not in `_instrumentBreadcrumbs`</span></span><br><span class="line">            <span class="comment">// so that we don't have more than one wrapper function</span></span><br><span class="line">            <span class="keyword">var</span> before, clickHandler, keypressHandler;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (</span><br><span class="line">              autoBreadcrumbs &amp;&amp;</span><br><span class="line">              autoBreadcrumbs.dom &amp;&amp;</span><br><span class="line">              (global === <span class="string">'EventTarget'</span> || global === <span class="string">'Node'</span>)</span><br><span class="line">            ) &#123;</span><br><span class="line">              <span class="comment">// <span class="doctag">NOTE:</span> generating multiple handlers per addEventListener invocation, should</span></span><br><span class="line">              <span class="comment">//       revisit and verify we can just use one (almost certainly)</span></span><br><span class="line">              clickHandler = self._breadcrumbEventHandler(<span class="string">'click'</span>);</span><br><span class="line">              keypressHandler = self._keypressEventHandler();</span><br><span class="line">              before = <span class="function"><span class="keyword">function</span>(<span class="params">evt</span>) </span>&#123;</span><br><span class="line">                <span class="comment">// need to intercept every DOM event in `before` argument, in case that</span></span><br><span class="line">                <span class="comment">// same wrapped method is re-used for different events (e.g. mousemove THEN click)</span></span><br><span class="line">                <span class="comment">// see #724</span></span><br><span class="line">                <span class="keyword">if</span> (!evt) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">var</span> eventType;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                  eventType = evt.type;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                  <span class="comment">// just accessing event properties can throw an exception in some rare circumstances</span></span><br><span class="line">                  <span class="comment">// see: https://github.com/getsentry/raven-js/issues/838</span></span><br><span class="line">                  <span class="keyword">return</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (eventType === <span class="string">'click'</span>) <span class="keyword">return</span> clickHandler(evt);</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (eventType === <span class="string">'keypress'</span>) <span class="keyword">return</span> keypressHandler(evt);</span><br><span class="line">              &#125;;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> orig.call(</span><br><span class="line">              <span class="keyword">this</span>,</span><br><span class="line">              evtName,</span><br><span class="line">              self.wrap(fn, <span class="literal">undefined</span>, before),</span><br><span class="line">              capture,</span><br><span class="line">              secure</span><br><span class="line">            );</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125;,</span><br><span class="line">        wrappedBuiltIns</span><br><span class="line">      );</span><br><span class="line">      fill(</span><br><span class="line">        proto,</span><br><span class="line">        <span class="string">'removeEventListener'</span>,</span><br><span class="line">        <span class="function"><span class="keyword">function</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">evt, fn, capture, secure</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">              fn = fn &amp;&amp; (fn.__raven_wrapper__ ? fn.__raven_wrapper__ : fn);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">              <span class="comment">// ignore, accessing __raven_wrapper__ will throw in some Selenium environments</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> orig.call(<span class="keyword">this</span>, evt, fn, capture, secure);</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125;,</span><br><span class="line">        wrappedBuiltIns</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  fill(_window, <span class="string">'setTimeout'</span>, wrapTimeFn, wrappedBuiltIns);</span><br><span class="line">  fill(_window, <span class="string">'setInterval'</span>, wrapTimeFn, wrappedBuiltIns);</span><br><span class="line">  <span class="keyword">if</span> (_window.requestAnimationFrame) &#123;</span><br><span class="line">    fill(</span><br><span class="line">      _window,</span><br><span class="line">      <span class="string">'requestAnimationFrame'</span>,</span><br><span class="line">      <span class="function"><span class="keyword">function</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">cb</span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> orig(self.wrap(cb));</span><br><span class="line">        &#125;;</span><br><span class="line">      &#125;,</span><br><span class="line">      wrappedBuiltIns</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// event targets borrowed from bugsnag-js:</span></span><br><span class="line">  <span class="comment">// https://github.com/bugsnag/bugsnag-js/blob/master/src/bugsnag.js#L666</span></span><br><span class="line">  <span class="keyword">var</span> eventTargets = [</span><br><span class="line">    <span class="string">'EventTarget'</span>,</span><br><span class="line">    <span class="string">'Window'</span>,</span><br><span class="line">    <span class="string">'Node'</span>,</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  ];</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; eventTargets.length; i++) &#123;</span><br><span class="line">    wrapEventTarget(eventTargets[i]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面代码主要做了两件事：</p>
+<ol>
+<li>利用<code>fill+wrap</code>函数拦截了<code>setTimeout</code>、<code>setInterval</code>、<code>requestAnimationFrame</code>的实现，将其中的回调函数使用<code>try-catch</code>包裹，回调出错时使用<code>captureException</code>发送</li>
+<li>使用类似的技巧，内部也利用了<code>wrapEventTarget</code>函数拦截各种对象上的<code>addEventListener</code></li>
+</ol>
+<p><code>fill</code>和<code>wrap</code>定义如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Polyfill a method</span></span><br><span class="line"><span class="comment"> * @param obj object e.g. `document`</span></span><br><span class="line"><span class="comment"> * @param name method name present on object e.g. `addEventListener`</span></span><br><span class="line"><span class="comment"> * @param replacement replacement function</span></span><br><span class="line"><span class="comment"> * @param track &#123;optional&#125; record instrumentation to an array</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">fill</span>(<span class="params">obj, name, replacement, track</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (obj == <span class="literal">null</span>) <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">var</span> orig = obj[name];</span><br><span class="line">  obj[name] = replacement(orig);</span><br><span class="line">  obj[name].__raven__ = <span class="literal">true</span>;</span><br><span class="line">  obj[name].__orig__ = orig;</span><br><span class="line">  <span class="keyword">if</span> (track) &#123;</span><br><span class="line">    track.push([obj, name, orig]);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>大体来说，<code>fill</code>将<code>obj</code>上的<code>name</code>属性值替换成<code>replacement</code>，并使用<code>track</code>记录原始对应关系。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">   * Wrap code within a context and returns back a new function to be executed</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * @param &#123;object&#125; options A specific set of options for this context [optional]</span></span><br><span class="line"><span class="comment">   * @param &#123;function&#125; func The function to be wrapped in a new context</span></span><br><span class="line"><span class="comment">   * @param &#123;function&#125; func A function to call before the try/catch wrapper [optional, private]</span></span><br><span class="line"><span class="comment">   * @return &#123;function&#125; The newly wrapped functions with a context</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">wrap: <span class="function"><span class="keyword">function</span>(<span class="params">options, func, _before</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line"> <span class="comment">// 一些递归出口....</span></span><br><span class="line"> <span class="function"><span class="keyword">function</span> <span class="title">wrapped</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> args = [],</span><br><span class="line">      i = <span class="built_in">arguments</span>.length,</span><br><span class="line">      deep = !options || (options &amp;&amp; options.deep !== <span class="literal">false</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (_before &amp;&amp; isFunction(_before)) &#123;</span><br><span class="line">      _before.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Recursively wrap all of a function's arguments that are</span></span><br><span class="line">    <span class="comment">// functions themselves.</span></span><br><span class="line">    <span class="keyword">while</span> (i--) args[i] = deep ? self.wrap(options, <span class="built_in">arguments</span>[i]) : <span class="built_in">arguments</span>[i];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">// Attempt to invoke user-land function</span></span><br><span class="line">      <span class="comment">// <span class="doctag">NOTE:</span> If you are a Sentry user, and you are seeing this stack frame, it</span></span><br><span class="line">      <span class="comment">//       means Raven caught an error invoking your application code. This is</span></span><br><span class="line">      <span class="comment">//       expected behavior and NOT indicative of a bug with Raven.js.</span></span><br><span class="line">      <span class="keyword">return</span> func.apply(<span class="keyword">this</span>, args);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">      self._ignoreNextOnError();</span><br><span class="line">      self.captureException(e, options);</span><br><span class="line">      <span class="keyword">throw</span> e;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// copy over properties of the old function</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> property <span class="keyword">in</span> func) &#123;</span><br><span class="line">    <span class="keyword">if</span> (hasKey(func, property)) &#123;</span><br><span class="line">      wrapped[property] = func[property];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  wrapped.prototype = func.prototype;</span><br><span class="line"></span><br><span class="line">  func.__raven_wrapper__ = wrapped;</span><br><span class="line">  <span class="comment">// Signal that this function has been wrapped/filled already</span></span><br><span class="line">  <span class="comment">// for both debugging and to prevent it to being wrapped/filled twice</span></span><br><span class="line">  wrapped.__raven__ = <span class="literal">true</span>;</span><br><span class="line">  wrapped.__orig__ = func;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> wrapped;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p><code>wrapped</code>会替换真正的原始回调，使用<code>try-catch</code>包裹原始函数调用，这样就能捕获错误了，整个过程我们的业务代码都是无感知的。</p>
+<p>小结一下<code>_instrumentTryCatch</code>做的事情：</p>
+<ol>
+<li>利用<code>fill+wrap</code>函数拦截了<code>setTimeout</code>、<code>setInterval</code>、<code>requestAnimationFrame</code>的实现，将其中的回调函数使用<code>try-catch</code>包裹，回调出错时使用<code>captureException</code>发送</li>
+<li>使用类似的技巧，内部也利用了<code>wrapEventTarget</code>函数拦截各种对象上的<code>addEventListener</code>。</li>
+</ol>
+<h1 id="instrumentBreadcrumbs"><a href="#instrumentBreadcrumbs" class="headerlink" title="_instrumentBreadcrumbs"></a>_instrumentBreadcrumbs</h1><p>用于记录行为轨迹，包括路由切换、控制台日志、xhr/fetch 请求、点击事件等，将轨迹放到全局<code>_breadcrumbs</code>数组中，之后发送 server 时会携带。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * Instrument browser built-ins w/ breadcrumb capturing</span></span><br><span class="line"><span class="comment">  *  - XMLHttpRequests</span></span><br><span class="line"><span class="comment">  *  - DOM interactions (click/typing)</span></span><br><span class="line"><span class="comment">  *  - window.location changes</span></span><br><span class="line"><span class="comment">  *  - console</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * Can be disabled or individually configured via the `autoBreadcrumbs` config option</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> _instrumentBreadcrumbs: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line">   <span class="keyword">var</span> autoBreadcrumbs = <span class="keyword">this</span>._globalOptions.autoBreadcrumbs;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">var</span> wrappedBuiltIns = self._wrappedBuiltIns;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">function</span> <span class="title">wrapProp</span>(<span class="params">prop, xhr</span>) </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (prop <span class="keyword">in</span> xhr &amp;&amp; isFunction(xhr[prop])) &#123;</span><br><span class="line">       fill(xhr, prop, <span class="function"><span class="keyword">function</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> self.wrap(orig);</span><br><span class="line">       &#125;); <span class="comment">// intentionally don't track filled methods on XHR instances</span></span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 记录xhr</span></span><br><span class="line">   <span class="keyword">if</span> (autoBreadcrumbs.xhr &amp;&amp; <span class="string">'XMLHttpRequest'</span> <span class="keyword">in</span> _window) &#123;</span><br><span class="line">     <span class="keyword">var</span> xhrproto = _window.XMLHttpRequest &amp;&amp; _window.XMLHttpRequest.prototype;</span><br><span class="line">     fill(</span><br><span class="line">       xhrproto,</span><br><span class="line">       <span class="string">'open'</span>,</span><br><span class="line">       <span class="function"><span class="keyword">function</span>(<span class="params">origOpen</span>) </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">method, url</span>) </span>&#123;</span><br><span class="line">           <span class="comment">// preserve arity</span></span><br><span class="line"></span><br><span class="line">           <span class="comment">// if Sentry key appears in URL, don't capture</span></span><br><span class="line">           <span class="keyword">if</span> (isString(url) &amp;&amp; url.indexOf(self._globalKey) === <span class="number">-1</span>) &#123;</span><br><span class="line">             <span class="keyword">this</span>.__raven_xhr = &#123;</span><br><span class="line">               method: method,</span><br><span class="line">               url: url,</span><br><span class="line">               status_code: <span class="literal">null</span></span><br><span class="line">             &#125;;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">return</span> origOpen.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">         &#125;;</span><br><span class="line">       &#125;,</span><br><span class="line">       wrappedBuiltIns</span><br><span class="line">     );</span><br><span class="line"></span><br><span class="line">     fill(</span><br><span class="line">       xhrproto,</span><br><span class="line">       <span class="string">'send'</span>,</span><br><span class="line">       <span class="function"><span class="keyword">function</span>(<span class="params">origSend</span>) </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">           <span class="comment">// preserve arity</span></span><br><span class="line">           <span class="keyword">var</span> xhr = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">           <span class="function"><span class="keyword">function</span> <span class="title">onreadystatechangeHandler</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">             <span class="keyword">if</span> (xhr.__raven_xhr &amp;&amp; xhr.readyState === <span class="number">4</span>) &#123;</span><br><span class="line">               <span class="keyword">try</span> &#123;</span><br><span class="line">                 <span class="comment">// touching statusCode in some platforms throws</span></span><br><span class="line">                 <span class="comment">// an exception</span></span><br><span class="line">                 xhr.__raven_xhr.status_code = xhr.status;</span><br><span class="line">               &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">                 <span class="comment">/* do nothing */</span></span><br><span class="line">               &#125;</span><br><span class="line"></span><br><span class="line">               self.captureBreadcrumb(&#123;</span><br><span class="line">                 type: <span class="string">'http'</span>,</span><br><span class="line">                 category: <span class="string">'xhr'</span>,</span><br><span class="line">                 data: xhr.__raven_xhr</span><br><span class="line">               &#125;);</span><br><span class="line">             &#125;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">var</span> props = [<span class="string">'onload'</span>, <span class="string">'onerror'</span>, <span class="string">'onprogress'</span>];</span><br><span class="line">           <span class="keyword">for</span> (<span class="keyword">var</span> j = <span class="number">0</span>; j &lt; props.length; j++) &#123;</span><br><span class="line">             wrapProp(props[j], xhr);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (<span class="string">'onreadystatechange'</span> <span class="keyword">in</span> xhr &amp;&amp; isFunction(xhr.onreadystatechange)) &#123;</span><br><span class="line">             fill(</span><br><span class="line">               xhr,</span><br><span class="line">               <span class="string">'onreadystatechange'</span>,</span><br><span class="line">               <span class="function"><span class="keyword">function</span>(<span class="params">orig</span>) </span>&#123;</span><br><span class="line">                 <span class="keyword">return</span> self.wrap(orig, <span class="literal">undefined</span>, onreadystatechangeHandler);</span><br><span class="line">               &#125; <span class="comment">/* intentionally don't track this instrumentation */</span></span><br><span class="line">             );</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="comment">// if onreadystatechange wasn't actually set by the page on this xhr, we</span></span><br><span class="line">             <span class="comment">// are free to set our own and capture the breadcrumb</span></span><br><span class="line">             xhr.onreadystatechange = onreadystatechangeHandler;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">return</span> origSend.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">         &#125;;</span><br><span class="line">       &#125;,</span><br><span class="line">       wrappedBuiltIns</span><br><span class="line">     );</span><br><span class="line">   &#125;</span><br><span class="line"><span class="comment">// 记录fetch</span></span><br><span class="line">   <span class="keyword">if</span> (autoBreadcrumbs.xhr &amp;&amp; supportsFetch()) &#123;</span><br><span class="line">     fill(</span><br><span class="line">       _window,</span><br><span class="line">       <span class="string">'fetch'</span>,</span><br><span class="line">       <span class="function"><span class="keyword">function</span>(<span class="params">origFetch</span>) </span>&#123;</span><br><span class="line">         <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">           <span class="comment">// preserve arity</span></span><br><span class="line">           <span class="comment">// Make a copy of the arguments to prevent deoptimization</span></span><br><span class="line">           <span class="comment">// https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#32-leaking-arguments</span></span><br><span class="line">           <span class="keyword">var</span> args = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="built_in">arguments</span>.length);</span><br><span class="line">           <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; args.length; ++i) &#123;</span><br><span class="line">             args[i] = <span class="built_in">arguments</span>[i];</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">var</span> fetchInput = args[<span class="number">0</span>];</span><br><span class="line">           <span class="keyword">var</span> method = <span class="string">'GET'</span>;</span><br><span class="line">           <span class="keyword">var</span> url;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (<span class="keyword">typeof</span> fetchInput === <span class="string">'string'</span>) &#123;</span><br><span class="line">             url = fetchInput;</span><br><span class="line">           &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="string">'Request'</span> <span class="keyword">in</span> _window &amp;&amp; fetchInput <span class="keyword">instanceof</span> _window.Request) &#123;</span><br><span class="line">             url = fetchInput.url;</span><br><span class="line">             <span class="keyword">if</span> (fetchInput.method) &#123;</span><br><span class="line">               method = fetchInput.method;</span><br><span class="line">             &#125;</span><br><span class="line">           &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             url = <span class="string">''</span> + fetchInput;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="comment">// if Sentry key appears in URL, don't capture, as it's our own request</span></span><br><span class="line">           <span class="keyword">if</span> (url.indexOf(self._globalKey) !== <span class="number">-1</span>) &#123;</span><br><span class="line">             <span class="keyword">return</span> origFetch.apply(<span class="keyword">this</span>, args);</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">if</span> (args[<span class="number">1</span>] &amp;&amp; args[<span class="number">1</span>].method) &#123;</span><br><span class="line">             method = args[<span class="number">1</span>].method;</span><br><span class="line">           &#125;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">var</span> fetchData = &#123;</span><br><span class="line">             method: method,</span><br><span class="line">             url: url,</span><br><span class="line">             status_code: <span class="literal">null</span></span><br><span class="line">           &#125;;</span><br><span class="line"></span><br><span class="line">           <span class="keyword">return</span> origFetch</span><br><span class="line">             .apply(<span class="keyword">this</span>, args)</span><br><span class="line">             .then(<span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">               fetchData.status_code = response.status;</span><br><span class="line"></span><br><span class="line">               self.captureBreadcrumb(&#123;</span><br><span class="line">                 type: <span class="string">'http'</span>,</span><br><span class="line">                 category: <span class="string">'fetch'</span>,</span><br><span class="line">                 data: fetchData</span><br><span class="line">               &#125;);</span><br><span class="line"></span><br><span class="line">               <span class="keyword">return</span> response;</span><br><span class="line">             &#125;)</span><br><span class="line">             [<span class="string">'catch'</span>](<span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">               <span class="comment">// if there is an error performing the request</span></span><br><span class="line">               self.captureBreadcrumb(&#123;</span><br><span class="line">                 type: <span class="string">'http'</span>,</span><br><span class="line">                 category: <span class="string">'fetch'</span>,</span><br><span class="line">                 data: fetchData,</span><br><span class="line">                 level: <span class="string">'error'</span></span><br><span class="line">               &#125;);</span><br><span class="line"></span><br><span class="line">               <span class="keyword">throw</span> err;</span><br><span class="line">             &#125;);</span><br><span class="line">         &#125;;</span><br><span class="line">       &#125;,</span><br><span class="line">       wrappedBuiltIns</span><br><span class="line">     );</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Capture breadcrumbs from any click that is unhandled / bubbled up all the way</span></span><br><span class="line">   <span class="comment">// to the document. Do this before we instrument addEventListener.</span></span><br><span class="line">   <span class="keyword">if</span> (autoBreadcrumbs.dom &amp;&amp; <span class="keyword">this</span>._hasDocument) &#123;</span><br><span class="line">     <span class="keyword">if</span> (_document.addEventListener) &#123;</span><br><span class="line">       _document.addEventListener(<span class="string">'click'</span>, self._breadcrumbEventHandler(<span class="string">'click'</span>), <span class="literal">false</span>);</span><br><span class="line">       _document.addEventListener(<span class="string">'keypress'</span>, self._keypressEventHandler(), <span class="literal">false</span>);</span><br><span class="line">     &#125; <span class="keyword">else</span> <span class="keyword">if</span> (_document.attachEvent) &#123;</span><br><span class="line">       <span class="comment">// IE8 Compatibility</span></span><br><span class="line">       _document.attachEvent(<span class="string">'onclick'</span>, self._breadcrumbEventHandler(<span class="string">'click'</span>));</span><br><span class="line">       _document.attachEvent(<span class="string">'onkeypress'</span>, self._keypressEventHandler());</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// record navigation (URL) changes</span></span><br><span class="line">   <span class="comment">// <span class="doctag">NOTE:</span> in Chrome App environment, touching history.pushState, *even inside</span></span><br><span class="line">   <span class="comment">//       a try/catch block*, will cause Chrome to output an error to console.error</span></span><br><span class="line">   <span class="comment">// borrowed from: https://github.com/angular/angular.js/pull/13945/files</span></span><br><span class="line">   <span class="keyword">var</span> chrome = _window.chrome;</span><br><span class="line">   <span class="keyword">var</span> isChromePackagedApp = chrome &amp;&amp; chrome.app &amp;&amp; chrome.app.runtime;</span><br><span class="line">   <span class="keyword">var</span> hasPushAndReplaceState =</span><br><span class="line">     !isChromePackagedApp &amp;&amp;</span><br><span class="line">     _window.history &amp;&amp;</span><br><span class="line">     _window.history.pushState &amp;&amp;</span><br><span class="line">     _window.history.replaceState;</span><br><span class="line">   <span class="keyword">if</span> (autoBreadcrumbs.location &amp;&amp; hasPushAndReplaceState) &#123;</span><br><span class="line">     <span class="comment">// <span class="doctag">TODO:</span> remove onpopstate handler on uninstall()</span></span><br><span class="line">     <span class="keyword">var</span> oldOnPopState = _window.onpopstate;</span><br><span class="line">     _window.onpopstate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">       <span class="keyword">var</span> currentHref = self._location.href;</span><br><span class="line">       self._captureUrlChange(self._lastHref, currentHref);</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (oldOnPopState) &#123;</span><br><span class="line">         <span class="keyword">return</span> oldOnPopState.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">       &#125;</span><br><span class="line">     &#125;;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">var</span> historyReplacementFunction = <span class="function"><span class="keyword">function</span>(<span class="params">origHistFunction</span>) </span>&#123;</span><br><span class="line">       <span class="comment">// note history.pushState.length is 0; intentionally not declaring</span></span><br><span class="line">       <span class="comment">// params to preserve 0 arity</span></span><br><span class="line">       <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params"><span class="regexp">/* state, title, url */</span></span>) </span>&#123;</span><br><span class="line">         <span class="keyword">var</span> url = <span class="built_in">arguments</span>.length &gt; <span class="number">2</span> ? <span class="built_in">arguments</span>[<span class="number">2</span>] : <span class="literal">undefined</span>;</span><br><span class="line"></span><br><span class="line">         <span class="comment">// url argument is optional</span></span><br><span class="line">         <span class="keyword">if</span> (url) &#123;</span><br><span class="line">           <span class="comment">// coerce to string (this is what pushState does)</span></span><br><span class="line">           self._captureUrlChange(self._lastHref, url + <span class="string">''</span>);</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">return</span> origHistFunction.apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>);</span><br><span class="line">       &#125;;</span><br><span class="line">     &#125;;</span><br><span class="line"></span><br><span class="line">     fill(_window.history, <span class="string">'pushState'</span>, historyReplacementFunction, wrappedBuiltIns);</span><br><span class="line">     fill(_window.history, <span class="string">'replaceState'</span>, historyReplacementFunction, wrappedBuiltIns);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 记录控制台记录</span></span><br><span class="line">   <span class="keyword">if</span> (autoBreadcrumbs.console &amp;&amp; <span class="string">'console'</span> <span class="keyword">in</span> _window &amp;&amp; <span class="built_in">console</span>.log) &#123;</span><br><span class="line">     <span class="comment">// console</span></span><br><span class="line">     <span class="keyword">var</span> consoleMethodCallback = <span class="function"><span class="keyword">function</span>(<span class="params">msg, data</span>) </span>&#123;</span><br><span class="line">       self.captureBreadcrumb(&#123;</span><br><span class="line">         message: msg,</span><br><span class="line">         level: data.level,</span><br><span class="line">         category: <span class="string">'console'</span></span><br><span class="line">       &#125;);</span><br><span class="line">     &#125;;</span><br><span class="line"></span><br><span class="line">     each([<span class="string">'debug'</span>, <span class="string">'info'</span>, <span class="string">'warn'</span>, <span class="string">'error'</span>, <span class="string">'log'</span>], <span class="function"><span class="keyword">function</span>(<span class="params">_, level</span>) </span>&#123;</span><br><span class="line">       wrapConsoleMethod(<span class="built_in">console</span>, level, consoleMethodCallback);</span><br><span class="line">     &#125;);</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;,</span><br></pre></td></tr></table></figure>
+<p>里面有几个辅助函数，这里稍作说明，每个辅助函数的代码都比较好理解。</p>
+<ul>
+<li><p><code>captureBreadcrumb</code>： 将参数对象放到全局的<code>_breadcrumbs</code>数组中，在此之前如果用户设置了<code>breadcrumbCallback</code>，会先把参数给此<code>callback</code>处理一下。<code>_breadcrumbs</code>会在<code>_send</code>中被发送到后端，<code>_send</code>会由<code>_processException</code>或<code>captureMessage</code>调用，其中<code>_processException</code>会由<code>_handleStackInfo</code>调用.所以可以认为<code>captureBreadcrumb</code>中的<code>_breadcrumbs</code>会在之后向后台发送错误时携带上.</p>
+</li>
+<li><p><code>_breadcrumbEventHandler</code>：记录发生<code>dom</code>事件时，事件目标节点的在<code>dom tree</code>中的路径（如果重复触发多次则只记录第一次）。路径只记录从当前节点到最高 5 级父节点，最终格式为<code>....grandparent&gt;parent&gt;node</code>. 获取的路径最后也是由<code>captureBreadcrumb</code>处理.</p>
+</li>
+<li><p><code>_keypressEventHandler</code>： 主要是记录<code>input/textarea</code>上的<code>keypress</code>事件，<code>_breadcrumbEventHandler</code>更多的是针对鼠标事件。<code>keypress</code>事件通过<code>1000ms</code>的<code>debounce</code>做了截流，最终还是会调用<code>_breadcrumbEventHandler</code>记录路径.</p>
+</li>
+<li><p><code>_captureUrlChange</code>：对之前和现在的<code>url</code>进行一些处理后，交由<code>captureBreadcrumb</code>处理.</p>
+</li>
+</ul>
+<p>如果理解了<code>_instrumentTryCatch</code>的套路，那么理解<code>_instrumentBreadcrumbs</code>就会简单很多，因为他们都是通过<code>fill+wrap</code>的组合来做到这些。</p>
+<p>小结一下<code>_instrumentTryCatch</code>做的事情：</p>
+<ol>
+<li>拦截<code>popstate</code>、<code>pushState</code>、<code>replaceState</code>，利用<code>_captureUrlChange</code>函数记录当前<code>url</code></li>
+<li>拦截<code>console</code>上的<code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>log</code>，利用<code>captureBreadcrumb</code>记录调用参数</li>
+<li>拦截<code>xhr</code>，在<code>open</code>时利用<code>__raven_xhr</code>变量记录发送的<code>url+method</code>，在<code>send</code>时<ol>
+<li>使用<code>wrap</code>包裹<code>onload</code>, <code>onerror</code>, <code>onprogress</code>的回调，使用<code>try-catch</code>抓错</li>
+<li>在<code>onreadystatechange</code>时，使用<code>captureBreadcrumb</code>记录本次请求的<code>url+method+status_code</code></li>
+</ol>
+</li>
+<li>拦截<code>fetch</code>，使用与拦截<code>xhr</code>类似的技巧，在<code>fetch</code>成功或失败时记录本次请求</li>
+<li>拦截冒泡到<code>document</code>上的<code>click</code>、<code>keypress</code>事件，使用<code>_breadcrumbEventHandler</code>、<code>_keypressEventHandler</code>处理</li>
+</ol>
+<h1 id="drainPlugins"><a href="#drainPlugins" class="headerlink" title="_drainPlugins"></a>_drainPlugins</h1><p>跟前面的几个比起来，这个算很简单的了，就是拿到内部插件数组中的每个插件安装一下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">_drainPlugins: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> self = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">  each(<span class="keyword">this</span>._plugins, <span class="function"><span class="keyword">function</span>(<span class="params">_, plugin</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> installer = plugin[<span class="number">0</span>]; <span class="comment">// 插件函数</span></span><br><span class="line">    <span class="keyword">var</span> args = plugin[<span class="number">1</span>]; <span class="comment">// 插件函数的参数</span></span><br><span class="line">    installer.apply(self, [self].concat(args));</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p><code>Raven</code>通过各种方法来捕获错误，同时记录行为轨迹，所有的方式列举如下：</p>
+<ul>
+<li><p><code>TraceKit</code>：监听全局<code>window.error</code>事件，处理错误堆栈信息后发送给<code>Sentry Server</code></p>
+</li>
+<li><p><code>_attachPromiseRejectionHandler</code>：捕捉未<code>catch</code>的<code>Promise</code>错误，处理后发送<code>server</code></p>
+</li>
+<li><p><code>_breadcrumbEventHandler</code>：记录发生<code>dom</code>事件时目标节点的路径，并在下次发送<code>server</code>时携带</p>
+</li>
+<li><p><code>_keypressEventHandler</code>：记录<code>input/textarea</code>上的<code>keypress</code>事件，<code>1000ms</code>截流，最终调用<code>_breadcrumbEventHandler</code></p>
+</li>
+<li><p><code>captureMessage</code>、<code>captureException</code>：手动发送错误到<code>server</code></p>
+</li>
+<li><p><code>_instrumentTryCatch</code>：</p>
+<ol>
+<li>拦截了<code>setTimeout</code>、<code>setInterval</code>、<code>requestAnimationFrame</code>的实现，将其中的回调函数使用<code>try-catch</code>包裹，回调出错时使用<code>captureException</code>发送</li>
+<li>拦截<code>Window</code>等多个对象上的<code>addEventListener</code>，同样使用上面的方式包裹</li>
+</ol>
+</li>
+<li><p><code>_instrumentBreadcrumbs</code>，记录各种操作，存为『面包屑』，并在下次发送<code>server</code>时携带</p>
+<ol>
+<li><p>拦截<code>popstate</code>、<code>pushState</code>、<code>replaceState</code>，利用记录当前<code>url</code></p>
+</li>
+<li><p>拦截<code>console</code>上的<code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>, <code>log</code>，记录调用方法和参数</p>
+</li>
+<li><p>拦截<code>xhr</code>，在<code>open</code>时记录发送的<code>url+method</code>，在<code>send</code>时</p>
+<ol>
+<li>包裹<code>onload</code>, <code>onerror</code>, <code>onprogress</code>的回调，使用<code>try-catch</code>抓错</li>
+<li>在<code>onreadystatechange</code>时，记录本次请求的<code>url+method+status_code</code></li>
+</ol>
+</li>
+<li><p>拦截<code>fetch</code>，使用与拦截<code>xhr</code>类似的技巧，在<code>fetch</code>成功或失败时记录本次请求</p>
+</li>
+<li><p>拦截冒泡到<code>document</code>上的<code>click、keypress</code>事件，使用<code>_breadcrumbEventHandler</code>、<code>_keypressEventHandler</code>处理</p>
+</li>
+</ol>
+</li>
+<li><p><code>RavenVuePlugin</code>: 设置<code>Vue.config.errorHandler</code>，并将错误交由<code>captureException</code>处理</p>
+</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vue/" rel="tag"># vue</a>
+          
+            <a href="/tags/Sentry/" rel="tag"># Sentry</a>
+          
+            <a href="/tags/Raven/" rel="tag"># Raven</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/17/vue-i18n-source-code/" rel="next" title="VueI18n源码解析">
+                <i class="fa fa-chevron-left"></i> VueI18n源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/22/unicode/" rel="prev" title="Unicode">
+                Unicode <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#配置及主入口-install-方法"><span class="nav-number">1.</span> <span class="nav-text">配置及主入口 install 方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#TraceKit-report-subscribe"><span class="nav-number">2.</span> <span class="nav-text">TraceKit.report.subscribe</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#TraceKit-computeStackTrace"><span class="nav-number">2.1.</span> <span class="nav-text">TraceKit.computeStackTrace</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#computeStackTraceFromStackProp"><span class="nav-number">2.1.1.</span> <span class="nav-text">computeStackTraceFromStackProp</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#handleOnErrorStackInfo"><span class="nav-number">3.</span> <span class="nav-text">_handleOnErrorStackInfo</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#attachPromiseRejectionHandler"><span class="nav-number">4.</span> <span class="nav-text">_attachPromiseRejectionHandler</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#captureException"><span class="nav-number">4.1.</span> <span class="nav-text">captureException</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#patchFunctionToString"><span class="nav-number">5.</span> <span class="nav-text">_patchFunctionToString</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#instrumentTryCatch"><span class="nav-number">6.</span> <span class="nav-text">_instrumentTryCatch</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#instrumentBreadcrumbs"><span class="nav-number">7.</span> <span class="nav-text">_instrumentBreadcrumbs</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#drainPlugins"><span class="nav-number">8.</span> <span class="nav-text">_drainPlugins</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">9.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

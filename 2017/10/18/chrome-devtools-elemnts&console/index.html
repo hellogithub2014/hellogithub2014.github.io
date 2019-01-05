@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CACHE,HTTP,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="作为前端开发者，谷歌浏览器的开发者工具是每天都要用的。以前在公众号上也会偶尔看到相关的文章，不过都是别人消化过的知识了，倒不如自己去官网系统的学习一遍，这样以后碰到类似的文章就心中有数了😆 设备模式切换 Device Mode切换 Device Mode 按钮可以打开或关闭 Device Mode。 当 Device Mode 打开时，该图标呈蓝色。当 Device Mode 关闭时，该图标呈灰">
+<meta name="keywords" content="CACHE,HTTP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chrome开发者工具之elements&amp;console面板使用总结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="作为前端开发者，谷歌浏览器的开发者工具是每天都要用的。以前在公众号上也会偶尔看到相关的文章，不过都是别人消化过的知识了，倒不如自己去官网系统的学习一遍，这样以后碰到类似的文章就心中有数了😆 设备模式切换 Device Mode切换 Device Mode 按钮可以打开或关闭 Device Mode。 当 Device Mode 打开时，该图标呈蓝色。当 Device Mode 关闭时，该图标呈灰">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/device-mode-initial-view.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/images/chrome-devtools/10-18/device-mode-on.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/images/chrome-devtools/10-18/device-mode-off.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/device-mode.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/select-device.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.40.59.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/change-orientation.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/zoom-to-fit.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/device-mode-dotmenu.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/edit-property-name.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/computed-pane.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/right-click-inspect.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.29.56.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/images/chrome-devtools/10-18/inspect-icon.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/实时编辑dom结构.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/edit-as-html.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.44.20.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.49.04.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.50.40.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.52.04.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.56.14.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2019.56.34.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.04.23.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.14.19.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/message-stacking.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.17.56.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/timestamped-console.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.21.36.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.24.19.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-19%2020.31.21.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.26.23.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.27.35.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.31.15.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.34.09.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.35.39.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.37.38.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.39.22.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.43.40.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.47.42.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.50.22.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.55.22.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2021.59.15.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2022.08.47.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/chrome-devtools/屏幕快照%202017-08-20%2022.22.17.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chrome开发者工具之elements&amp;console面板使用总结">
+<meta name="twitter:description" content="作为前端开发者，谷歌浏览器的开发者工具是每天都要用的。以前在公众号上也会偶尔看到相关的文章，不过都是别人消化过的知识了，倒不如自己去官网系统的学习一遍，这样以后碰到类似的文章就心中有数了😆 设备模式切换 Device Mode切换 Device Mode 按钮可以打开或关闭 Device Mode。 当 Device Mode 打开时，该图标呈蓝色。当 Device Mode 关闭时，该图标呈灰">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/chrome-devtools/10-18/device-mode-initial-view.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/">
+
+
+
+
+
+  <title>Chrome开发者工具之elements&console面板使用总结 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/10/18/chrome-devtools-elemnts&console/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chrome开发者工具之elements&console面板使用总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-18T22:00:00+08:00">
+                2017-10-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>作为前端开发者，谷歌浏览器的开发者工具是每天都要用的。以前在公众号上也会偶尔看到相关的文章，不过都是别人消化过的知识了，倒不如自己去官网系统的学习一遍，这样以后碰到类似的文章就心中有数了😆</p>
+<h1 id="设备模式"><a href="#设备模式" class="headerlink" title="设备模式"></a>设备模式</h1><h2 id="切换-Device-Mode"><a href="#切换-Device-Mode" class="headerlink" title="切换 Device Mode"></a>切换 Device Mode</h2><p>切换 Device Mode 按钮可以打开或关闭 Device Mode。<br><img src="/images/chrome-devtools/10-18/device-mode-initial-view.png" alt=""></p>
+<p>当 Device Mode 打开时，该图标呈蓝色<br><img src="images/chrome-devtools/10-18/device-mode-on.png" style="height:70px;width:70px;">。当 Device Mode 关闭时，该图标呈灰色<img src="images/chrome-devtools/10-18/device-mode-off.png" style="height:70px;width:70px;">。</p>
+<h2 id="使用视口控件"><a href="#使用视口控件" class="headerlink" title="使用视口控件"></a>使用视口控件</h2><p><img src="/images/chrome-devtools/10-18/device-mode.png" alt=""><br>包括以下两个模式：</p>
+<ol>
+<li><p>自适应。使视口可以通过任意一侧的大手柄随意调整大小。</p>
+</li>
+<li><p>特定设备。将视口锁定为特定设备确切的视口大小，并模拟特定设备特性。</p>
+</li>
+</ol>
+<h3 id="自适应"><a href="#自适应" class="headerlink" title="自适应"></a>自适应</h3><p>可以用来调整视口大小以<strong>创建完全自适应设计</strong>，这种设计可以适应未知和未来的设备类型。在视口上拖动调整大小的大手柄，或者点击菜单栏中的值进行精确调整。</p>
+<h3 id="特定设备"><a href="#特定设备" class="headerlink" title="特定设备"></a>特定设备</h3><h4 id="内置设备预设"><a href="#内置设备预设" class="headerlink" title="内置设备预设"></a>内置设备预设</h4><p><img src="/images/chrome-devtools/10-18/select-device.png" alt=""></p>
+<h4 id="添加自定义设备预设"><a href="#添加自定义设备预设" class="headerlink" title="添加自定义设备预设"></a>添加自定义设备预设</h4><ol>
+<li><p>转至 DevTools 的 Settings 面板。</p>
+</li>
+<li><p>点击 Devices 标签。</p>
+</li>
+<li><p>点击 Add custom device。</p>
+</li>
+<li><p>输入设备名称、宽度、高度、设备像素比和 User Agent 字符串。</p>
+</li>
+<li><p>点击 save。</p>
+</li>
+</ol>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.40.59.png" alt=""></p>
+<h4 id="设备状态和方向"><a href="#设备状态和方向" class="headerlink" title="设备状态和方向"></a>设备状态和方向</h4><p>主要用于在横向和纵向屏幕方向之间切换<br><img src="/images/chrome-devtools/10-18/change-orientation.png" alt=""></p>
+<h4 id="缩放到合适大小"><a href="#缩放到合适大小" class="headerlink" title="缩放到合适大小"></a>缩放到合适大小</h4><p><img src="/images/chrome-devtools/10-18/zoom-to-fit.png" alt=""></p>
+<h4 id="可选控件"><a href="#可选控件" class="headerlink" title="可选控件"></a>可选控件</h4><p>点击设备工具栏右侧上的三个小圆点，可以更改或启用可选控件。当前选项包括：</p>
+<ul>
+<li><p>User Agent 类型（模拟 UA 和触摸事件）</p>
+</li>
+<li><p>设备像素比</p>
+</li>
+<li><p>媒体查询</p>
+</li>
+<li><p>标尺</p>
+</li>
+<li><p>配置网络（UA、网络节流）</p>
+</li>
+</ul>
+<p><img src="/images/chrome-devtools/10-18/device-mode-dotmenu.png" alt=""></p>
+<p>这些工具的具体使用方法参见<a href="https://developers.google.com/web/tools/chrome-devtools/device-mode/emulate-mobile-viewports" target="_blank" rel="noopener">测试自适应和设备特定的视口</a></p>
+<h1 id="元素面板"><a href="#元素面板" class="headerlink" title="元素面板"></a>元素面板</h1><p>Chrome DevTools 的 Elements 面板中的 DOM 树视图可以显示当前网页的 DOM 结构。通过 DOM 更新实时修改页面的内容和结构。还可以检查和实时编辑页面的 HTML 与 CSS。</p>
+<h2 id="编辑样式"><a href="#编辑样式" class="headerlink" title="编辑样式"></a>编辑样式</h2><h3 id="实时编辑样式"><a href="#实时编辑样式" class="headerlink" title="实时编辑样式"></a>实时编辑样式</h3><p>在 Styles 窗格中实时编辑样式属性名称和值。所有样式均可修改，除了灰色部分（与 User Agent 样式表一样）。<br>要编辑名称或值，请点击它，进行更改，然后按 Tab 或 Enter 保存更改。<br><img src="/images/chrome-devtools/10-18/edit-property-name.png" alt=""></p>
+<p>styles窗格更详细使用请阅读<a href="https://developers.google.com/web/tools/chrome-devtools/inspect-styles/edit-styles" target="_blank" rel="noopener">编辑样式</a></p>
+<h3 id="检查和编辑框模型参数"><a href="#检查和编辑框模型参数" class="headerlink" title="检查和编辑框模型参数"></a>检查和编辑框模型参数</h3><p>使用 Computed 窗格检查和编辑当前元素的框模型参数。 框模型中的所有值均可修改，只需点击它们即可。<br><img src="/images/chrome-devtools/10-18/computed-pane.png" alt=""></p>
+<h2 id="编辑DOM"><a href="#编辑DOM" class="headerlink" title="编辑DOM"></a>编辑DOM</h2><h3 id="检查元素"><a href="#检查元素" class="headerlink" title="检查元素"></a>检查元素</h3><ol>
+<li><p>右键点击页面上的任何元素并选择 Inspect。<br> <img src="/images/chrome-devtools/10-18/right-click-inspect.png" alt=""></p>
+</li>
+<li><p>打开控制台，然后按 <code>Ctrl + Shift + C (Windows)</code> 或 <code>Cmd + Shift + C (Mac)</code>，然后将鼠标悬停到某个元素上。 DevTools 会在 Elements 面板中自动突出显示您悬停的元素。点击元素可以退出检查模式，同时保持元素在 Elements 面板中处于突出显示状态。<br> <img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.29.56.png" alt=""></p>
+</li>
+<li><p>点击 Inspect Element 按钮<img src="images/chrome-devtools/10-18/inspect-icon.png" style="height:70px;width:70px;"> 转到 Inspect Element 模式，然后点击元素。</p>
+</li>
+<li><p>在控制台中使用 inspect 方法，例如 inspect(document.body)。</p>
+</li>
+</ol>
+<h3 id="实时编辑-DOM-节点"><a href="#实时编辑-DOM-节点" class="headerlink" title="实时编辑 DOM 节点"></a>实时编辑 DOM 节点</h3><p>要实时编辑 DOM 节点，只需双击选定元素，然后进行更改。<br><img src="/images/chrome-devtools/实时编辑dom结构.png" alt=""></p>
+<h3 id="以-HTML-形式编辑-DOM-节点及其子级"><a href="#以-HTML-形式编辑-DOM-节点及其子级" class="headerlink" title="以 HTML 形式编辑 DOM 节点及其子级"></a>以 HTML 形式编辑 DOM 节点及其子级</h3><ol>
+<li><p>在DOM节点上右键，或者点击最左边的<code>more actions</code> 菜单（3个小点）,然后选择 Edit as HTML。</p>
+</li>
+<li><p>随意编辑</p>
+</li>
+<li><p>按 Ctrl+Enter (Windows / Linux) 或 Cmd+Enter (Mac) 保存更改。</p>
+</li>
+<li><p>按 Esc 可以退出编辑器而不保存。</p>
+</li>
+</ol>
+<p><img src="/images/chrome-devtools/10-18/edit-as-html.png" alt=""></p>
+<h3 id="移动-DOM-节点"><a href="#移动-DOM-节点" class="headerlink" title="移动 DOM 节点"></a>移动 DOM 节点</h3><p>点击、按住并拖动节点可将其移动。</p>
+<h3 id="设置-DOM-断点"><a href="#设置-DOM-断点" class="headerlink" title="设置 DOM 断点"></a>设置 DOM 断点</h3><p>设置 DOM 断点以调试复杂的 JavaScript 应用。例如，如果 JavaScript 正在更改 DOM 元素的样式，将 DOM 断点设置为在元素属性修改时触发。在发生以下一种 DOM 更改时触发断点：子树更改、属性更改、节点移除。<br><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.44.20.png" alt=""></p>
+<h4 id="子树修改"><a href="#子树修改" class="headerlink" title="子树修改"></a>子树修改</h4><p><strong>添加、移除或移动子元素</strong>时将触发子树修改断点。例如，如果在 main-content 元素上设置子树修改，以下代码将触发断点：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">'main-content'</span>);</span><br><span class="line"><span class="comment">//modify the element's subtree.</span></span><br><span class="line"><span class="keyword">var</span> mySpan = <span class="built_in">document</span>.createElement(<span class="string">'span'</span>);</span><br><span class="line">element.appendChild( mySpan );</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.49.04.png" alt=""></p>
+<h4 id="属性修改"><a href="#属性修改" class="headerlink" title="属性修改"></a>属性修改</h4><p><strong>动态更改元素的属性</strong> (class, id, name) 时将发生属性修改：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> element = <span class="built_in">document</span>.getElementById(<span class="string">'main-content'</span>);</span><br><span class="line"><span class="comment">// class attribute of element has been modified.</span></span><br><span class="line">element.className = <span class="string">'active'</span>;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.50.40.png" alt=""></p>
+<h4 id="节点移除"><a href="#节点移除" class="headerlink" title="节点移除"></a>节点移除</h4><p>从 DOM 中<strong>移除节点</strong>时将触发节点移除修改：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.getElementById(<span class="string">'main-content'</span>).remove();</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.52.04.png" alt=""></p>
+<h3 id="与-DOM-断点交互"><a href="#与-DOM-断点交互" class="headerlink" title="与 DOM 断点交互"></a>与 DOM 断点交互</h3><p>Elements 和 Sources 面板均包含一个用于管理 DOM 断点的窗格。每个断点都会列出元素标识符和断点类型。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.56.14.png" alt=""></p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 19.56.34.png" alt=""></p>
+<p>可通过以下方式之一与列出的每一个断点交互：</p>
+<ul>
+<li><p>悬停在元素标识符上可以显示元素在页面上的相应位置（类似于在 Elements 面板中悬停在节点上）。</p>
+</li>
+<li><p>点击元素可以将其在 Elements 面板中选中。</p>
+</li>
+<li><p>切换复选框可以启用或停用断点。</p>
+</li>
+</ul>
+<h3 id="查看元素事件侦听器"><a href="#查看元素事件侦听器" class="headerlink" title="查看元素事件侦听器"></a>查看元素事件侦听器</h3><p>在 Event Listeners 窗格中查看与 DOM 节点关联的 JavaScript 事件侦听器。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.04.23.png" alt=""></p>
+<p>右键点击<code>handler</code>，并选择 <code>Show Function Definition</code> 可以查看函数的定义位置。另外：如果启用 <code>Ancestors</code> 复选框，除了当前选定节点的事件侦听器外，还会显示其祖先实体的事件侦听器。如果停用复选框，将仅显示当前选定节点的事件侦听器。</p>
+<h1 id="控制台面板"><a href="#控制台面板" class="headerlink" title="控制台面板"></a>控制台面板</h1><h2 id="打开console面板"><a href="#打开console面板" class="headerlink" title="打开console面板"></a>打开console面板</h2><ol>
+<li><p>直接点击console面板。。。</p>
+</li>
+<li><p>任何其他面板旁的抽屉式导航栏的形式</p>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.14.19.png" alt=""></p>
+</li>
+<li><p>任何其他面板中，按ESC键</p>
+</li>
+</ol>
+<h2 id="消息堆叠"><a href="#消息堆叠" class="headerlink" title="消息堆叠"></a>消息堆叠</h2><p>如果一条消息连续重复，而不是在新行上输出每一个消息实例，控制台将“堆叠”消息并在左侧外边距显示一个数字。此数字表示该消息已重复的次数。</p>
+<p><img src="/images/chrome-devtools/10-18/message-stacking.png" alt=""></p>
+<p>如果倾向于为每一个日志使用一个独特的行条目，在 DevTools 设置中启用 Show timestamps。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.17.56.png" alt=""></p>
+<p>由于每一条消息的时间戳均不同，因此，每一条消息都将显示在各自的行上。</p>
+<p><img src="/images/chrome-devtools/10-18/timestamped-console.png" alt=""></p>
+<h2 id="处理控制台历史记录"><a href="#处理控制台历史记录" class="headerlink" title="处理控制台历史记录"></a>处理控制台历史记录</h2><h3 id="清除历史记录"><a href="#清除历史记录" class="headerlink" title="清除历史记录"></a>清除历史记录</h3><p>可以通过以下方式清除控制台历史记录：</p>
+<ul>
+<li><p>在控制台中点击右键，然后按 Clear console。</p>
+</li>
+<li><p>在控制台中键入 clear()。</p>
+</li>
+<li><p>从的 JavaScript 代码内调用 console.clear()。</p>
+</li>
+<li><p>按 Ctrl+L （Mac、Windows、Linux）。</p>
+</li>
+<li><p>点击面板左上角的按钮<img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.21.36.png" alt=""></p>
+</li>
+</ul>
+<h3 id="保留历史记录"><a href="#保留历史记录" class="headerlink" title="保留历史记录"></a>保留历史记录</h3><p>启用控制台顶部的 <code>Preserve log</code> 复选框可以在页面刷新或更改之间保留控制台历史记录。 消息将一直存储，直至清除控制台或者关闭标签。</p>
+<h3 id="保存历史记录"><a href="#保存历史记录" class="headerlink" title="保存历史记录"></a>保存历史记录</h3><p>在控制台中点击右键，然后选择 <code>Save as</code>，将控制台的输出保存到日志文件中。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.24.19.png" alt=""></p>
+<h2 id="过滤控制台输出"><a href="#过滤控制台输出" class="headerlink" title="过滤控制台输出"></a>过滤控制台输出</h2><p>可以按严重性等级过滤控制台输出。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-19 20.31.21.png" alt=""></p>
+<h2 id="console-api"><a href="#console-api" class="headerlink" title="console api"></a>console api</h2><h3 id="诊断并记录到控制台中"><a href="#诊断并记录到控制台中" class="headerlink" title="诊断并记录到控制台中"></a>诊断并记录到控制台中</h3><ul>
+<li><p>使用 console.log() 进行基本记录</p>
+</li>
+<li><p>使用 console.error() 和 console.warn() 显示引入注目的消息</p>
+</li>
+<li><p>使用 console.group() 和 console.groupEnd() 对相关消息进行分组，避免混乱</p>
+</li>
+<li><p>使用 console.assert() 显示条件性错误消息</p>
+</li>
+</ul>
+<h4 id="写入控制台"><a href="#写入控制台" class="headerlink" title="写入控制台"></a>写入控制台</h4><p>使用<code>console.log()</code> 方法可以向控制台进行任何基本记录。此方法采用一个或多个表达式作为参数，并将其当前值写入控制台，从而将多个参数级联到一个由空格分隔的行中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">"Node count:"</span>, <span class="number">3</span>, <span class="string">"and the current time is:"</span>, <span class="built_in">Date</span>.now());</span><br><span class="line"><span class="comment">// output</span></span><br><span class="line">Node count: <span class="number">3</span> and the current time is: <span class="number">1503235350740</span></span><br></pre></td></tr></table></figure>
+<h4 id="组织控制台输出"><a href="#组织控制台输出" class="headerlink" title="组织控制台输出"></a>组织控制台输出</h4><ol>
+<li><p>将消息组织到一起<br>您可以使用组命令将相关输出组织到一起。<code>console.group()</code> 命令采用一个字符串参数设置组名称。在您的 JavaScript 中调用此命令后，控制台会开始将所有后续输出都组织到一起。要结束分组，您只需要在完成后调用 <code>console.groupEnd()</code>。</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> user = <span class="string">"jsmith"</span>, authenticated = <span class="literal">false</span>;</span><br><span class="line"><span class="built_in">console</span>.group(<span class="string">"Authentication phase"</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"Authenticating user '%s'"</span>, user);</span><br><span class="line"><span class="comment">// authentication code here...</span></span><br><span class="line"><span class="keyword">if</span> (!authenticated) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"User '%s' not authenticated."</span>, user)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">console</span>.groupEnd();</span><br></pre></td></tr></table></figure>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.26.23.png" alt=""></p>
+</li>
+<li><p>嵌套组<br>日志组也可以彼此嵌套。同时以小片段查看较大的组时，嵌套组非常有用。</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> user = <span class="string">"jsmith"</span>, authenticated = <span class="literal">true</span>, authorized = <span class="literal">true</span>;</span><br><span class="line"><span class="comment">// Top-level group</span></span><br><span class="line"><span class="built_in">console</span>.group(<span class="string">"Authenticating user '%s'"</span>, user);</span><br><span class="line"><span class="keyword">if</span> (authenticated) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"User '%s' was authenticated"</span>, user);</span><br><span class="line">    <span class="comment">// Start nested group</span></span><br><span class="line">    <span class="built_in">console</span>.group(<span class="string">"Authorizing user '%s'"</span>, user);</span><br><span class="line">    <span class="keyword">if</span> (authorized) &#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"User '%s' was authorized."</span>, user);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// End nested group</span></span><br><span class="line">    <span class="built_in">console</span>.groupEnd();</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// End top-level group</span></span><br><span class="line"><span class="built_in">console</span>.groupEnd();</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"A group-less log trace."</span>);</span><br></pre></td></tr></table></figure>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.27.35.png" alt=""></p>
+</li>
+<li><p>自动折叠组:<br>大量使用组时，即时查看所有信息可能不是非常有用。这些情况下，您可以通过调用 <code>console.groupCollapsed()</code> 而不是 <code>console.group()</code> 的方式自动折叠组：</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> user = <span class="string">"jsmith"</span>, authenticated = <span class="literal">false</span>;</span><br><span class="line"><span class="built_in">console</span>.groupCollapsed(<span class="string">"Authentication phase"</span>);</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">"Authenticating user '%s'"</span>, user);</span><br><span class="line"><span class="comment">// authentication code here...</span></span><br><span class="line"><span class="keyword">if</span> (!authenticated) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"User '%s' not authenticated."</span>, user)</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">console</span>.groupEnd();</span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'other info.....'</span>)</span><br></pre></td></tr></table></figure>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.31.15.png" alt=""></p>
+</li>
+</ol>
+<h4 id="错误和警告"><a href="#错误和警告" class="headerlink" title="错误和警告"></a>错误和警告</h4><p>错误和警告的作用与正常日志的作用相同。唯一的区别是 <code>error()</code> 和 <code>warn()</code> 的样式引人注目。</p>
+<ol>
+<li><p><code>console.error()</code>方法会显示红色图标和红色消息文本：</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">connectToServer</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.error(<span class="string">"Error: %s (%i)"</span>, <span class="string">"Server is  not responding"</span>,<span class="number">500</span>);</span><br><span class="line">&#125;</span><br><span class="line">connectToServer();</span><br></pre></td></tr></table></figure>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.34.09.png" alt=""></p>
+</li>
+<li><p><code>console.warn()</code> 方法会显示一个黄色警告图标和相应的消息文本：</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a=&#123;&#125;;</span><br><span class="line">a.childNodes=[<span class="number">1</span>,<span class="number">2</span>];</span><br><span class="line"><span class="keyword">if</span>(a.childNodes.length &lt; <span class="number">3</span> ) &#123;</span><br><span class="line">    <span class="built_in">console</span>.warn(<span class="string">'Warning! Too few nodes (%d)'</span>, a.childNodes.length);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.35.39.png" alt=""></p>
+</li>
+</ol>
+<h4 id="断言"><a href="#断言" class="headerlink" title="断言"></a>断言</h4><p><code>console.assert()</code> 方法可以仅在其第一个参数为 false 时有条件地显示错误字符串（其第二个参数）。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.37.38.png" alt=""></p>
+<h4 id="字符串替代和格式设置"><a href="#字符串替代和格式设置" class="headerlink" title="字符串替代和格式设置"></a>字符串替代和格式设置</h4><p>传递到任何记录方法的第一个参数可能包含一个或多个格式说明符。格式说明符由一个 <code>%</code> 符号与后面紧跟的一个字母组成，字母指示应用到值的格式。字符串后面的参数会按顺序应用到占位符。</p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.39.22.png" alt=""></p>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.43.40.png" alt=""></p>
+<p>完整的格式说明符参见<a href="https://developers.google.com/web/tools/chrome-devtools/console/console-write" target="_blank" rel="noopener">诊断病假记录到控制台中</a></p>
+<h3 id="比较类似的数据对象"><a href="#比较类似的数据对象" class="headerlink" title="比较类似的数据对象"></a>比较类似的数据对象</h3><p>使用 <code>table()</code> 方法，您可以轻松地查看包含类似数据的对象和数组。调用时，此方法将提取对象的属性并创建一个标头。行数据则来自每个索引的属性值。</p>
+<h4 id="记录对象数组"><a href="#记录对象数组" class="headerlink" title="记录对象数组"></a>记录对象数组</h4><p>在最基本的形式中，只需要一个由具有相同属性的多个对象组成的数组，<code>table()</code> 命令将执行剩余操作：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.table([&#123;<span class="attr">a</span>:<span class="number">1</span>, <span class="attr">b</span>:<span class="number">2</span>, <span class="attr">c</span>:<span class="number">3</span>&#125;, &#123;<span class="attr">a</span>:<span class="string">"foo"</span>, <span class="attr">b</span>:<span class="literal">false</span>, <span class="attr">c</span>:<span class="literal">undefined</span>&#125;]);</span><br><span class="line"><span class="built_in">console</span>.table([[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], [<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]]);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.47.42.png" alt=""></p>
+<h4 id="记录特定的属性"><a href="#记录特定的属性" class="headerlink" title="记录特定的属性"></a>记录特定的属性</h4><p>可以使用 table() 的第二个参数记录更多高级对象。定义一个包含您希望显示的属性字符串的数组</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Person</span>(<span class="params">firstName, lastName, age</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.firstName = firstName;</span><br><span class="line">  <span class="keyword">this</span>.lastName = lastName;</span><br><span class="line">  <span class="keyword">this</span>.age = age;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> family = &#123;&#125;;</span><br><span class="line">family.mother = <span class="keyword">new</span> Person(<span class="string">"Susan"</span>, <span class="string">"Doyle"</span>, <span class="number">32</span>);</span><br><span class="line">family.father = <span class="keyword">new</span> Person(<span class="string">"John"</span>, <span class="string">"Doyle"</span>, <span class="number">33</span>);</span><br><span class="line">family.daughter = <span class="keyword">new</span> Person(<span class="string">"Lily"</span>, <span class="string">"Doyle"</span>, <span class="number">5</span>);</span><br><span class="line">family.son = <span class="keyword">new</span> Person(<span class="string">"Mike"</span>, <span class="string">"Doyle"</span>, <span class="number">8</span>);</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.table(family, [<span class="string">"firstName"</span>, <span class="string">"lastName"</span>, <span class="string">"age"</span>]);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.50.22.png" alt=""></p>
+<h3 id="测量执行时间和对执行进行计数"><a href="#测量执行时间和对执行进行计数" class="headerlink" title="测量执行时间和对执行进行计数"></a>测量执行时间和对执行进行计数</h3><ul>
+<li><p>使用 console.time() 和 console.timeEnd() 跟踪代码执行点之间经过的时间。</p>
+</li>
+<li><p>使用 console.count() 对相同字符串传递到函数的次数进行计数。</p>
+</li>
+</ul>
+<h4 id="测量执行时间"><a href="#测量执行时间" class="headerlink" title="测量执行时间"></a>测量执行时间</h4><p><code>time()</code> 方法可以启动一个新计时器，并且对测量某个事项花费的时间非常有用。将一个字符串传递到方法，以便为标记命名。<br>如果您想要停止计时器，请调用 <code>timeEnd()</code> 并向其传递已传递到初始值设定项的相同字符串。<br>控制台随后会在 <code>timeEnd()</code> 方法触发时记录标签和经过的时间。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测量 100 万个新 Array 的初始化：</span></span><br><span class="line"><span class="built_in">console</span>.time(<span class="string">"Array initialize"</span>);</span><br><span class="line"><span class="keyword">var</span> array= <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">1000000</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> i = array.length - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    array[i] = <span class="keyword">new</span> <span class="built_in">Object</span>();</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">console</span>.timeEnd(<span class="string">"Array initialize"</span>);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.55.22.png" alt=""></p>
+<h4 id="对语句执行进行计数"><a href="#对语句执行进行计数" class="headerlink" title="对语句执行进行计数"></a>对语句执行进行计数</h4><p>使用 <code>count()</code> 方法记录提供的字符串，以及相同字符串已被提供的次数。当完全相同的语句被提供给同一行上的 <code>count()</code> 时，此数字将增大。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">login</span>(<span class="params">user</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.count(<span class="string">"Login called for user "</span> + user);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">users = [ <span class="comment">// by last name since we have too many Pauls.</span></span><br><span class="line">    <span class="string">'Irish'</span>,</span><br><span class="line">    <span class="string">'Bakaus'</span>,</span><br><span class="line">    <span class="string">'Kinlan'</span></span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">users.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">element, index, array</span>) </span>&#123;</span><br><span class="line">    login(element);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">login(users[<span class="number">0</span>]);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 21.59.15.png" alt=""></p>
+<h3 id="表达式求值"><a href="#表达式求值" class="headerlink" title="表达式求值"></a>表达式求值</h3><ul>
+<li><p>只需键入表达式即可对其进行求值。</p>
+</li>
+<li><p>使用一个快捷键选择元素。</p>
+</li>
+<li><p>使用 inspect() 检查 DOM 元素和 JavaScript 堆对象。</p>
+</li>
+<li><p>使用 $0 - 4 访问最近选择的元素和对象。</p>
+</li>
+</ul>
+<h4 id="查看表达式"><a href="#查看表达式" class="headerlink" title="查看表达式"></a>查看表达式</h4><p>如果有多个匹配项，<code>↑</code> 和 <code>↓</code> 在它们之间循环切换。 按 <code>→</code> 键可选择当前建议。如果有一个建议，按 <code>Tab</code>键选中它。</p>
+<h4 id="选择元素"><a href="#选择元素" class="headerlink" title="选择元素"></a>选择元素</h4><table>
+<thead>
+<tr>
+<th>快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$()</code></td>
+<td>返回与指定 CSS 选择器匹配的第一个元素。 <code>document.querySelector()</code> 的快捷键。</td>
+</tr>
+<tr>
+<td><code>$$()</code></td>
+<td>返回一个与指定 CSS 选择器匹配的所有元素数组。等同于 <code>document.querySelectorAll()</code>。</td>
+</tr>
+<tr>
+<td><code>$x()</code></td>
+<td>返回一个与指定 <code>XPath</code> 匹配的元素数组。</td>
+</tr>
+</tbody>
+</table>
+<p><img src="/images/chrome-devtools/屏幕快照 2017-08-20 22.08.47.png" alt=""></p>
+<h3 id="其他console-api"><a href="#其他console-api" class="headerlink" title="其他console api"></a>其他console api</h3><ol>
+<li><p><code>console.dir(object)</code><br>输出以 JavaScript 形式表示的指定对象。如果正在记录的对象是 HTML 元素，将输出其以 DOM 形式表示的属性，如下所示：</p>
+<p> <img src="/images/chrome-devtools/屏幕快照 2017-08-20 22.22.17.png" alt=""></p>
+</li>
+<li><p><code>console.clear()</code> 清理控制台</p>
+</li>
+<li><p><code>console.debug(object [, object, ...])</code> 与 console.log() 作用相同。</p>
+</li>
+<li><p><code>console.info(object [, object, ...])</code> 与 console.log() 作用相同。</p>
+</li>
+<li><p>完整api reference参考<a href="https://developers.google.com/web/tools/chrome-devtools/console/console-reference#clear" target="_blank" rel="noopener">Console API 参考</a>  以及 <a href="https://developers.google.com/web/tools/chrome-devtools/console/command-line-reference" target="_blank" rel="noopener">Command API 参考</a></p>
+</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CACHE/" rel="tag"># CACHE</a>
+          
+            <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/16/browser-cache-summary/" rel="next" title="浏览器缓存机制总结">
+                <i class="fa fa-chevron-left"></i> 浏览器缓存机制总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/19/dom-element-size-summary/" rel="prev" title="DOM元素大小、形状和滚动总结">
+                DOM元素大小、形状和滚动总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#设备模式"><span class="nav-number">1.</span> <span class="nav-text">设备模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#切换-Device-Mode"><span class="nav-number">1.1.</span> <span class="nav-text">切换 Device Mode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用视口控件"><span class="nav-number">1.2.</span> <span class="nav-text">使用视口控件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#自适应"><span class="nav-number">1.2.1.</span> <span class="nav-text">自适应</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#特定设备"><span class="nav-number">1.2.2.</span> <span class="nav-text">特定设备</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#内置设备预设"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">内置设备预设</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加自定义设备预设"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">添加自定义设备预设</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设备状态和方向"><span class="nav-number">1.2.2.3.</span> <span class="nav-text">设备状态和方向</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缩放到合适大小"><span class="nav-number">1.2.2.4.</span> <span class="nav-text">缩放到合适大小</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可选控件"><span class="nav-number">1.2.2.5.</span> <span class="nav-text">可选控件</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#元素面板"><span class="nav-number">2.</span> <span class="nav-text">元素面板</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编辑样式"><span class="nav-number">2.1.</span> <span class="nav-text">编辑样式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#实时编辑样式"><span class="nav-number">2.1.1.</span> <span class="nav-text">实时编辑样式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#检查和编辑框模型参数"><span class="nav-number">2.1.2.</span> <span class="nav-text">检查和编辑框模型参数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编辑DOM"><span class="nav-number">2.2.</span> <span class="nav-text">编辑DOM</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#检查元素"><span class="nav-number">2.2.1.</span> <span class="nav-text">检查元素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实时编辑-DOM-节点"><span class="nav-number">2.2.2.</span> <span class="nav-text">实时编辑 DOM 节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#以-HTML-形式编辑-DOM-节点及其子级"><span class="nav-number">2.2.3.</span> <span class="nav-text">以 HTML 形式编辑 DOM 节点及其子级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#移动-DOM-节点"><span class="nav-number">2.2.4.</span> <span class="nav-text">移动 DOM 节点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#设置-DOM-断点"><span class="nav-number">2.2.5.</span> <span class="nav-text">设置 DOM 断点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#子树修改"><span class="nav-number">2.2.5.1.</span> <span class="nav-text">子树修改</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#属性修改"><span class="nav-number">2.2.5.2.</span> <span class="nav-text">属性修改</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#节点移除"><span class="nav-number">2.2.5.3.</span> <span class="nav-text">节点移除</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#与-DOM-断点交互"><span class="nav-number">2.2.6.</span> <span class="nav-text">与 DOM 断点交互</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查看元素事件侦听器"><span class="nav-number">2.2.7.</span> <span class="nav-text">查看元素事件侦听器</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#控制台面板"><span class="nav-number">3.</span> <span class="nav-text">控制台面板</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#打开console面板"><span class="nav-number">3.1.</span> <span class="nav-text">打开console面板</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#消息堆叠"><span class="nav-number">3.2.</span> <span class="nav-text">消息堆叠</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理控制台历史记录"><span class="nav-number">3.3.</span> <span class="nav-text">处理控制台历史记录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#清除历史记录"><span class="nav-number">3.3.1.</span> <span class="nav-text">清除历史记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保留历史记录"><span class="nav-number">3.3.2.</span> <span class="nav-text">保留历史记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保存历史记录"><span class="nav-number">3.3.3.</span> <span class="nav-text">保存历史记录</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#过滤控制台输出"><span class="nav-number">3.4.</span> <span class="nav-text">过滤控制台输出</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#console-api"><span class="nav-number">3.5.</span> <span class="nav-text">console api</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#诊断并记录到控制台中"><span class="nav-number">3.5.1.</span> <span class="nav-text">诊断并记录到控制台中</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#写入控制台"><span class="nav-number">3.5.1.1.</span> <span class="nav-text">写入控制台</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组织控制台输出"><span class="nav-number">3.5.1.2.</span> <span class="nav-text">组织控制台输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#错误和警告"><span class="nav-number">3.5.1.3.</span> <span class="nav-text">错误和警告</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#断言"><span class="nav-number">3.5.1.4.</span> <span class="nav-text">断言</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#字符串替代和格式设置"><span class="nav-number">3.5.1.5.</span> <span class="nav-text">字符串替代和格式设置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#比较类似的数据对象"><span class="nav-number">3.5.2.</span> <span class="nav-text">比较类似的数据对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#记录对象数组"><span class="nav-number">3.5.2.1.</span> <span class="nav-text">记录对象数组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#记录特定的属性"><span class="nav-number">3.5.2.2.</span> <span class="nav-text">记录特定的属性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测量执行时间和对执行进行计数"><span class="nav-number">3.5.3.</span> <span class="nav-text">测量执行时间和对执行进行计数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#测量执行时间"><span class="nav-number">3.5.3.1.</span> <span class="nav-text">测量执行时间</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对语句执行进行计数"><span class="nav-number">3.5.3.2.</span> <span class="nav-text">对语句执行进行计数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#表达式求值"><span class="nav-number">3.5.4.</span> <span class="nav-text">表达式求值</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#查看表达式"><span class="nav-number">3.5.4.1.</span> <span class="nav-text">查看表达式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#选择元素"><span class="nav-number">3.5.4.2.</span> <span class="nav-text">选择元素</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其他console-api"><span class="nav-number">3.5.5.</span> <span class="nav-text">其他console api</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVASCRIPT,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="我们的前端项目一直没有监控体系，导致每次出问题都要下机房翻错误日志，效率奇低。另外，有时客户跟我们反馈 BUG 时，我们并不知道他的手机上究竟是出了什么错，只能尽量在测试机上复现，效率也很低，而且很多时候的错误无法复现。 基于上面的痛点，我尝试了搭建一个简单的监控体系，虽然目前还处于DEMO阶段，但顺着这条思路走下去，还是可以在很大程度上解决以上问题。 由于平时项目很忙，不一定每天都有时间跟进，所">
+<meta name="keywords" content="JAVASCRIPT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端监控系统的尝试">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/01/23/front-end-monitor-system/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="我们的前端项目一直没有监控体系，导致每次出问题都要下机房翻错误日志，效率奇低。另外，有时客户跟我们反馈 BUG 时，我们并不知道他的手机上究竟是出了什么错，只能尽量在测试机上复现，效率也很低，而且很多时候的错误无法复现。 基于上面的痛点，我尝试了搭建一个简单的监控体系，虽然目前还处于DEMO阶段，但顺着这条思路走下去，还是可以在很大程度上解决以上问题。 由于平时项目很忙，不一定每天都有时间跟进，所">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/front-end-monitor/origin_error_stack.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/front-end-monitor/mapperd_error_stack.jpg">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.488Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端监控系统的尝试">
+<meta name="twitter:description" content="我们的前端项目一直没有监控体系，导致每次出问题都要下机房翻错误日志，效率奇低。另外，有时客户跟我们反馈 BUG 时，我们并不知道他的手机上究竟是出了什么错，只能尽量在测试机上复现，效率也很低，而且很多时候的错误无法复现。 基于上面的痛点，我尝试了搭建一个简单的监控体系，虽然目前还处于DEMO阶段，但顺着这条思路走下去，还是可以在很大程度上解决以上问题。 由于平时项目很忙，不一定每天都有时间跟进，所">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/front-end-monitor/origin_error_stack.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/01/23/front-end-monitor-system/">
+
+
+
+
+
+  <title>前端监控系统的尝试 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/01/23/front-end-monitor-system/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端监控系统的尝试</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-01-23T09:25:00+08:00">
+                2018-01-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们的前端项目一直没有监控体系，导致每次出问题都要下机房翻错误日志，效率奇低。另外，有时客户跟我们反馈 BUG 时，我们并不知道他的手机上究竟是出了什么错，只能尽量在测试机上复现，效率也很低，而且很多时候的错误无法复现。</p>
+<p>基于上面的痛点，我尝试了搭建一个简单的监控体系，虽然目前还处于<code>DEMO</code>阶段，但顺着这条思路走下去，还是可以在很大程度上解决以上问题。 由于平时项目很忙，不一定每天都有时间跟进，所以将目前的成果和技术细节记录下来。</p>
+<h1 id="前端错误日志收集"><a href="#前端错误日志收集" class="headerlink" title="前端错误日志收集"></a>前端错误日志收集</h1><p>我们有 3 个级别的错误日志上报</p>
+<ul>
+<li>专门的<code>logger</code>服务，提供了<code>error</code>方法，业务开发时很多时候使用它来打印日志</li>
+<li><code>Angular</code>框架级别<code>ErrorHandler</code>捕捉框架级别全局错误</li>
+<li>全局的<code>window.onerror</code>监听，可以捕捉到框架之外的错误</li>
+</ul>
+<h2 id="logger-服务"><a href="#logger-服务" class="headerlink" title="logger 服务"></a>logger 服务</h2><p>我们会在它的 error 方法中上报错误日志：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public error( message?: any, ...optionalParams: any[] ) &#123;</span><br><span class="line">   <span class="built_in">console</span>.error( message, ...optionalParams );</span><br><span class="line">   <span class="keyword">this</span>.log2Server( &#123;</span><br><span class="line">       message,</span><br><span class="line">       stack: <span class="string">""</span>,</span><br><span class="line">       other: optionalParams.map(<span class="function">(<span class="params"> item </span>) =&gt;</span> <span class="built_in">JSON</span>.stringify( item ) ).join( <span class="string">`,`</span> ),</span><br><span class="line">   &#125; );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public log2Server( &#123; message, stack, other &#125;: &#123; <span class="attr">message</span>: string, <span class="attr">stack</span>: string, other?: string &#125; ) &#123;</span><br><span class="line">   <span class="keyword">const</span> param = [</span><br><span class="line">       <span class="string">`message=<span class="subst">$&#123; <span class="built_in">encodeURIComponent</span>(message) &#125;</span>`</span>,</span><br><span class="line">       <span class="string">`stack=<span class="subst">$&#123; <span class="built_in">encodeURIComponent</span>(stack) &#125;</span>`</span>,</span><br><span class="line">       <span class="string">`userInfo=<span class="subst">$&#123; <span class="built_in">encodeURIComponent</span>(<span class="keyword">this</span>.userInfoStr) &#125;</span>`</span>,</span><br><span class="line">       <span class="string">`other=<span class="subst">$&#123; <span class="built_in">encodeURIComponent</span>(other) &#125;</span>`</span>,</span><br><span class="line">   ].join( <span class="string">`&amp;`</span> );</span><br><span class="line"></span><br><span class="line">   <span class="comment">// use beacons to send log.</span></span><br><span class="line">   ( <span class="keyword">new</span> Image() ).src = <span class="string">`<span class="subst">$&#123; <span class="keyword">this</span>.logServerUrl &#125;</span>?<span class="subst">$&#123; param &#125;</span>`</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private getLoginUserInfo() &#123;</span><br><span class="line">   <span class="keyword">return</span> &#123;</span><br><span class="line">       userId: <span class="keyword">this</span>.loginService.getLoginUserId(),</span><br><span class="line">    	  <span class="comment">// ... other user info</span></span><br><span class="line">   &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="ErrorHandler"><a href="#ErrorHandler" class="headerlink" title="ErrorHandler"></a>ErrorHandler</h2><p>Angular 框架给我们提供了这样一个服务来捕捉全局错误，可以继承框架自带的服务，然后扩展自己的特定逻辑。可以参考这两篇博客：</p>
+<ul>
+<li><p><a href="https://medium.com/@amcdnl/global-error-handling-with-angular2-6b992bdfb59c" target="_blank" rel="noopener">Global Error Handling with Angular2+</a></p>
+</li>
+<li><p><a href="https://netbasal.com/angular-2-custom-exception-handler-1bcbc45c3230" target="_blank" rel="noopener">Angular 2 — Custom Exception Handler</a></p>
+</li>
+</ul>
+<p>我们可以在捕捉到框架全局错误时，将这个服务上报到服务器。这里直接注入上面的<code>LoggerService</code>来复用它的代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@Injectable()</span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">MyErrorHandler</span> <span class="title">implements</span> <span class="title">ErrorHandler</span> </span>&#123;</span><br><span class="line">    private crmLogger: CrmLogger;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">constructor</span>(</span><br><span class="line">        private injector: Injector,</span><br><span class="line">    ) &#123;</span><br><span class="line">        <span class="keyword">this</span>.myLogger = injector.get( MyLogger );</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public handleError( error: any ): <span class="keyword">void</span> &#123;</span><br><span class="line">        <span class="built_in">console</span>.error( <span class="string">`MyErrorHandler =&gt; `</span>, error );</span><br><span class="line">        <span class="keyword">this</span>.myLogger.log2Server( &#123;</span><br><span class="line">            message: error.message,</span><br><span class="line">            stack: error.stack,</span><br><span class="line">            other: <span class="string">""</span>,</span><br><span class="line">        &#125; );</span><br><span class="line"></span><br><span class="line">        <span class="keyword">throw</span> error;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="window-onerror"><a href="#window-onerror" class="headerlink" title="window.onerror"></a>window.onerror</h2><p>这个没什么好说的了，随便在网上一搜都可以发现他的用法，也可以参见<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/GlobalEventHandlers/onerror" target="_blank" rel="noopener">MDN</a>。 我们同样在捕捉到错误后上报：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">window</span>.onerror = <span class="function"><span class="keyword">function</span>(<span class="params">message, source, lineno, colno, error</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> other = &#123;</span><br><span class="line">    source: source,</span><br><span class="line">    lineno: lineno,</span><br><span class="line">    colno: colno,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">var</span> param = [</span><br><span class="line">    <span class="string">'message='</span> + <span class="built_in">encodeURIComponent</span>(message),</span><br><span class="line">    <span class="string">'stack='</span> + <span class="built_in">encodeURIComponent</span>(error.stack),</span><br><span class="line">    <span class="string">'userInfo='</span> + <span class="built_in">encodeURIComponent</span>(userInfoStr),</span><br><span class="line">    <span class="string">'other='</span> + <span class="built_in">encodeURIComponent</span>(<span class="built_in">JSON</span>.stringify(other)),</span><br><span class="line">  ].join(<span class="string">'&amp;'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">console</span>.error(<span class="string">'window.onerror =&gt; '</span>, param);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">new</span> Image().src = logServerUrl + <span class="string">'?'</span> + param;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="监控后台错误堆栈解析"><a href="#监控后台错误堆栈解析" class="headerlink" title="监控后台错误堆栈解析"></a>监控后台错误堆栈解析</h1><p>在将错误日志传到后端之后，后端就可以利用这些信息了。但在产品模式下，前端传过来的堆栈信息是看不懂的，每一行都是例如</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at e.ngOnInit (http:<span class="comment">//localhost:1764/build/1.951ade2aa66addddc2b5.js:1:26650)</span></span><br></pre></td></tr></table></figure>
+<p>这个 js 文件有可能是多个源文件合并到一块的，我们除了能猜测到是哪个组件的<code>OnInit</code>钩子里除了错，其他一概不知。为了让错误更具可读性，有必要将其还原到真正的 ts 源代码中的位置。</p>
+<p>这就需要用到<code>sourcemap</code>了，简单来说，我们在压缩混淆 js 文件时，可以同时生成一个 map 文件，如上面的那行错误信息，就会有一个<code>1.951ade2aa66addddc2b5.js.map</code>文件。 这个文件提供了完整的从压缩后每个位置到源代码每个位置的映射关系。具体介绍可以<a href="http://www.ruanyifeng.com/blog/2013/01/javascript_source_map.html" target="_blank" rel="noopener">看这里</a></p>
+<p>我们要做的，就是做一个小工具，自动的把上面这样的信息，转换成映射后的位置信息。</p>
+<h2 id="html"><a href="#html" class="headerlink" title="html"></a>html</h2><p>我们的页面很简单：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">section</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">""</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">fieldset</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">legend</span>&gt;</span><span class="tag">&lt;<span class="name">h1</span>&gt;</span>原始堆栈<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">legend</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">textarea</span> <span class="attr">class</span>=<span class="string">"origin-stack"</span> <span class="attr">style</span>=<span class="string">"min-height: 300px;width: 100%;"</span>&gt;</span> <span class="tag">&lt;/<span class="name">textarea</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">fieldset</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">section</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">""</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">fieldset</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">legend</span>&gt;</span><span class="tag">&lt;<span class="name">h1</span>&gt;</span>映射堆栈<span class="tag">&lt;/<span class="name">h1</span>&gt;</span><span class="tag">&lt;/<span class="name">legend</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">"button"</span> <span class="attr">id</span>=<span class="string">"use-sourcemap-btn"</span>&gt;</span>开始映射<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"map-error"</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">h3</span>&gt;</span>SourceMap映射后堆栈：<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">pre</span> <span class="attr">class</span>=<span class="string">"mapped-stack"</span>&gt;</span><span class="tag">&lt;/<span class="name">pre</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">fieldset</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"../javascripts/source-map.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"../javascripts/map-stack-helper.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"../javascripts/map-error-stack.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>上面一块用于给用户粘贴原始的堆栈信息，下面提供一个按钮，用于转成成映射后的堆栈信息。 最下面引入了 3 个<code>js</code>文件。 <code>source-map.min.js</code>是在<a href="https://github.com/mozilla/source-map" target="_blank" rel="noopener">github</a>上找到的一个利用<code>sourcemap</code>的映射库。其他两个是我们的真正来做转换的代码。</p>
+<h2 id="js"><a href="#js" class="headerlink" title="js"></a>js</h2><p><strong><code>map-error-stack.js</code>：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">var originStack = document.querySelector(&apos;.origin-stack&apos;);</span><br><span class="line">var mappedStack = document.querySelector(&apos;.mapped-stack&apos;);</span><br><span class="line">var useSourcemapBtn = document.querySelector(&apos;#use-sourcemap-btn&apos;);</span><br><span class="line"></span><br><span class="line">useSourcemapBtn.addEventListener(&quot;click&quot;, function(e) &#123;</span><br><span class="line">    var originStackInfo = originStack.value;</span><br><span class="line">    mapStackHelper(originStackInfo, (error, result) =&gt; &#123;</span><br><span class="line">        if (error) &#123;</span><br><span class="line">            mapError.textContent = `尝试映射出错: $&#123;error&#125;`;</span><br><span class="line">            mappedStack.textContent = ``;</span><br><span class="line">            return;</span><br><span class="line">        &#125;</span><br><span class="line">        mappedStack.textContent = result;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>点击按钮时会利用在<code>map-stack-helper.js</code>中的帮助函数来自动映射整个错误堆栈。</p>
+<p><strong><code>map-stack-helper.js</code>：</strong></p>
+<p><strong>第一步，需要解析每一行错误信息，提取出出错的 js 文件路径、行号、列号。利用简单的正则就可以做到：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mapStackHelper = <span class="function"><span class="keyword">function</span>(<span class="params">originStackInfo, cb</span>) </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * since there maybe a lot of urls are duplicated, we do not need the fetch them one by one,</span></span><br><span class="line"><span class="comment">   * use a set to get the unique ones</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">var</span> urlSet = <span class="keyword">new</span> <span class="built_in">Set</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> errorLocationList = originStackInfo.split(<span class="string">'\n'</span>).map(<span class="function"><span class="params">info</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">var</span> errorLocation = info.match(<span class="regexp">/([^\(]+)\((.+\.js)\:(\d+)\:(\d+)/</span>); <span class="comment">// url:row:column</span></span><br><span class="line">    <span class="keyword">if</span> (!errorLocation) &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123; info &#125;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    urlSet.add(errorLocation[<span class="number">2</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      info: info,</span><br><span class="line">      errorPrefix: errorLocation[<span class="number">1</span>],</span><br><span class="line">      url: errorLocation[<span class="number">2</span>], <span class="comment">// errorLocation[0] is the entire matched string,followed by every captured group</span></span><br><span class="line">      row: errorLocation[<span class="number">3</span>],</span><br><span class="line">      column: errorLocation[<span class="number">4</span>],</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里如果可以解析，那么就把各部分分开存储。如果无法解析，就直接返回原始的整行信息。其中用到了一个<code>Set</code>用于去重，因为很多时候，错误信息对应的<code>url</code>是重复的。</p>
+<p><strong>第二步，根据解析到的 url，去获取对用的 map 文件。这里因为是 demo，所以直接假设 map 文件的位置和 js 文件在同一个文件夹。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * fetch all sourcemap corresponding the urlSet</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">var</span> sourceMapContentPromiseList = <span class="built_in">Array</span>.from(urlSet).map(<span class="function"><span class="params">url</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> sourceMapUrl = url + <span class="string">`.map`</span>;</span><br><span class="line">  <span class="keyword">return</span> fetch(sourceMapUrl)</span><br><span class="line">    .then(<span class="function"><span class="params">response</span> =&gt;</span> response.text())</span><br><span class="line">    .then(<span class="function"><span class="params">sourceMapContent</span> =&gt;</span> (&#123; url, sourceMapContent &#125;))</span><br><span class="line">    .catch(<span class="function"><span class="params">error</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.error(<span class="string">`failed to fetch <span class="subst">$&#123;sourceMapUrl&#125;</span>`</span>);</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        url,</span><br><span class="line">        sourceMapContent: <span class="literal">null</span>,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><strong>第三步，拿到所有 sourcemap 文件后，我们就可以得到一个 js 文件与 map 文件的映射。然后针对原始错误堆栈的每一行，获取到对应的 sourcemap 文件，最后根据行号列号就可以得到对应的 ts 文件名：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(sourceMapContentPromiseList)</span><br><span class="line">  .then(<span class="function"><span class="params">sourceMapContentList</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">//  cache  sourcemap into a map</span></span><br><span class="line">    <span class="keyword">var</span> urlContentMap = <span class="keyword">new</span> <span class="built_in">Map</span>();</span><br><span class="line">    sourceMapContentList.forEach(<span class="function"><span class="params">item</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> urlContentMap.set(item.url, item.sourceMapContent);</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> urlContentMap;</span><br><span class="line">  &#125;)</span><br><span class="line">  .then(<span class="function"><span class="params">urlContentMap</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> errorLocationList.map(<span class="function"><span class="params">errorLocation</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!errorLocation.url || !urlContentMap.has(errorLocation.url) || !urlContentMap.get(errorLocation.url)) &#123;</span><br><span class="line">        <span class="keyword">return</span> errorLocation.info;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">var</span> smc = <span class="keyword">new</span> sourceMap.SourceMapConsumer(urlContentMap.get(errorLocation.url));</span><br><span class="line">      <span class="keyword">var</span> originPosition = smc.originalPositionFor(&#123;</span><br><span class="line">        line: +errorLocation.row, <span class="comment">// transform to integer</span></span><br><span class="line">        column: +errorLocation.column,</span><br><span class="line">      &#125;);</span><br><span class="line">      <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;errorLocation.errorPrefix&#125;</span>(<span class="subst">$&#123;originPosition.source&#125;</span>:<span class="subst">$&#123;originPosition.line&#125;</span>:<span class="subst">$&#123;originPosition.column&#125;</span>)`</span>; <span class="comment">// ignore originPosition.name</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;)</span><br><span class="line">  .then(<span class="function"><span class="params">mappedStackList</span> =&gt;</span> mappedStackList.join(<span class="string">'\n'</span>))</span><br><span class="line">  .then(<span class="function"><span class="params">mappedStackInfo</span> =&gt;</span> cb(<span class="literal">undefined</span>, mappedStackInfo))</span><br><span class="line">  .catch(<span class="function"><span class="params">error</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.error(<span class="string">`Failed SourceMapConsumer`</span>, error);</span><br><span class="line">    cb(<span class="string">`Failed SourceMapConsumer`</span> + error, mappedStackInfo);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+<p>上面的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> smc = <span class="keyword">new</span> sourceMap.SourceMapConsumer(urlContentMap.get(errorLocation.url));</span><br></pre></td></tr></table></figure>
+<p>生成的对象，就可以利用它的<code>originalPositionFor</code>方法获取映射后的位置了。</p>
+<p>最后我们把映射后的堆栈信息再拼接起来，就可以得到映射后的堆栈信息了~</p>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><img src="/images/front-end-monitor/origin_error_stack.png" alt="原始堆栈"></p>
+<p><img src="/images/front-end-monitor/mapperd_error_stack.jpg" alt="映射后堆栈"></p>
+<h1 id="后续计划"><a href="#后续计划" class="headerlink" title="后续计划"></a>后续计划</h1><p>其实上面的东西我自己虽然早就开始思考了，但直到参加了<code>D2</code>大会，正好有一个阿里的讲师详细描述了他们的做法，我做的这些也是受到了他们的启发。这里将相关链接放出来：</p>
+<ul>
+<li><a href="https://tianchi.aliyun.com/forum/videoStream.html#postsId=3631" target="_blank" rel="noopener">把前端监控做到极致 - 视频</a></li>
+<li><a href="https://files.alicdn.com/tpsservice/39299d06993224a40767f1d29c6345e7.pdf" target="_blank" rel="noopener">把前端监控做到极致 - PPT</a></li>
+</ul>
+<p>后续会继续参考他们的做法 😆😆😆😆</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVASCRIPT/" rel="tag"># JAVASCRIPT</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/01/21/javascript-instanceof/" rel="next" title="javascript中的instanceof操作符">
+                <i class="fa fa-chevron-left"></i> javascript中的instanceof操作符
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/02/22/front-end-trackor-system/" rel="prev" title="前端埋点系统研究小结">
+                前端埋点系统研究小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前端错误日志收集"><span class="nav-number">1.</span> <span class="nav-text">前端错误日志收集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#logger-服务"><span class="nav-number">1.1.</span> <span class="nav-text">logger 服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ErrorHandler"><span class="nav-number">1.2.</span> <span class="nav-text">ErrorHandler</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#window-onerror"><span class="nav-number">1.3.</span> <span class="nav-text">window.onerror</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#监控后台错误堆栈解析"><span class="nav-number">2.</span> <span class="nav-text">监控后台错误堆栈解析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#html"><span class="nav-number">2.1.</span> <span class="nav-text">html</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#js"><span class="nav-number">2.2.</span> <span class="nav-text">js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效果"><span class="nav-number">2.3.</span> <span class="nav-text">效果</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#后续计划"><span class="nav-number">3.</span> <span class="nav-text">后续计划</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

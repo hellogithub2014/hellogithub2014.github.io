@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVASCRIPT,DOM,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="学 DOM 的知识时一直对元素的大小、形状和滚动相关的那好几个属性傻傻分不清楚，索性专门花一些时间好好专研然后总结下来。 文档坐标、视口坐标 文档坐标 - 滚动量 = 视口坐标 如果文档比视口小，或者还没出现滚动条，那么文档的左上角就是视口的左上角，此时他们坐标的起点是相同的。 鼠标的时间处理函数中，鼠标指针的位置是在视口坐标系中的。 元素大小偏移量 offset包括元素在屏幕上占用的所有可见空间">
+<meta name="keywords" content="JAVASCRIPT,DOM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DOM元素大小、形状和滚动总结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/10/19/dom-element-size-summary/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="学 DOM 的知识时一直对元素的大小、形状和滚动相关的那好几个属性傻傻分不清楚，索性专门花一些时间好好专研然后总结下来。 文档坐标、视口坐标 文档坐标 - 滚动量 = 视口坐标 如果文档比视口小，或者还没出现滚动条，那么文档的左上角就是视口的左上角，此时他们坐标的起点是相同的。 鼠标的时间处理函数中，鼠标指针的位置是在视口坐标系中的。 元素大小偏移量 offset包括元素在屏幕上占用的所有可见空间">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/dom-element-size/document-viewport-cordinate.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/dom-element-size/offset.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/dom-element-size/client.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/dom-element-size/scroll.jpg">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.479Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="DOM元素大小、形状和滚动总结">
+<meta name="twitter:description" content="学 DOM 的知识时一直对元素的大小、形状和滚动相关的那好几个属性傻傻分不清楚，索性专门花一些时间好好专研然后总结下来。 文档坐标、视口坐标 文档坐标 - 滚动量 = 视口坐标 如果文档比视口小，或者还没出现滚动条，那么文档的左上角就是视口的左上角，此时他们坐标的起点是相同的。 鼠标的时间处理函数中，鼠标指针的位置是在视口坐标系中的。 元素大小偏移量 offset包括元素在屏幕上占用的所有可见空间">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/dom-element-size/document-viewport-cordinate.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/10/19/dom-element-size-summary/">
+
+
+
+
+
+  <title>DOM元素大小、形状和滚动总结 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/10/19/dom-element-size-summary/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">DOM元素大小、形状和滚动总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-19T23:20:00+08:00">
+                2017-10-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>学 DOM 的知识时一直对元素的大小、形状和滚动相关的那好几个属性傻傻分不清楚，索性专门花一些时间好好专研然后总结下来。</p>
+<h1 id="文档坐标、视口坐标"><a href="#文档坐标、视口坐标" class="headerlink" title="文档坐标、视口坐标"></a>文档坐标、视口坐标</h1><p><img src="/images/dom-element-size/document-viewport-cordinate.jpg" alt=""></p>
+<p>文档坐标 - 滚动量 = 视口坐标</p>
+<p>如果文档比视口小，或者还没出现滚动条，那么文档的左上角就是视口的左上角，此时他们坐标的起点是相同的。</p>
+<p>鼠标的时间处理函数中，鼠标指针的位置是在视口坐标系中的。</p>
+<h1 id="元素大小"><a href="#元素大小" class="headerlink" title="元素大小"></a>元素大小</h1><h2 id="偏移量-offset"><a href="#偏移量-offset" class="headerlink" title="偏移量 offset"></a>偏移量 offset</h2><p>包括元素在屏幕上占用的<strong>所有可见空间（由高度、宽度、内边距、滚动条和边框决定，不包括外边距）</strong>。与偏移量相关的 4 个属性：</p>
+<ul>
+<li><code>offsetHeight</code> - 元素在垂直方向上占用的空间大小</li>
+<li><code>offsetWidth</code> - 水平方向占用的空间大小</li>
+<li><code>offsetLeft</code> - 元素的左外边框<strong>至包含元素（保存在<code>offsetParent</code>属性中）</strong>的左内边框之间的像素距离</li>
+<li><code>offetTop</code> - 元素的上外边框<strong>至包含元素</strong>的上内边框之间的像素距离</li>
+</ul>
+<p><img src="/images/dom-element-size/offset.jpeg" alt=""></p>
+<p>要想知道某个元素在页面上的偏移量，将这个元素的<code>offsetLeft</code>和<code>offetTop</code>与其<code>offsetParent</code>的相同属性相加，如此循环直到根元素即可：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对很多元素来说，这是在计算文档坐标</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getElementLeft</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> actualLeft = element.offsetLeft;</span><br><span class="line">  <span class="keyword">var</span> current = element.offsetParent;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (current) &#123;</span><br><span class="line">    actualLeft += current.offsetLeft;</span><br><span class="line">    current = current.offsetParent;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> actualLeft;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong> - 所有这些偏移量都是只读的，而且每次访问他们都需要重新计算。</p>
+<h2 id="客户区大小-client"><a href="#客户区大小-client" class="headerlink" title="客户区大小 client"></a>客户区大小 client</h2><p>指的是<strong>元素内容及其内边距所占据的空间</strong>大小,<strong>滚动条占用的空间不算在内</strong>。相关属性有 2 个：</p>
+<ul>
+<li><code>clientWidth</code> - 元素内容区宽度加上左右内边距宽度,</li>
+<li><code>clientHeight</code> - 元素内容区高度加上上下内边距的高度</li>
+</ul>
+<p><img src="/images/dom-element-size/client.jpeg" alt=""></p>
+<p>最常用到这些属性的情况，就是确定浏览器视口大小。要确定浏览器视口大小，可以使用<code>doucment.documentElement</code>或<code>document.body</code>的<code>clientWidth</code>和<code>clientHeight</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getViewPort</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// compatMode用来判断当前浏览器采用的渲染方式。</span></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">document</span>.compatMode === <span class="string">'BackCompat'</span>) &#123;</span><br><span class="line">    <span class="comment">// 标准兼容模式关闭</span></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      width: <span class="built_in">document</span>.body.clientWidth,</span><br><span class="line">      height: <span class="built_in">document</span>.body.clientHeight,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      width: <span class="built_in">document</span>.documentElement.clientWidth,</span><br><span class="line">      height: <span class="built_in">document</span>.documentElement.clientHeight,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>注意</strong> - 与偏移量相似，客户区大小也都是只读的，而且每次访问他们都需要重新计算。</p>
+<h2 id="滚动大小"><a href="#滚动大小" class="headerlink" title="滚动大小"></a>滚动大小</h2><p>指的是<strong>包含滚动内容的元素</strong>的大小。有些元素（如<html>）能自动添加滚动条，有些则需要通过设置 css 的<code>overflow</code>才能滚动。相关的 4 个属性：</html></p>
+<ul>
+<li><code>scrollHeight</code> - 在没有滚动条的情况下，元素内容的总高度，是元素的内容区加上内边距再加上任何溢出内容的尺寸。</li>
+<li><code>scrollWidth</code> - 在没有滚动条的情况下，元素内容的总宽度，是元素的内容区加上内边距再加上任何溢出内容的尺寸。</li>
+<li><code>scrollLeft</code> - 被隐藏在内容区左侧的像素数。<strong>通过设置这个属性可以改变元素的滚动位置</strong>。</li>
+<li><code>scrollTop</code> - 被隐藏在内容区上方的像素数。<strong>通过设置这个属性可以改变元素的滚动位置</strong>。</li>
+</ul>
+<p><img src="/images/dom-element-size/scroll.jpg" alt=""></p>
+<p><code>scrollHeight</code>和<code>scrollWidth</code>主要用于确定元素内容的实际大小。例如通常认为<html>元素是在浏览器视口中滚动的元素，因此带有垂直滚动条的页面总高度就是<code>document.documentElement.scrollHeight</code>或<code>document.body.scrollHeight</code>。<br>此时<strong>浏览器的垂直滚动条高度</strong>就是<code>document.documentElement.scrollTop</code>或<code>document.body.scrollTop</code>。</html></p>
+<p>在确定文档总高度时（包括基于视口的最小高度时），必须取得<code>scrollWidth</code>/<code>clientWidth</code>和<code>scrollHeight</code>/<code>clientHeight</code>中的最大值，才能保证在跨浏览器的环境下得到精确的结果。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> docWidth = <span class="built_in">Math</span>.max(<span class="built_in">document</span>.documentElement.scrollWidth, <span class="built_in">document</span>.documentElement.clientWidth); <span class="comment">// 或者document.body</span></span><br><span class="line"><span class="keyword">var</span> docHeight = <span class="built_in">Math</span>.max(<span class="built_in">document</span>.documentElement.scrollHeight, <span class="built_in">document</span>.documentElement.clientHeight); <span class="comment">// 或者document.body</span></span><br></pre></td></tr></table></figure>
+<p><strong>通过<code>scrollLeft</code>和<code>scrollTop</code>既可以确定元素当前滚动的状态，也可以设置元素的滚动位置</strong>。例如在元素尚未被滚动时，这两个属性均为 0.如果元素被垂直滚动了，那么<code>scrollTop</code>的值会大于 0，且表示元素上方不可见内容的像素高度。将元素的<code>scrollTop</code>设置为 0，就可以重置元素的垂直滚动位置。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 如果元素不是位于顶部，将其回滚到顶部</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">scrollToTop</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (element.scrollTop !== <span class="number">0</span>) &#123;</span><br><span class="line">    element.scrollTop = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="滚动"><a href="#滚动" class="headerlink" title="滚动"></a>滚动</h3><p>除了上面说到的设置<code>scrollLeft</code>和<code>scrollTop</code>来让元素滚动外，window 对象的<strong><code>scrollTo()</code></strong>(和其同义词<code>scroll()</code>)也可以做到，它接收一个文档坐标并作为滚动条的偏移量去设置他们，也就是说窗口滚动到指定的点出现的视口的左上角。</p>
+<p>以下代码可以让浏览器滚动到文档最底部可见：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> docHeight = <span class="built_in">document</span>.documentElement.offsetHeight;</span><br><span class="line"><span class="keyword">var</span> viewportHeight = getViewPort().height; <span class="comment">// 见上面客户区大小的方法</span></span><br><span class="line"><span class="built_in">window</span>.scrollTo(<span class="number">0</span>, docHeight - viewportHeight);</span><br></pre></td></tr></table></figure>
+<p>window 的<strong><code>scrollBy()</code></strong>和<code>scrollTo()</code>、<code>scroll()</code>类似，不过他的参数是相对的，并在当前滚动条的偏移量上增加。 例如每秒向下滚动 10 像素：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">setInterval(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  scrollBy(<span class="number">10</span>);</span><br><span class="line">&#125;, <span class="number">1000</span>);</span><br></pre></td></tr></table></figure>
+<p>在元素上调用<strong><code>scrollIntoView</code></strong>会让浏览器滚动到此元素可见的位置，默认情况下它试图将元素的上边缘放在或尽量接近视口的上边缘，如果只传递 false 作为参数，它将试图将元素的下边缘放在或者尽量接近视口的下边缘。</p>
+<h2 id="确定元素大小"><a href="#确定元素大小" class="headerlink" title="确定元素大小"></a>确定元素大小</h2><p><code>getBoundingClientRect</code>方法会返回一个矩形对象，包含 4 个属性： <code>left</code>、<code>top</code>、<code>right</code>、<code>bottom</code>.这些属性是元素在页面中<strong>相对于视口的位置</strong>，即视口坐标。其返回的坐标包含边框和内边距，但不包含外边距。另外，这个方法返回的坐标是一个快照版本，不会实时更新。</p>
+<p>为了将其转化为文档坐标，需要加上浏览器滚动条的大小（见上面滚动大小小节）。</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>本文内容均是参考自<code>JavaScript</code>红宝书(第 12 章)和权威指南(15.8)的。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVASCRIPT/" rel="tag"># JAVASCRIPT</a>
+          
+            <a href="/tags/DOM/" rel="tag"># DOM</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/18/chrome-devtools-elemnts&console/" rel="next" title="Chrome开发者工具之elements&console面板使用总结">
+                <i class="fa fa-chevron-left"></i> Chrome开发者工具之elements&console面板使用总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/25/tslint-recommend-rules/" rel="prev" title="Tslint官方推荐规则详细解释">
+                Tslint官方推荐规则详细解释 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#文档坐标、视口坐标"><span class="nav-number">1.</span> <span class="nav-text">文档坐标、视口坐标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#元素大小"><span class="nav-number">2.</span> <span class="nav-text">元素大小</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#偏移量-offset"><span class="nav-number">2.1.</span> <span class="nav-text">偏移量 offset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户区大小-client"><span class="nav-number">2.2.</span> <span class="nav-text">客户区大小 client</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#滚动大小"><span class="nav-number">2.3.</span> <span class="nav-text">滚动大小</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#滚动"><span class="nav-number">2.3.1.</span> <span class="nav-text">滚动</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#确定元素大小"><span class="nav-number">2.4.</span> <span class="nav-text">确定元素大小</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">3.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

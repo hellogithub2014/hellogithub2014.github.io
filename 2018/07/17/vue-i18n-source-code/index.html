@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="vue,VueI18n,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="这段时间一直在做国际化的项目，需要对界面上的文本都对各种语言做翻译，利用了vue-i18n这个库,它可以在切换语言时无刷新的更新页面上的文本翻译。 本文主要用来记录阅读这个库时的心得体会。 如何使用按照官网教程安装完后，经过很简单的几句代码就可以使用了： 12345678910111213import VueI18n from &apos;vue-i18n&apos;;Vue.use(VueI18n);export">
+<meta name="keywords" content="vue,VueI18n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="VueI18n源码解析">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/07/17/vue-i18n-source-code/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="这段时间一直在做国际化的项目，需要对界面上的文本都对各种语言做翻译，利用了vue-i18n这个库,它可以在切换语言时无刷新的更新页面上的文本翻译。 本文主要用来记录阅读这个库时的心得体会。 如何使用按照官网教程安装完后，经过很简单的几句代码就可以使用了： 12345678910111213import VueI18n from &apos;vue-i18n&apos;;Vue.use(VueI18n);export">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vuei18n/vuei18n-struct.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.498Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="VueI18n源码解析">
+<meta name="twitter:description" content="这段时间一直在做国际化的项目，需要对界面上的文本都对各种语言做翻译，利用了vue-i18n这个库,它可以在切换语言时无刷新的更新页面上的文本翻译。 本文主要用来记录阅读这个库时的心得体会。 如何使用按照官网教程安装完后，经过很简单的几句代码就可以使用了： 12345678910111213import VueI18n from &apos;vue-i18n&apos;;Vue.use(VueI18n);export">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/vuei18n/vuei18n-struct.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/07/17/vue-i18n-source-code/">
+
+
+
+
+
+  <title>VueI18n源码解析 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/07/17/vue-i18n-source-code/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">VueI18n源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-07-17T22:30:00+08:00">
+                2018-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>这段时间一直在做国际化的项目，需要对界面上的文本都对各种语言做翻译，利用了<a href="https://github.com/kazupon/vue-i18n" target="_blank" rel="noopener">vue-i18n</a>这个库,它可以在切换语言时无刷新的更新页面上的文本翻译。 本文主要用来记录阅读这个库时的心得体会。</p>
+<h1 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h1><p>按照官网教程安装完后，经过很简单的几句代码就可以使用了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> VueI18n <span class="keyword">from</span> <span class="string">'vue-i18n'</span>;</span><br><span class="line"></span><br><span class="line">Vue.use(VueI18n);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> i18n = <span class="keyword">new</span> VueI18n(&#123;</span><br><span class="line">  messages: preMessages,</span><br><span class="line">  fallbackLocale,</span><br><span class="line">  silentTranslationWarn: conf.isProductionEnv, <span class="comment">// 生产环境禁掉warning</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Vue(&#123;</span><br><span class="line">  i18n,</span><br><span class="line">&#125;).$mount(<span class="string">'#app'</span>);</span><br></pre></td></tr></table></figure>
+<h1 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h1><p>整个插件的结构如下：</p>
+<p><img src="/images/vuei18n/vuei18n-struct.png" alt="插件结构"></p>
+<h1 id="入口"><a href="#入口" class="headerlink" title="入口"></a>入口</h1><p>先看看<code>Vue.use</code>是如何工作的，代码位于<code>vue/src/core/global-api/use.js</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Vue.use = <span class="function"><span class="keyword">function</span>(<span class="params">plugin: Function | Object</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 查看已安装插件列表中是否有此插件</span></span><br><span class="line">  <span class="keyword">const</span> installedPlugins = <span class="keyword">this</span>._installedPlugins || (<span class="keyword">this</span>._installedPlugins = []);</span><br><span class="line">  <span class="keyword">if</span> (installedPlugins.indexOf(plugin) &gt; <span class="number">-1</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// additional parameters</span></span><br><span class="line">  <span class="keyword">const</span> args = toArray(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">  args.unshift(<span class="keyword">this</span>);</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> plugin.install === <span class="string">'function'</span>) &#123;</span><br><span class="line">    plugin.install.apply(plugin, args); <span class="comment">// 调用插件的install方法</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> plugin === <span class="string">'function'</span>) &#123;</span><br><span class="line">    plugin.apply(<span class="literal">null</span>, args); <span class="comment">// 如果没有install，那么调用插件自身</span></span><br><span class="line">  &#125;</span><br><span class="line">  installedPlugins.push(plugin);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下来就是<code>VueI18n.install</code>干了些什么，代码位于<code>vue-i18n/src/install.js</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">install</span>(<span class="params">_Vue</span>) </span>&#123;</span><br><span class="line">  Vue = _Vue;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> version = (Vue.version &amp;&amp; <span class="built_in">Number</span>(Vue.version.split(<span class="string">'.'</span>)[<span class="number">0</span>])) || <span class="number">-1</span>;</span><br><span class="line">  <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">  <span class="comment">// 插件利用install.installed来判断是否自己已被安装过，一个很常见的小技巧。。。</span></span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; install.installed) &#123;</span><br><span class="line">    warn(<span class="string">'already installed.'</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  install.installed = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; version &lt; <span class="number">2</span>) &#123;</span><br><span class="line">    warn(<span class="string">`vue-i18n (<span class="subst">$&#123;install.version&#125;</span>) need to use Vue 2.0 or later (Vue: <span class="subst">$&#123;Vue.version&#125;</span>).`</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 挂载$.i18n变量</span></span><br><span class="line">  <span class="built_in">Object</span>.defineProperty(Vue.prototype, <span class="string">'$i18n'</span>, &#123;</span><br><span class="line">    get() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>._i18n;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  extend(Vue); <span class="comment">// 在vue实例上添加各种格式化函数</span></span><br><span class="line">  Vue.mixin(mixin); <span class="comment">// 挂载生命周期钩子</span></span><br><span class="line">  Vue.directive(<span class="string">'t'</span>, &#123; bind, update &#125;); <span class="comment">// 添加v-t函数，研究实现</span></span><br><span class="line">  Vue.component(component.name, component); <span class="comment">// 添加全局&lt;i18n&gt;组件</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// use object-based merge strategy</span></span><br><span class="line">  <span class="keyword">const</span> strats = Vue.config.optionMergeStrategies;</span><br><span class="line">  strats.i18n = strats.methods; <span class="comment">// 针对i18n的Vue选项指定合并策略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="如何实现无刷新更新语言"><a href="#如何实现无刷新更新语言" class="headerlink" title="如何实现无刷新更新语言"></a>如何实现无刷新更新语言</h1><p>这是我们最为关心的问题了，也是这个插件最核心的逻辑，其他都是为了让插件更好用。</p>
+<p>此处逻辑放在了<code>Vue.mixin(mixin)</code>里，这里面主要是给 Vue 实例或组件添加了 2 个生命周期钩子<code>beforeCreate</code>和<code>beforeDestroy</code>。 在<code>beforeCreate</code>钩子里实现了对语言、文本等变量的监听，如果发现了变更，就会手动触发 Vue 实例或组件的<code>$forceUpdate</code>方法强制更新。在<code>beforeDestroy</code>中注销所有监听。</p>
+<h2 id="beforeCreate"><a href="#beforeCreate" class="headerlink" title="beforeCreate"></a>beforeCreate</h2><p>这个就是核心代码了，看看怎么实现的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">beforeCreate (): <span class="keyword">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> options: any = <span class="keyword">this</span>.$options <span class="comment">// Vue实例或组件的选项</span></span><br><span class="line">    options.i18n = options.i18n || (options.__i18n ? &#123;&#125; : <span class="literal">null</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (options.i18n) &#123;</span><br><span class="line">      <span class="keyword">if</span> (options.i18n <span class="keyword">instanceof</span> VueI18n) &#123; <span class="comment">// 按照最常见的用法，这个分支是成立的</span></span><br><span class="line">        <span class="comment">// init locale messages via custom blocks</span></span><br><span class="line">        <span class="keyword">if</span> (options.__i18n) &#123; <span class="comment">// 这个__i18n选项没用过，暂且忽略</span></span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">let</span> localeMessages = &#123;&#125;</span><br><span class="line">            options.__i18n.forEach(<span class="function"><span class="params">resource</span> =&gt;</span> &#123;</span><br><span class="line">              localeMessages = merge(localeMessages, <span class="built_in">JSON</span>.parse(resource))</span><br><span class="line">            &#125;)</span><br><span class="line">            <span class="built_in">Object</span>.keys(localeMessages).forEach(<span class="function">(<span class="params">locale: Locale</span>) =&gt;</span> &#123;</span><br><span class="line">              options.i18n.mergeLocaleMessage(locale, localeMessages[locale])</span><br><span class="line">            &#125;)</span><br><span class="line">          &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">            <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">              warn(<span class="string">`Cannot parse locale messages via custom blocks.`</span>, e)</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">this</span>._i18n = options.i18n</span><br><span class="line">        <span class="keyword">this</span>._i18nWatcher = <span class="keyword">this</span>._i18n.watchI18nData() <span class="comment">// 这一句和下一句是关键，用于监听翻译变量的变更并触发页面更新，待会单独讲</span></span><br><span class="line">        <span class="keyword">this</span>._i18n.subscribeDataChanging(<span class="keyword">this</span>)</span><br><span class="line">        <span class="keyword">this</span>._subscribing = <span class="literal">true</span></span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isPlainObject(options.i18n)) &#123; <span class="comment">// 使用插件时传入的i18n只是一个普通对象</span></span><br><span class="line">        <span class="comment">// component local i18n，手动构造VueI18n对象，逻辑和上面的基本一致，略过。。。</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">this</span>.$root &amp;&amp; <span class="keyword">this</span>.$root.$i18n &amp;&amp; <span class="keyword">this</span>.$root.$i18n <span class="keyword">instanceof</span> VueI18n) &#123;</span><br><span class="line">          options.i18n.root = <span class="keyword">this</span>.$root.$i18n</span><br><span class="line">          options.i18n.formatter = <span class="keyword">this</span>.$root.$i18n.formatter</span><br><span class="line">          options.i18n.fallbackLocale = <span class="keyword">this</span>.$root.$i18n.fallbackLocale</span><br><span class="line">          options.i18n.silentTranslationWarn = <span class="keyword">this</span>.$root.$i18n.silentTranslationWarn</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// init locale messages via custom blocks</span></span><br><span class="line">        <span class="keyword">if</span> (options.__i18n) &#123;</span><br><span class="line">          <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">let</span> localeMessages = &#123;&#125;</span><br><span class="line">            options.__i18n.forEach(<span class="function"><span class="params">resource</span> =&gt;</span> &#123;</span><br><span class="line">              localeMessages = merge(localeMessages, <span class="built_in">JSON</span>.parse(resource))</span><br><span class="line">            &#125;)</span><br><span class="line">            options.i18n.messages = localeMessages</span><br><span class="line">          &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">            <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">              warn(<span class="string">`Cannot parse locale messages via custom blocks.`</span>, e)</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">this</span>._i18n = <span class="keyword">new</span> VueI18n(options.i18n)</span><br><span class="line">        <span class="keyword">this</span>._i18nWatcher = <span class="keyword">this</span>._i18n.watchI18nData()</span><br><span class="line">        <span class="keyword">this</span>._i18n.subscribeDataChanging(<span class="keyword">this</span>)</span><br><span class="line">        <span class="keyword">this</span>._subscribing = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (options.i18n.sync === <span class="literal">undefined</span> || !!options.i18n.sync) &#123;</span><br><span class="line">          <span class="keyword">this</span>._localeWatcher = <span class="keyword">this</span>.$i18n.watchLocale()</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">          warn(<span class="string">`Cannot be interpreted 'i18n' option.`</span>)</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">this</span>.$root &amp;&amp; <span class="keyword">this</span>.$root.$i18n &amp;&amp; <span class="keyword">this</span>.$root.$i18n <span class="keyword">instanceof</span> VueI18n) &#123; <span class="comment">// 如果在根组件注册了i18n</span></span><br><span class="line">      <span class="comment">// root i18n</span></span><br><span class="line">      <span class="keyword">this</span>._i18n = <span class="keyword">this</span>.$root.$i18n</span><br><span class="line">      <span class="keyword">this</span>._i18n.subscribeDataChanging(<span class="keyword">this</span>) <span class="comment">// 注意这里并没有watch的逻辑，只注册了订阅</span></span><br><span class="line">      <span class="keyword">this</span>._subscribing = <span class="literal">true</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (options.parent &amp;&amp; options.parent.$i18n &amp;&amp; options.parent.$i18n <span class="keyword">instanceof</span> VueI18n) &#123; <span class="comment">// 如果在父组件注册了i18n</span></span><br><span class="line">      <span class="comment">// parent i18n</span></span><br><span class="line">      <span class="keyword">this</span>._i18n = options.parent.$i18n</span><br><span class="line">      <span class="keyword">this</span>._i18n.subscribeDataChanging(<span class="keyword">this</span>) <span class="comment">// 这里同样只注册了订阅</span></span><br><span class="line">      <span class="keyword">this</span>._subscribing = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br></pre></td></tr></table></figure>
+<p>如果在当前组件没有注册 i18n 插件，会首先去根组件找，然后再去父组件找。只要找到了就说明如果翻译变量变化了，当前组件可以执行更新。</p>
+<h2 id="watchI18nData、subscribeDataChanging"><a href="#watchI18nData、subscribeDataChanging" class="headerlink" title="watchI18nData、subscribeDataChanging"></a>watchI18nData、subscribeDataChanging</h2><p>为了能够监听到翻译变量的变化，vuei18n 做了一个巧妙的事：</p>
+<ol>
+<li>它在内部实例化了一个 vue 实例，然后把所有相关翻译变量当做<code>data</code>选项传进去，</li>
+<li>最后再<code>watch</code>整个<code>data</code>，只要触发了<code>watch</code>就说明翻译变量发生了变化。</li>
+</ol>
+<p>首先，在执行插件的构造函数时，有一个<code>_initVM</code>函数，这里就是用来实例化内部 vm 的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">_initVM(data: &#123;</span><br><span class="line">	locale: Locale,</span><br><span class="line">	fallbackLocale: Locale,</span><br><span class="line">	messages: LocaleMessages,</span><br><span class="line">	dateTimeFormats: DateTimeFormats,</span><br><span class="line">	numberFormats: NumberFormats,</span><br><span class="line">&#125;): <span class="keyword">void</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> silent = Vue.config.silent;</span><br><span class="line">	Vue.config.silent = <span class="literal">true</span>;</span><br><span class="line">	<span class="keyword">this</span>._vm = <span class="keyword">new</span> Vue(&#123; data &#125;);</span><br><span class="line">	Vue.config.silent = silent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到监听的有语言、默认语言、翻译词包、时间格式化函数、数字格式化函数</p>
+<p>然后在上述的<code>mixin</code>逻辑中，有一个<code>watchI18nData</code>函数，它就是用来<code>watch</code>整个<code>data</code>对象的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">watchI18nData(): <span class="built_in">Function</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> self = <span class="keyword">this</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>._vm.$watch(</span><br><span class="line">	 <span class="string">'$data'</span>,</span><br><span class="line">	 () =&gt; &#123;</span><br><span class="line">	   <span class="keyword">let</span> i = self._dataListeners.length;</span><br><span class="line">	   <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">	     Vue.nextTick(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">	       self._dataListeners[i] &amp;&amp; self._dataListeners[i].$forceUpdate();</span><br><span class="line">	     &#125;);</span><br><span class="line">	   &#125;</span><br><span class="line">	 &#125;,</span><br><span class="line">	 &#123; <span class="attr">deep</span>: <span class="literal">true</span> &#125;,</span><br><span class="line">	);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>_dataListeners</code>是什么？ 这里是一个简单的<code>观察者模式</code>，<code>_dataListeners</code>是一个数组，存放所有对<code>data</code>感兴趣的回调函数。回调函数在哪里注册的呢？ 就是上面的</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>._i18n.subscribeDataChanging(<span class="keyword">this</span>); <span class="comment">// this指向vue组件或vue实例</span></span><br></pre></td></tr></table></figure>
+<p>最后只要看看<code>$forceUpdate</code>干了什么，整个插件的主体脉络就梳理清楚了，应该就是执行页面更新了.这个函数在<code>vue</code>源码中的<code>vue/src/core/instance/lifecycle.js</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$forceUpdate = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">if</span> (vm._watcher) &#123;</span><br><span class="line">    vm._watcher.update();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>至于<code>vm._watcher.update()</code>干了些什么事，以后再研究。</p>
+<p>综上： 我们可以在页面上设置一个切换语言功能，在其中只要更改语言<code>locale</code>就可以最终执行组件的<code>update</code>了，或者动态的更新词包也行。</p>
+<h2 id="beforeDestroy"><a href="#beforeDestroy" class="headerlink" title="beforeDestroy"></a>beforeDestroy</h2><p>上面也说到，这里会卸载<code>watch</code>和<code>_dataListeners</code>,具体看看怎么做的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">beforeDestroy (): <span class="keyword">void</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">this</span>._i18n) &#123; <span class="keyword">return</span> &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>._subscribing) &#123;</span><br><span class="line">    <span class="keyword">this</span>._i18n.unsubscribeDataChanging(<span class="keyword">this</span>)</span><br><span class="line">    <span class="keyword">delete</span> <span class="keyword">this</span>._subscribing</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>._i18nWatcher) &#123;</span><br><span class="line">    <span class="keyword">this</span>._i18nWatcher()</span><br><span class="line">    <span class="keyword">delete</span> <span class="keyword">this</span>._i18nWatcher</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>._localeWatcher) &#123;</span><br><span class="line">    <span class="keyword">this</span>._localeWatcher()</span><br><span class="line">    <span class="keyword">delete</span> <span class="keyword">this</span>._localeWatcher</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>._i18n = <span class="literal">null</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码很简单，略。。。。</p>
+<p>至此，插件的核心逻辑就讲完了，其他的都是锦上添花的功能，我们也挨个来看下。</p>
+<h1 id="t、-tc"><a href="#t、-tc" class="headerlink" title="$t、$tc"></a><code>$t</code>、<code>$tc</code></h1><p>在<code>install</code>函数中执行了这个<code>extend(Vue)</code>，它会往<code>vue</code>实例上挂载各种各样的便利格式化函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Object</span>.defineProperty(Vue.prototype, <span class="string">'$t'</span>, &#123;</span><br><span class="line">  get() &#123;</span><br><span class="line">    <span class="keyword">return</span> (key: Path, ...values: any): <span class="function"><span class="params">TranslateResult</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> i18n = <span class="keyword">this</span>.$i18n;</span><br><span class="line">      <span class="keyword">return</span> i18n._t(key, i18n.locale, i18n._getMessages(), <span class="keyword">this</span>, ...values);</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// $FlowFixMe</span></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(Vue.prototype, <span class="string">'$tc'</span>, &#123;</span><br><span class="line">  get() &#123;</span><br><span class="line">    <span class="keyword">return</span> (key: Path, choice?: number, ...values: any): <span class="function"><span class="params">TranslateResult</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> i18n = <span class="keyword">this</span>.$i18n;</span><br><span class="line">      <span class="keyword">return</span> i18n._tc(key, i18n.locale, i18n._getMessages(), <span class="keyword">this</span>, choice, ...values);</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>这里重点关注最常用的<code>$t</code>和<code>$tc</code>.</p>
+<h2 id="t"><a href="#t" class="headerlink" title="$t"></a><code>$t</code></h2><p>跟踪它的代码调用，会发现最后会到一个<code>_render</code>函数，他负责将词条连同各种参数翻译成最终的文本：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// message是待翻译词条，values是参数如插值或单复数的实际值</span></span><br><span class="line"> _render(message: string, <span class="attr">interpolateMode</span>: string, <span class="attr">values</span>: any): any &#123;</span><br><span class="line">   <span class="keyword">const</span> ret = <span class="keyword">this</span>._formatter.interpolate(message, values);</span><br><span class="line">   <span class="comment">// if interpolateMode is **not** 'string' ('row'),</span></span><br><span class="line">   <span class="comment">// return the compiled data (e.g. ['foo', VNode, 'bar']) with formatter</span></span><br><span class="line">   <span class="keyword">return</span> interpolateMode === <span class="string">'string'</span> ? ret.join(<span class="string">''</span>) : ret;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>这个函数又调用了<code>_formatter.interpolate</code>，<code>formatter</code>负责解析切割词条，返回文本片段数组。</p>
+<h2 id="formatter"><a href="#formatter" class="headerlink" title="formatter"></a>formatter</h2><p>分为了两步：<code>parse</code>和<code>compile</code>，</p>
+<h3 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h3><p>负责把待翻译词条解析成特定格式的数组，数组每个元素格式如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	type: string, <span class="comment">// 纯文本text、列表list、插值named</span></span><br><span class="line">	value: string</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整个过程其实并不难，就是挨个处理字符：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> RE_TOKEN_LIST_VALUE: <span class="built_in">RegExp</span> = <span class="regexp">/^(\d)+/</span>;</span><br><span class="line"><span class="keyword">const</span> RE_TOKEN_NAMED_VALUE: <span class="built_in">RegExp</span> = <span class="regexp">/^(\w)+/</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">parse</span>(<span class="params">format: string</span>): <span class="title">Array</span>&lt;<span class="title">Token</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> tokens: <span class="built_in">Array</span>&lt;Token&gt; = [];</span><br><span class="line">  <span class="keyword">let</span> position: number = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> text: string = <span class="string">''</span>;</span><br><span class="line">  <span class="keyword">while</span> (position &lt; format.length) &#123;</span><br><span class="line">    <span class="keyword">let</span> char: string = format[position++];</span><br><span class="line">    <span class="keyword">if</span> (char === <span class="string">'&#123;'</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (text) &#123;</span><br><span class="line">        tokens.push(&#123; <span class="attr">type</span>: <span class="string">'text'</span>, <span class="attr">value</span>: text &#125;);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      text = <span class="string">''</span>;</span><br><span class="line">      <span class="keyword">let</span> sub: string = <span class="string">''</span>;</span><br><span class="line">      char = format[position++];</span><br><span class="line">      <span class="keyword">while</span> (char !== <span class="string">'&#125;'</span>) &#123;</span><br><span class="line">        sub += char;</span><br><span class="line">        char = format[position++];</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">const</span> type = RE_TOKEN_LIST_VALUE.test(sub) ? <span class="string">'list'</span> : RE_TOKEN_NAMED_VALUE.test(sub) ? <span class="string">'named'</span> : <span class="string">'unknown'</span>;</span><br><span class="line">      tokens.push(&#123; <span class="attr">value</span>: sub, type &#125;);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (char === <span class="string">'%'</span>) &#123;</span><br><span class="line">      <span class="comment">// when found rails i18n syntax, skip text capture</span></span><br><span class="line">      <span class="keyword">if</span> (format[position] !== <span class="string">'&#123;'</span>) &#123;</span><br><span class="line">        text += char;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      text += char;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  text &amp;&amp; tokens.push(&#123; <span class="attr">type</span>: <span class="string">'text'</span>, <span class="attr">value</span>: text &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> tokens;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>比如<code>hello , my name is {name}, and you?</code>就会被解析为:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;</span><br><span class="line">    type: <span class="string">'text'</span>,</span><br><span class="line">    value: <span class="string">'hello , my name is '</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    type: <span class="string">'named'</span>,</span><br><span class="line">    value: <span class="string">'name'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    type: <span class="string">'text'</span>,</span><br><span class="line">    value: <span class="string">', and you?'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>这里的<code>name</code>变量真正的值就存储在<code>_render</code>函数的<code>values</code>参数中。下一步<code>compile</code>就会拿到真正的值并替换<code>name</code>变量.</p>
+<h2 id="compile"><a href="#compile" class="headerlink" title="compile"></a>compile</h2><p>同样比较简单，最后也会返回一个数组</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// values参数就是_render函数的values</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">compile</span>(<span class="params">tokens: Array&lt;Token&gt;, values: Object | Array&lt;any&gt;</span>): <span class="title">Array</span>&lt;<span class="title">any</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> compiled: <span class="built_in">Array</span>&lt;any&gt; = [];</span><br><span class="line">  <span class="keyword">let</span> index: number = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> mode: string = <span class="built_in">Array</span>.isArray(values) ? <span class="string">'list'</span> : isObject(values) ? <span class="string">'named'</span> : <span class="string">'unknown'</span>;</span><br><span class="line">  <span class="keyword">if</span> (mode === <span class="string">'unknown'</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> compiled;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 挨个处理parse函数返回的数组元素</span></span><br><span class="line">  <span class="keyword">while</span> (index &lt; tokens.length) &#123;</span><br><span class="line">    <span class="keyword">const</span> token: Token = tokens[index];</span><br><span class="line">    <span class="keyword">switch</span> (token.type) &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'text'</span>: <span class="comment">// 纯文本</span></span><br><span class="line">        compiled.push(token.value);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'list'</span>: <span class="comment">// 列表插值</span></span><br><span class="line">        compiled.push(values[<span class="built_in">parseInt</span>(token.value, <span class="number">10</span>)]); <span class="comment">// 拿到values中对应索引的值</span></span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'named'</span>:</span><br><span class="line">        <span class="keyword">if</span> (mode === <span class="string">'named'</span>) &#123;</span><br><span class="line">          compiled.push((values: any)[token.value]); <span class="comment">// 拿到values中对应的属性值</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">            warn(<span class="string">`Type of token '<span class="subst">$&#123;token.type&#125;</span>' and format of value '<span class="subst">$&#123;mode&#125;</span>' don't match!`</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="string">'unknown'</span>:</span><br><span class="line">        <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">          warn(<span class="string">`Detect 'unknown' type of token!`</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    index++;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> compiled;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其实只要把<code>compiled</code>数组<code>join</code>就是最终<code>$t</code>的结果了，为什么不这么干呢？ 是因为想把<code>formatter</code>处理的结果给<code>$tc</code>复用。</p>
+<h2 id="tc"><a href="#tc" class="headerlink" title="$tc"></a><code>$tc</code></h2><p>它比较『无耻』，先直接拿到<code>$t</code>的劳动果实，再从数组中挑一个想要的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">_tc(key: Path, <span class="attr">_locale</span>: Locale, <span class="attr">messages</span>: LocaleMessages, <span class="attr">host</span>: any, choice?: number, ...values: any): any &#123;</span><br><span class="line">  <span class="keyword">if</span> (!key) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">''</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (choice === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    choice = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> fetchChoice(<span class="keyword">this</span>._t(key, _locale, messages, host, ...values), choice);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>fetchChoice</code>的逻辑并不难，就是根据<code>choice</code>的值取数组中挑一个元素回来，各位看官自行去了解。</p>
+<h1 id="v-t"><a href="#v-t" class="headerlink" title="v-t"></a>v-t</h1><p>这是一个全局指令，</p>
+<p>这是一个全局指令，只有<code>bind</code>和<code>update</code>两个选项，前者会在绑定 DOM 元素时将翻译后的词条当做元素的<code>textContent</code>，后者执行更新逻辑。</p>
+<h2 id="bind"><a href="#bind" class="headerlink" title="bind"></a>bind</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">bind</span>(<span class="params">el: any, binding: Object, vnode: any</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  t(el, binding, vnode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>应该来说，这里的<code>t</code>函数做的事情和挂载到<code>Vue</code>实例上的<code>$t</code>、<code>$tc</code>类似，实际代码确实也是这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">t</span>(<span class="params">el: any, binding: Object, vnode: any</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> value: any = binding.value; <span class="comment">// 绑定到指令上的新值</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> &#123; path, locale, args, choice &#125; = parseValue(value);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 校验逻辑...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> vm: any = vnode.context;</span><br><span class="line">  <span class="comment">// 单复数词条</span></span><br><span class="line">  <span class="keyword">if</span> (choice) &#123;</span><br><span class="line">    el._vt = el.textContent = vm.$i18n.tc(path, choice, ...makeParams(locale, args)); <span class="comment">// 更新元素textContent</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    el._vt = el.textContent = vm.$i18n.t(path, ...makeParams(locale, args));</span><br><span class="line">  &#125;</span><br><span class="line">  el._locale = vm.$i18n.locale; <span class="comment">// 缓存当前语言到元素上面，以便在update时判断语言是否变化</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="update"><a href="#update" class="headerlink" title="update"></a>update</h2><p>更新时，如果语言没变且绑定到指令上的值没有变化则什么也不做；否则执行跟<code>bind</code>相同的逻辑：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">update</span>(<span class="params">el: any, binding: Object, vnode: any, oldVNode: any</span>): <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">if</span> (localeEqual(el, vnode) &amp;&amp; looseEqual(binding.value, binding.oldValue)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125; <span class="comment">// localeEqual判断语言是否由变化，会使用t函数中缓存的_locale</span></span><br><span class="line"></span><br><span class="line">  t(el, binding, vnode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的<code>looseEqual</code>比较有意思：如果都是数组，那么挨个比较每个数组元素；如果两个参数都是对象，那么递归比较每个属性值；如果不是对象，那么把它俩转为字符串对比：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">looseEqual</span>(<span class="params">a: any, b: any</span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (a === b) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> isObjectA: boolean = isObject(a);</span><br><span class="line">  <span class="keyword">const</span> isObjectB: boolean = isObject(b);</span><br><span class="line">  <span class="keyword">if</span> (isObjectA &amp;&amp; isObjectB) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> isArrayA: boolean = <span class="built_in">Array</span>.isArray(a);</span><br><span class="line">      <span class="keyword">const</span> isArrayB: boolean = <span class="built_in">Array</span>.isArray(b);</span><br><span class="line">      <span class="keyword">if</span> (isArrayA &amp;&amp; isArrayB) &#123;</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">          a.length === b.length &amp;&amp;</span><br><span class="line">          a.every(</span><br><span class="line">            (e: any, <span class="attr">i</span>: number): <span class="function"><span class="params">boolean</span> =&gt;</span> &#123;</span><br><span class="line">              <span class="keyword">return</span> looseEqual(e, b[i]);</span><br><span class="line">            &#125;,</span><br><span class="line">          )</span><br><span class="line">        );</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!isArrayA &amp;&amp; !isArrayB) &#123;</span><br><span class="line">        <span class="keyword">const</span> keysA: <span class="built_in">Array</span>&lt;string&gt; = <span class="built_in">Object</span>.keys(a);</span><br><span class="line">        <span class="keyword">const</span> keysB: <span class="built_in">Array</span>&lt;string&gt; = <span class="built_in">Object</span>.keys(b);</span><br><span class="line">        <span class="keyword">return</span> (</span><br><span class="line">          keysA.length === keysB.length &amp;&amp;</span><br><span class="line">          keysA.every(</span><br><span class="line">            (key: string): <span class="function"><span class="params">boolean</span> =&gt;</span> &#123;</span><br><span class="line">              <span class="keyword">return</span> looseEqual(a[key], b[key]);</span><br><span class="line">            &#125;,</span><br><span class="line">          )</span><br><span class="line">        );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">/* istanbul ignore next */</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">      <span class="comment">/* istanbul ignore next */</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!isObjectA &amp;&amp; !isObjectB) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">String</span>(a) === <span class="built_in">String</span>(b);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="lt-i18n-gt"><a href="#lt-i18n-gt" class="headerlink" title="&lt;i18n&gt;"></a><code>&lt;i18n&gt;</code></h1><p>这是<code>VueI18n</code>提供的一个函数式组件，业务中用的比较少，暂且没看。。。。 它的作用是可以方便的混合普通文本翻译与 html 模板，在一些稍微复杂的情形下会比较有用。</p>
+<h1 id="Vue-config-optionMergeStrategies"><a href="#Vue-config-optionMergeStrategies" class="headerlink" title="Vue.config.optionMergeStrategies"></a>Vue.config.optionMergeStrategies</h1><p>看到<code>install</code>方法里最后有这样两句：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// use object-based merge strategy</span></span><br><span class="line"><span class="keyword">const</span> strats = Vue.config.optionMergeStrategies;</span><br><span class="line">strats.i18n = strats.methods;</span><br></pre></td></tr></table></figure>
+<p>关于选项合并策略，<a href="https://cn.vuejs.org/v2/guide/mixins.html" target="_blank" rel="noopener">vue 的 mixin</a>也有描述，但具体的源码是怎样的呢？<code>mixin</code>是在什么时间点起作用的呢？</p>
+<p>我们先回答后一个问题：</p>
+<h2 id="mixin-的作用时间点"><a href="#mixin-的作用时间点" class="headerlink" title="mixin 的作用时间点"></a>mixin 的作用时间点</h2><p>在<code>Vue</code>的构造函数(位于<code>/vue/src/core/instance/index.js</code>)中只有很短的几句：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Vue</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; !(<span class="keyword">this</span> <span class="keyword">instanceof</span> Vue)) &#123;</span><br><span class="line">    warn(<span class="string">'Vue is a constructor and should be called with the `new` keyword'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">this</span>._init(options);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">initMixin(Vue);</span><br><span class="line">stateMixin(Vue);</span><br><span class="line">eventsMixin(Vue);</span><br><span class="line">lifecycleMixin(Vue);</span><br><span class="line">renderMixin(Vue);</span><br></pre></td></tr></table></figure>
+<p>其中的<code>_init</code>函数是在<code>initMixin</code>中定义的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">initMixin</span>(<span class="params">Vue: Class&lt;Component&gt;</span>) </span>&#123;</span><br><span class="line">  Vue.prototype._init = <span class="function"><span class="keyword">function</span>(<span class="params">options?: Object</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line">    <span class="comment">// a uid</span></span><br><span class="line">    vm._uid = uid++;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> startTag, endTag;</span><br><span class="line">    <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">    <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; config.performance &amp;&amp; mark) &#123;</span><br><span class="line">      startTag = <span class="string">`vue-perf-start:<span class="subst">$&#123;vm._uid&#125;</span>`</span>;</span><br><span class="line">      endTag = <span class="string">`vue-perf-end:<span class="subst">$&#123;vm._uid&#125;</span>`</span>;</span><br><span class="line">      mark(startTag);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// a flag to avoid this being observed</span></span><br><span class="line">    vm._isVue = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// merge options</span></span><br><span class="line">    <span class="keyword">if</span> (options &amp;&amp; options._isComponent) &#123;</span><br><span class="line">      <span class="comment">// optimize internal component instantiation</span></span><br><span class="line">      <span class="comment">// since dynamic options merging is pretty slow, and none of the</span></span><br><span class="line">      <span class="comment">// internal component options needs special treatment.</span></span><br><span class="line">      initInternalComponent(vm, options);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || &#123;&#125;, vm);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/* istanbul ignore else */</span></span><br><span class="line">    <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">      initProxy(vm);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      vm._renderProxy = vm;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// expose real self</span></span><br><span class="line">    vm._self = vm;</span><br><span class="line">    initLifecycle(vm);</span><br><span class="line">    initEvents(vm);</span><br><span class="line">    initRender(vm);</span><br><span class="line">    callHook(vm, <span class="string">'beforeCreate'</span>);</span><br><span class="line">    initInjections(vm); <span class="comment">// resolve injections before data/props</span></span><br><span class="line">    initState(vm);</span><br><span class="line">    initProvide(vm); <span class="comment">// resolve provide after data/props</span></span><br><span class="line">    callHook(vm, <span class="string">'created'</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">    <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; config.performance &amp;&amp; mark) &#123;</span><br><span class="line">      vm._name = formatComponentName(vm, <span class="literal">false</span>);</span><br><span class="line">      mark(endTag);</span><br><span class="line">      measure(<span class="string">`vue <span class="subst">$&#123;vm._name&#125;</span> init`</span>, startTag, endTag);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (vm.$options.el) &#123;</span><br><span class="line">      vm.$mount(vm.$options.el);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到有一句</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vm.$options = mergeOptions(</span><br><span class="line">  resolveConstructorOptions(vm.constructor), <span class="comment">// 构造函数自己的options</span></span><br><span class="line">  options || &#123;&#125;,</span><br><span class="line">  vm,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p><strong>这个<code>mergeOptions</code>就是处理<code>mixin</code>的过程了，可以看到这个过程非常早，早于组件初始化生命周期钩子。</strong>再来看看<code>mergeOptions</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Merge two option objects into a new one.</span></span><br><span class="line"><span class="comment"> * Core utility used in both instantiation and inheritance.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">mergeOptions</span>(<span class="params">parent: Object, child: Object, vm?: Component</span>): <span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">    checkComponents(child);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> child === <span class="string">'function'</span>) &#123;</span><br><span class="line">    child = child.options;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  normalizeProps(child, vm);</span><br><span class="line">  normalizeInject(child, vm);</span><br><span class="line">  normalizeDirectives(child);</span><br><span class="line">  <span class="keyword">const</span> extendsFrom = child.extends;</span><br><span class="line">  <span class="keyword">if</span> (extendsFrom) &#123;</span><br><span class="line">    parent = mergeOptions(parent, extendsFrom, vm);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 这里就是mixin被合并到组件option的时机，child.mixins就是指我们传入的那个mixin数组</span></span><br><span class="line">  <span class="keyword">if</span> (child.mixins) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = child.mixins.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="comment">// 按照这里的代码逻辑，靠后的mixin选项会覆盖靠前的mixin</span></span><br><span class="line">      parent = mergeOptions(parent, child.mixins[i], vm);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 合并完整个mixin之后，再合并其他选项</span></span><br><span class="line">  <span class="keyword">const</span> options = &#123;&#125;;</span><br><span class="line">  <span class="keyword">let</span> key;</span><br><span class="line">  <span class="keyword">for</span> (key <span class="keyword">in</span> parent) &#123;</span><br><span class="line">    mergeField(key);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (key <span class="keyword">in</span> child) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!hasOwn(parent, key)) &#123;</span><br><span class="line">      mergeField(key);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">mergeField</span>(<span class="params">key</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> strat = strats[key] || defaultStrat; <span class="comment">// 根据每一个选项获取对应的合并策略</span></span><br><span class="line">    options[key] = strat(parent[key], child[key], vm, key); <span class="comment">// 根据合并策略合并选项</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> options;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>好，我们已经知道<code>mixin</code>的合并时机非常早，并且会在合并组件其他选项之前就会合并<code>mixin</code>的选项。正因为这样，才有官网上说的『如果组件自身的选项与 mixin 冲突，最后会以组件自身的选项为准』。</p>
+<p>对于<code>i18n</code>选项的合并，通过代码我们已经知道他是使用<code>Vue.config.optionMergeStrategies.methods</code>，其实对于各种合并策略，无非就是怎么处理参数中的两个对象，我们不妨把所有提供提供的合并策略挨个了解下，代码都位于<code>vue/src/core/util/options.js</code>。</p>
+<p><strong>components、directives 和 filters 的合并策略都是 mergeAssets,大体就是组件选项覆盖 mixin 选项。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mergeAssets</span>(<span class="params">parentVal: ?Object, childVal: ?Object, vm?: Component, key: string</span>): <span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> res = <span class="built_in">Object</span>.create(parentVal || <span class="literal">null</span>);</span><br><span class="line">  <span class="keyword">if</span> (childVal) &#123;</span><br><span class="line">    <span class="keyword">return</span> extend(res, childVal);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ASSET_TYPES =&gt; [component、directive、filter]</span></span><br><span class="line">ASSET_TYPES.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">type</span>) </span>&#123;</span><br><span class="line">  strats[type + <span class="string">'s'</span>] = mergeAssets;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="strats-props、strats-methods、strats-inject-、strats-computed"><a href="#strats-props、strats-methods、strats-inject-、strats-computed" class="headerlink" title="strats.props、strats.methods、strats.inject 、strats.computed"></a>strats.props、strats.methods、strats.inject 、strats.computed</h3><p>这几个都是使用相同的一个叫<code>extend</code>的函数:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">strats.props = strats.methods = strats.inject = strats.computed = <span class="function"><span class="keyword">function</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  parentVal: ?Object,</span></span></span><br><span class="line"><span class="function"><span class="params">  childVal: ?Object,</span></span></span><br><span class="line"><span class="function"><span class="params">  vm?: Component,</span></span></span><br><span class="line"><span class="function"><span class="params">  key: string,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): ?<span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (childVal &amp;&amp; process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">    assertObjectType(key, childVal, vm);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!parentVal) <span class="keyword">return</span> childVal;</span><br><span class="line">  <span class="keyword">const</span> ret = <span class="built_in">Object</span>.create(<span class="literal">null</span>); <span class="comment">// 空对象</span></span><br><span class="line">  extend(ret, parentVal);</span><br><span class="line">  <span class="keyword">if</span> (childVal) extend(ret, childVal);</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>上述代码逻辑很简单，如果<code>parent</code>或<code>child</code>为空，直接返回不为空的那个；否则执行<code>extend</code>合并二者的选项，<code>extend</code>同样很简单：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// from中的第一层元素覆盖to的第一层元素</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">extend</span>(<span class="params">to: Object, _from: ?Object</span>): <span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> _from) &#123;</span><br><span class="line">    to[key] = _from[key];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> to;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以这几个合并策略都是最多只合并一层属性。</p>
+<h3 id="strats-data"><a href="#strats-data" class="headerlink" title="strats.data"></a>strats.data</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">strats.data = <span class="function"><span class="keyword">function</span>(<span class="params">parentVal: any, childVal: any, vm?: Component</span>): ?<span class="title">Function</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> mergeDataOrFn(parentVal, childVal, vm);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">mergeDataOrFn</span>(<span class="params">parentVal: any, childVal: any, vm?: Component</span>): ?<span class="title">Function</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!vm) &#123;</span><br><span class="line">    <span class="comment">// in a Vue.extend merge, both should be functions</span></span><br><span class="line">    <span class="keyword">if</span> (!childVal) &#123;</span><br><span class="line">      <span class="keyword">return</span> parentVal;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!parentVal) &#123;</span><br><span class="line">      <span class="keyword">return</span> childVal;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// when parentVal &amp; childVal are both present,</span></span><br><span class="line">    <span class="comment">// we need to return a function that returns the</span></span><br><span class="line">    <span class="comment">// merged result of both functions... no need to</span></span><br><span class="line">    <span class="comment">// check if parentVal is a function here because</span></span><br><span class="line">    <span class="comment">// it has to be a function to pass previous merges.</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">mergedDataFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="keyword">return</span> mergeData(</span><br><span class="line">        <span class="keyword">typeof</span> childVal === <span class="string">'function'</span> ? childVal.call(<span class="keyword">this</span>, <span class="keyword">this</span>) : childVal,</span><br><span class="line">        <span class="keyword">typeof</span> parentVal === <span class="string">'function'</span> ? parentVal.call(<span class="keyword">this</span>, <span class="keyword">this</span>) : parentVal,</span><br><span class="line">      );</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">mergedInstanceDataFn</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// instance merge</span></span><br><span class="line">      <span class="keyword">const</span> instanceData = <span class="keyword">typeof</span> childVal === <span class="string">'function'</span> ? childVal.call(vm, vm) : childVal;</span><br><span class="line">      <span class="keyword">const</span> defaultData = <span class="keyword">typeof</span> parentVal === <span class="string">'function'</span> ? parentVal.call(vm, vm) : parentVal;</span><br><span class="line">      <span class="keyword">if</span> (instanceData) &#123;</span><br><span class="line">        <span class="keyword">return</span> mergeData(instanceData, defaultData);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> defaultData;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意<code>methods</code>策略直接返回的合并后对象，而<code>data</code>策略返回的是一个函数，原因在代码注释里已经说的很清楚。接下来关注下其中的<code>mergeData</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Helper that recursively merges two data objects together.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mergeData</span>(<span class="params">to: Object, from: ?Object</span>): <span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">from</span>) <span class="keyword">return</span> to;</span><br><span class="line">  <span class="keyword">let</span> key, toVal, fromVal;</span><br><span class="line">  <span class="keyword">const</span> keys = <span class="built_in">Object</span>.keys(<span class="keyword">from</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; keys.length; i++) &#123;</span><br><span class="line">    key = keys[i];</span><br><span class="line">    toVal = to[key];</span><br><span class="line">    fromVal = <span class="keyword">from</span>[key];</span><br><span class="line">    <span class="keyword">if</span> (!hasOwn(to, key)) &#123;</span><br><span class="line">      set(to, key, fromVal);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isPlainObject(toVal) &amp;&amp; isPlainObject(fromVal)) &#123;</span><br><span class="line">      mergeData(toVal, fromVal); <span class="comment">// 递归合并子属性</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> to;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意到这里是递归合并所有选项，而不是像<a href="https://cn.vuejs.org/v2/guide/mixins.html" target="_blank" rel="noopener">官网上说</a>的那样：</p>
+<blockquote>
+<p>数据对象在内部会进行浅合并 (一层属性深度)，在和组件的数据发生冲突时以组件数据优先。</p>
+</blockquote>
+<p>我们也使用以下代码也可以验证<code>data</code>的合并不是只合并一层属性。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mixin = &#123;</span><br><span class="line">  data: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      message: <span class="string">'hello'</span>,</span><br><span class="line">      foo: <span class="string">'abc'</span>,</span><br><span class="line">      inner: &#123;</span><br><span class="line">        a: <span class="number">1</span>,</span><br><span class="line">        b: <span class="number">2</span>,</span><br><span class="line">        c: &#123;</span><br><span class="line">          x: <span class="number">1</span>,</span><br><span class="line">          y: <span class="number">2</span>,</span><br><span class="line">          d: &#123;</span><br><span class="line">            z: <span class="number">3</span>,</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Vue(&#123;</span><br><span class="line">  mixins: [mixin],</span><br><span class="line">  data: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      message: <span class="string">'goodbye'</span>,</span><br><span class="line">      bar: <span class="string">'def'</span>,</span><br><span class="line">      inner: &#123;</span><br><span class="line">        a: <span class="number">2</span>,</span><br><span class="line">        b: <span class="number">3</span>,</span><br><span class="line">        c: &#123;</span><br><span class="line">          x: <span class="number">2</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  created: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="built_in">JSON</span>.stringify(<span class="keyword">this</span>.$data));</span><br><span class="line">    <span class="comment">// &#123;"message":"goodbye","bar":"def","inner":&#123;"a":2,"b":3,"c":&#123;"x":2,"y":2,"d":&#123;"z":3&#125;&#125;&#125;,"foo":"abc"&#125;</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>综上，<code>data</code>合并策略返回一个函数，所有深层次的选项都会被合并。</p>
+<h3 id="strats-watch"><a href="#strats-watch" class="headerlink" title="strats.watch"></a>strats.watch</h3><p>他会把所有 watch 选项最后合并成数组。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Watchers.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Watchers hashes should not overwrite one</span></span><br><span class="line"><span class="comment"> * another, so we merge them as arrays.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">strats.watch = <span class="function"><span class="keyword">function</span>(<span class="params">parentVal: ?Object, childVal: ?Object, vm?: Component, key: string</span>): ?<span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">if</span> (!parentVal) <span class="keyword">return</span> childVal;</span><br><span class="line">  <span class="keyword">const</span> ret = &#123;&#125;;</span><br><span class="line">  extend(ret, parentVal);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> childVal) &#123;</span><br><span class="line">    <span class="keyword">let</span> parent = ret[key];</span><br><span class="line">    <span class="keyword">const</span> child = childVal[key];</span><br><span class="line">    <span class="keyword">if</span> (parent &amp;&amp; !<span class="built_in">Array</span>.isArray(parent)) &#123;</span><br><span class="line">      parent = [parent];</span><br><span class="line">    &#125;</span><br><span class="line">    ret[key] = parent ? parent.concat(child) : <span class="built_in">Array</span>.isArray(child) ? child : [child];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="strats-propsData、strats-el"><a href="#strats-propsData、strats-el" class="headerlink" title="strats.propsData、strats.el"></a>strats.propsData、strats.el</h3><p>这两个选项只能在非生产环境下使用，</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Options with restrictions</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span>) &#123;</span><br><span class="line">  strats.el = strats.propsData = <span class="function"><span class="keyword">function</span>(<span class="params">parent, child, vm, key</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (!vm) &#123;</span><br><span class="line">      warn(<span class="string">`option "<span class="subst">$&#123;key&#125;</span>" can only be used during instance `</span> + <span class="string">'creation with the `new` keyword.'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> defaultStrat(parent, child);</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Default strategy.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">const</span> defaultStrat = <span class="function"><span class="keyword">function</span>(<span class="params">parentVal: any, childVal: any</span>): <span class="title">any</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> childVal === <span class="literal">undefined</span> ? parentVal : childVal;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这俩都是采用类似短路求值的方式，优先使用<code>childVal</code>.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vue/" rel="tag"># vue</a>
+          
+            <a href="/tags/VueI18n/" rel="tag"># VueI18n</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/16/jest-quirks/" rel="next" title="vue结合jest踩坑记">
+                <i class="fa fa-chevron-left"></i> vue结合jest踩坑记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/22/sentry-source-code/" rel="prev" title="Sentry源码解析">
+                Sentry源码解析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#如何使用"><span class="nav-number">1.</span> <span class="nav-text">如何使用</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结构"><span class="nav-number">2.</span> <span class="nav-text">结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#入口"><span class="nav-number">3.</span> <span class="nav-text">入口</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何实现无刷新更新语言"><span class="nav-number">4.</span> <span class="nav-text">如何实现无刷新更新语言</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#beforeCreate"><span class="nav-number">4.1.</span> <span class="nav-text">beforeCreate</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#watchI18nData、subscribeDataChanging"><span class="nav-number">4.2.</span> <span class="nav-text">watchI18nData、subscribeDataChanging</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#beforeDestroy"><span class="nav-number">4.3.</span> <span class="nav-text">beforeDestroy</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#t、-tc"><span class="nav-number">5.</span> <span class="nav-text">$t、$tc</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#t"><span class="nav-number">5.1.</span> <span class="nav-text">$t</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#formatter"><span class="nav-number">5.2.</span> <span class="nav-text">formatter</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#parse"><span class="nav-number">5.2.1.</span> <span class="nav-text">parse</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#compile"><span class="nav-number">5.3.</span> <span class="nav-text">compile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tc"><span class="nav-number">5.4.</span> <span class="nav-text">$tc</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#v-t"><span class="nav-number">6.</span> <span class="nav-text">v-t</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#bind"><span class="nav-number">6.1.</span> <span class="nav-text">bind</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#update"><span class="nav-number">6.2.</span> <span class="nav-text">update</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#lt-i18n-gt"><span class="nav-number">7.</span> <span class="nav-text">&lt;i18n&gt;</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Vue-config-optionMergeStrategies"><span class="nav-number">8.</span> <span class="nav-text">Vue.config.optionMergeStrategies</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mixin-的作用时间点"><span class="nav-number">8.1.</span> <span class="nav-text">mixin 的作用时间点</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#strats-props、strats-methods、strats-inject-、strats-computed"><span class="nav-number">8.1.1.</span> <span class="nav-text">strats.props、strats.methods、strats.inject 、strats.computed</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#strats-data"><span class="nav-number">8.1.2.</span> <span class="nav-text">strats.data</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#strats-watch"><span class="nav-number">8.1.3.</span> <span class="nav-text">strats.watch</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#strats-propsData、strats-el"><span class="nav-number">8.1.4.</span> <span class="nav-text">strats.propsData、strats.el</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

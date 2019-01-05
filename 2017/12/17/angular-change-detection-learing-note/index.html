@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="ANGULAR,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="参考  ANGULAR CHANGE DETECTION EXPLAINED  Change Detection Reinvented Victor Savkin   什么时候会触发变更检测？主要有3类异步操作会触发变更检测  Events - click, submit, … XHR - Fetching data from a remote server Timers - setTimeout">
+<meta name="keywords" content="ANGULAR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Angular变更检测学习笔记">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/12/17/angular-change-detection-learing-note/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="参考  ANGULAR CHANGE DETECTION EXPLAINED  Change Detection Reinvented Victor Savkin   什么时候会触发变更检测？主要有3类异步操作会触发变更检测  Events - click, submit, … XHR - Fetching data from a remote server Timers - setTimeout">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://blog.thoughtram.io/images/cd-tree-2.svg">
+<meta property="og:image" content="https://blog.thoughtram.io/images/cd-tree-7.svg">
+<meta property="og:image" content="https://blog.thoughtram.io/images/cd-tree-8.svg">
+<meta property="og:image" content="https://blog.thoughtram.io/images/cd-tree-13.svg">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.485Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Angular变更检测学习笔记">
+<meta name="twitter:description" content="参考  ANGULAR CHANGE DETECTION EXPLAINED  Change Detection Reinvented Victor Savkin   什么时候会触发变更检测？主要有3类异步操作会触发变更检测  Events - click, submit, … XHR - Fetching data from a remote server Timers - setTimeout">
+<meta name="twitter:image" content="https://blog.thoughtram.io/images/cd-tree-2.svg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/12/17/angular-change-detection-learing-note/">
+
+
+
+
+
+  <title>Angular变更检测学习笔记 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/12/17/angular-change-detection-learing-note/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Angular变更检测学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-17T11:10:00+08:00">
+                2017-12-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>参考</p>
+<ul>
+<li><p><a href="https://blog.thoughtram.io/angular/2016/02/22/angular-2-change-detection-explained.html#observables" target="_blank" rel="noopener">ANGULAR CHANGE DETECTION EXPLAINED</a></p>
+</li>
+<li><p><a href="https://www.youtube.com/watch?v=jvKGQSFQf10" target="_blank" rel="noopener">Change Detection Reinvented Victor Savkin</a></p>
+</li>
+</ul>
+<h2 id="什么时候会触发变更检测？"><a href="#什么时候会触发变更检测？" class="headerlink" title="什么时候会触发变更检测？"></a>什么时候会触发变更检测？</h2><p>主要有3类异步操作会触发变更检测</p>
+<ol>
+<li><strong>Events</strong> - click, submit, …</li>
+<li><strong>XHR</strong> - Fetching data from a remote server</li>
+<li><strong>Timers</strong> - setTimeout(), setInterval()</li>
+</ol>
+<h2 id="谁来触发"><a href="#谁来触发" class="headerlink" title="谁来触发"></a>谁来触发</h2><p>Angular使用一个自己的<strong><code>NgZone</code></strong>来监听上述异步操作，每次当一个异步操作结束后，<code>NgZone</code>就会发出一个<strong><code>onTurnDone</code></strong>事件流。</p>
+<p>然后在一个叫<strong><code>ApplicationRef</code></strong>的类中，会订阅这个事件流，最后运行所有的变更检测器。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// very simplified version of actual source</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ApplicationRef</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  changeDetectorRefs:ChangeDetectorRef[] = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">constructor</span>(private zone: NgZone) &#123;</span><br><span class="line">    <span class="keyword">this</span>.zone.onTurnDone</span><br><span class="line">      .subscribe(<span class="function"><span class="params">()</span> =&gt;</span> <span class="keyword">this</span>.zone.run(<span class="function"><span class="params">()</span> =&gt;</span> <span class="keyword">this</span>.tick());</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  tick() &#123;</span><br><span class="line">    <span class="keyword">this</span>.changeDetectorRefs</span><br><span class="line">      .forEach(<span class="function">(<span class="params">ref</span>) =&gt;</span> ref.detectChanges());</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="变更检测"><a href="#变更检测" class="headerlink" title="变更检测"></a>变更检测</h2><p>每个组件都有自己的变更检测器，所有的变更检测器会组成一棵树，以根组件的检测器作为根。这棵树其实与组件树一一对应。</p>
+<p><img src="https://blog.thoughtram.io/images/cd-tree-2.svg" alt=""></p>
+<p>默认情况下，每次变更检测，都会从根节点开始，<strong>自顶向下的检测所有的变更检测器</strong>。</p>
+<p><img src="https://blog.thoughtram.io/images/cd-tree-7.svg" alt=""></p>
+<p>即使是整棵树都要检测，但这个过程还是很快的，主要是因为Angular会生成对引擎友好的代码，可以大大提升执行速度。</p>
+<blockquote>
+<p>Angular creates change detector classes at runtime for each component, which are monomorphic, because they know exactly what the shape of the component’s model is. VMs can perfectly optimize this code, which makes it very fast to execute. The good thing is that we don’t have to care about that too much, because Angular does it automatically.</p>
+</blockquote>
+<h2 id="可变性"><a href="#可变性" class="headerlink" title="可变性"></a>可变性</h2><p>考虑以下代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@Component(&#123;</span><br><span class="line">  template: <span class="string">'&lt;v-card [vData]="vData"&gt;&lt;/v-card&gt;'</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VCardApp</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">constructor</span>() &#123;</span><br><span class="line">    <span class="keyword">this</span>.vData = &#123;</span><br><span class="line">      name: <span class="string">'Christoph Burgdorf'</span>,</span><br><span class="line">      email: <span class="string">'christoph@thoughtram.io'</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  changeData() &#123;</span><br><span class="line">    <span class="keyword">this</span>.vData.name = <span class="string">'Pascal Precht'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@Component( &#123;</span><br><span class="line">  selector: <span class="string">'v-card'</span>,</span><br><span class="line">  template: <span class="string">`</span></span><br><span class="line"><span class="string">					&lt;p&gt;name:&#123;&#123;vData?.name&#125;&#125;&lt;/p&gt;</span></span><br><span class="line"><span class="string">					&lt;p&gt;email:&#123;&#123;vData?.email&#125;&#125;&lt;/p&gt;</span></span><br><span class="line"><span class="string">				`</span></span><br><span class="line">&#125; )</span><br><span class="line"><span class="keyword">export</span> <span class="class"><span class="keyword">class</span> <span class="title">VCardComponent</span> <span class="title">implements</span> <span class="title">OnInit</span> </span>&#123;</span><br><span class="line">  @Input() vData: any;</span><br><span class="line">  <span class="keyword">constructor</span> () &#123; &#125;</span><br><span class="line"></span><br><span class="line">  ngOnInit () &#123;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>假设App中使用某个异步操作可以运行<code>changeData</code>方法，然后改变了<code>vData.name</code>，此时Angular变更检测开始工作。</p>
+<p>在检测到<code>v-card</code>组件时，会先检测输入属性<code>vData</code>是否还是指向之前的引用，发现没有变化。<strong>但是因为它的name属性发生了变化，此组件的变更检测器还是会完整的运行一遍,最终页面上展示的name会变成Pascal Precht。</strong></p>
+<p><strong>发生上述情况的原因是vData是一个可变对象，所以Angular不得不保守的运行对应的变更检测，因为单单判断引用是否变化不能得知其内部的属性值是否有变化。</strong></p>
+<h2 id="不可变对象"><a href="#不可变对象" class="headerlink" title="不可变对象"></a>不可变对象</h2><p>例如<code>immutabale.js</code>之类的库实现了不可变对象，每次尝试更换不可变对象的属性，都不会改变原有对象，而是返回一个新的对象引用。</p>
+<p>在Angular中，结合不可变对象和特定的变更检测策略，可以大大减少变更检测涉及的范围。以<code>v-card</code>为例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@Component(&#123;</span><br><span class="line">  template: <span class="string">`</span></span><br><span class="line"><span class="string">    &lt;h2&gt;&#123;&#123;vData.name&#125;&#125;&lt;/h2&gt;</span></span><br><span class="line"><span class="string">    &lt;span&gt;&#123;&#123;vData.email&#125;&#125;&lt;/span&gt;</span></span><br><span class="line"><span class="string">  `</span>,</span><br><span class="line">  changeDetection: ChangeDetectionStrategy.OnPush</span><br><span class="line">&#125;)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">VCardCmp</span> </span>&#123;</span><br><span class="line">  @Input() vData;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意上面的<strong><code>ChangeDetectionStrategy.OnPush</code></strong>，此时Angular可以放心大胆的说：如果vData的引用没有变化，那么以<code>v-card</code>为根的所有子树，包括<code>v-card</code>自身，都可以跳过变更检测。</p>
+<p><img src="https://blog.thoughtram.io/images/cd-tree-8.svg" alt=""></p>
+<h2 id="Observables"><a href="#Observables" class="headerlink" title="Observables"></a>Observables</h2><p>因为<code>Observable</code>表示一个流，它们自身的引用通常是不会变化的，每次有新值，都会在流上体现。当<code>Observable</code>作为某个组件的<code>@Input</code>时，同时组件使用了<strong><code>OnPush</code></strong>检测策略，可以想象通常默认情况下它们是不会触发变更检测的。如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">@Component(&#123;</span><br><span class="line">  template: <span class="string">'&#123;&#123;counter&#125;&#125;'</span>,</span><br><span class="line">  changeDetection: ChangeDetectionStrategy.OnPush</span><br><span class="line">&#125;)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CartBadgeCmp</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  @Input() addItemStream:Observable&lt;any&gt;;</span><br><span class="line">  counter = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  ngOnInit() &#123;</span><br><span class="line">    <span class="keyword">this</span>.addItemStream.subscribe(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.counter++; <span class="comment">// application state changed</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为了解决上述情况，可以注入<code>ChangeDetectorRef</code>，然后调用它的<code>markForCheck</code>方法，<strong>它会将根组件到当前组件的那条路径标记为在变更检测时需要进行检测。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">constructor</span>(private cd: ChangeDetectorRef) &#123;&#125;</span><br><span class="line"></span><br><span class="line">ngOnInit() &#123;</span><br><span class="line">    <span class="keyword">this</span>.addItemStream.subscribe(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.counter++; <span class="comment">// application state changed</span></span><br><span class="line">      <span class="keyword">this</span>.cd.markForCheck(); <span class="comment">// marks path</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在进行变更检测时：</p>
+<p><img src="https://blog.thoughtram.io/images/cd-tree-13.svg" alt=""></p>
+<h2 id="NgZone-in-Angular"><a href="#NgZone-in-Angular" class="headerlink" title="NgZone in Angular"></a>NgZone in Angular</h2><p>参考<a href="https://blog.thoughtram.io/angular/2016/02/01/zones-in-angular-2.html" target="_blank" rel="noopener">ZONES IN ANGULAR</a></p>
+<blockquote>
+<p>NgZone is basically a forked zone that extends its API and adds some additional functionality to its execution context. One of the things it adds to the API is the following set of custom events we can subscribe to, as they are observable streams:</p>
+</blockquote>
+<ul>
+<li><p><strong>onTurnStart()</strong> - Notifies subscribers just before Angular’s event turn starts. Emits an event once per browser task that is handled by Angular.</p>
+</li>
+<li><p><strong>onTurnDone()</strong> - Notifies subscribers immediately after Angular’s zone is done processing the current turn and any micro tasks scheduled from that turn.</p>
+</li>
+<li><p><strong>onEventDone()</strong> - Notifies subscribers immediately after the final onTurnDone() callback before ending VM event. Useful for testing to validate application state.</p>
+</li>
+</ul>
+<h3 id="zone"><a href="#zone" class="headerlink" title="zone"></a>zone</h3><p>参考<a href="https://blog.thoughtram.io/angular/2016/01/22/understanding-zones.html#table-of-contents" target="_blank" rel="noopener">UNDERSTANDING ZONES</a></p>
+<p><strong>zones are are basically an execution context for asynchronous operations。</strong></p>
+<p>Zones can perform an operation - such as starting or stopping a timer, or saving a stack trace - each time that code enters or exits a zone. They can override methods within our code, or even associate data with individual zones.</p>
+<h4 id="Creating-forking-and-extending-Zones"><a href="#Creating-forking-and-extending-Zones" class="headerlink" title="Creating, forking and extending Zones"></a>Creating, forking and extending Zones</h4><p>需要使用<code>zone.js</code>，之后我们就能拿到一个全局的<code>zone</code>对象，它有一个<code>run</code>方法，参数是一个函数，可以让这个函数运行在一个独立的<code>zone</code>当中。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">main</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  foo();</span><br><span class="line">  setTimeout(doSomething, <span class="number">2000</span>);</span><br><span class="line">  bar();</span><br><span class="line">  baz();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">zone.run(main);</span><br></pre></td></tr></table></figure>
+<p>此时<code>main</code>方法就在一个独立的上下文中运行了。我们还可以在函数进行或退出<code>zone</code>的各个时间点加上钩子来监控运行情况。</p>
+<p>安装钩子首先需要<code>fork</code>当前已有的<code>zone</code>，它会返回一个继承它的子<code>zone</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myZone = zone.fork();</span><br><span class="line">myZone.run(main);</span><br></pre></td></tr></table></figure>
+<p>所有的钩子都可以放在一个用于<code>fork</code>方法参数的<code>ZoneSpecification</code>对象中，可选的钩子有：</p>
+<ul>
+<li><strong>onZoneCreated</strong> - Runs when zone is forked</li>
+<li><strong>beforeTask</strong> - Runs before a function called with zone.run is executed</li>
+<li><strong>afterTask</strong> - Runs after a function in the zone runs</li>
+<li><strong>onError</strong> - Runs when a function passed to zone.run will throw</li>
+</ul>
+<p>一个示范：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> myZoneSpec = &#123;</span><br><span class="line">  beforeTask: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'Before task'</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">  afterTask: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'After task'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> myZone = zone.fork(myZoneSpec);</span><br><span class="line">myZone.run(main);</span><br></pre></td></tr></table></figure>
+<h4 id="Monkey-patched-Hooks"><a href="#Monkey-patched-Hooks" class="headerlink" title="Monkey-patched Hooks"></a>Monkey-patched Hooks</h4><p>As soon as we embed <code>zone.js</code> in our site, pretty much all methods that cause asynchronous operations are monkey-patched to run in a new zone.</p>
+<p>For example, when we call <code>setTimeout()</code> we actually call <code>Zone.setTimeout()</code>, which in turn creates a new zone using <code>zone.fork()</code> in which the given handler is executed. And that’s why our hooks are executed as well, because the forked zone in which the handler will be executed, simply inherits from the parent zone.</p>
+<p>There are some other methods that <code>zone.js</code> overrides by default and provides us as hooks:</p>
+<ul>
+<li><code>Zone.setInterval()</code></li>
+<li><code>Zone.alert()</code></li>
+<li><code>Zone.prompt()</code></li>
+<li><code>Zone.requestAnimationFrame()</code></li>
+<li><code>Zone.addEventListener()</code></li>
+<li><code>Zone.removeEventListener()</code></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ANGULAR/" rel="tag"># ANGULAR</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/14/pre-cache-static-files-of-web-app/" rel="next" title="一种web app资源预缓存方案">
+                <i class="fa fa-chevron-left"></i> 一种web app资源预缓存方案
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/01/20/offline-detect/" rel="prev" title="前端离线检测">
+                前端离线检测 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么时候会触发变更检测？"><span class="nav-number">1.</span> <span class="nav-text">什么时候会触发变更检测？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#谁来触发"><span class="nav-number">2.</span> <span class="nav-text">谁来触发</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#变更检测"><span class="nav-number">3.</span> <span class="nav-text">变更检测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#可变性"><span class="nav-number">4.</span> <span class="nav-text">可变性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不可变对象"><span class="nav-number">5.</span> <span class="nav-text">不可变对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Observables"><span class="nav-number">6.</span> <span class="nav-text">Observables</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NgZone-in-Angular"><span class="nav-number">7.</span> <span class="nav-text">NgZone in Angular</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#zone"><span class="nav-number">7.1.</span> <span class="nav-text">zone</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Creating-forking-and-extending-Zones"><span class="nav-number">7.1.1.</span> <span class="nav-text">Creating, forking and extending Zones</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Monkey-patched-Hooks"><span class="nav-number">7.1.2.</span> <span class="nav-text">Monkey-patched Hooks</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

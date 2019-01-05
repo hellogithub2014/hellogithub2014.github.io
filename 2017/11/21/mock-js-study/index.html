@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="MOCK,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="团队中的开发是前后端分离的，经常会步调不一致。之前前端都是将 mock 数据写死在 js 中，等后台接口写好了再把这些 mock 数据删掉，感觉很麻烦。于是研究了一下有没有什么 mock 的库，找到一个不错的Mock. 本文就是一个学习笔记。 基本使用安装直接把官方文档丢出来比较好： 文档 里面写的很详细就不说了。我们的项目里是采用&amp;lt;script&amp;gt;标签加载的方式。 1&amp;lt;scrip">
+<meta name="keywords" content="MOCK">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mock.js学习笔记">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/11/21/mock-js-study/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="团队中的开发是前后端分离的，经常会步调不一致。之前前端都是将 mock 数据写死在 js 中，等后台接口写好了再把这些 mock 数据删掉，感觉很麻烦。于是研究了一下有没有什么 mock 的库，找到一个不错的Mock. 本文就是一个学习笔记。 基本使用安装直接把官方文档丢出来比较好： 文档 里面写的很详细就不说了。我们的项目里是采用&amp;lt;script&amp;gt;标签加载的方式。 1&amp;lt;scrip">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mock.js学习笔记">
+<meta name="twitter:description" content="团队中的开发是前后端分离的，经常会步调不一致。之前前端都是将 mock 数据写死在 js 中，等后台接口写好了再把这些 mock 数据删掉，感觉很麻烦。于是研究了一下有没有什么 mock 的库，找到一个不错的Mock. 本文就是一个学习笔记。 基本使用安装直接把官方文档丢出来比较好： 文档 里面写的很详细就不说了。我们的项目里是采用&amp;lt;script&amp;gt;标签加载的方式。 1&amp;lt;scrip">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/11/21/mock-js-study/">
+
+
+
+
+
+  <title>mock.js学习笔记 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/11/21/mock-js-study/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">mock.js学习笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-21T11:25:00+08:00">
+                2017-11-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>团队中的开发是前后端分离的，经常会步调不一致。之前前端都是将 mock 数据写死在 js 中，等后台接口写好了再把这些 mock 数据删掉，感觉很麻烦。于是研究了一下有没有什么 mock 的库，找到一个不错的<strong><a href="https://github.com/nuysoft/Mock" target="_blank" rel="noopener">Mock</a></strong>. 本文就是一个学习笔记。</p>
+<h1 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>直接把官方文档丢出来比较好： <a href="https://github.com/nuysoft/Mock/wiki" target="_blank" rel="noopener">文档</a></p>
+<p>里面写的很详细就不说了。我们的项目里是采用<code>&lt;script&gt;</code>标签加载的方式。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"path/to/mock.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="基本使用-1"><a href="#基本使用-1" class="headerlink" title="基本使用"></a>基本使用</h2><p>同样很简单，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> data = Mock.mock(&#123;</span><br><span class="line">  <span class="string">'list|1-10'</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">'id|+1'</span>: <span class="number">1</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">  ],</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">&#123;</span></span><br><span class="line"><span class="comment">	"list": [</span></span><br><span class="line"><span class="comment">	    &#123;</span></span><br><span class="line"><span class="comment">	        "id": 1</span></span><br><span class="line"><span class="comment">	    &#125;,</span></span><br><span class="line"><span class="comment">	    &#123;</span></span><br><span class="line"><span class="comment">	        "id": 2</span></span><br><span class="line"><span class="comment">	    &#125;,</span></span><br><span class="line"><span class="comment">	    &#123;</span></span><br><span class="line"><span class="comment">	        "id": 3</span></span><br><span class="line"><span class="comment">	    &#125;</span></span><br><span class="line"><span class="comment">	]</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+<p>在<a href="http://mockjs.com/examples.html" target="_blank" rel="noopener">这里</a>有官方的各种示例，涵盖了所有的 mock api。</p>
+<p>官网文档里有每个 api 的解析。</p>
+<h1 id="项目实践"><a href="#项目实践" class="headerlink" title="项目实践"></a>项目实践</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>我们的项目中，前端是通过 nginx 反向代理 post 请求到具体后端应用的，然后在请求体里有一个<code>ROUTE</code>的字段来决定具体的路由。 例如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:8765/MyTest/test.do</span><br></pre></td></tr></table></figure>
+<p>请求体示范</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	&quot;ROUTE&quot;:&quot;ROUTE_PATH&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>而官网的示范中，大多数都是写死的请求 url：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Mock.mock(<span class="string">'http://g.cn'</span>, &#123;</span><br><span class="line">  <span class="comment">// template</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>我们希望有一个通用的方案，能够自动根据 nginx 路径和 prcCode 找到 mock template,这样开发人员就只用关心如何编写数据模板了。</p>
+<p>然后继续翻阅文档查到一个 api：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Mock.mock( rurl, rtype, function( options ) )</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>记录用于生成响应数据的函数。当拦截到匹配  rurl  和  rtype  的 Ajax 请求时，函数  function(options)  将被执行，并把执行结果作为响应数据返回。</p>
+</blockquote>
+<blockquote>
+<p>options 指向本次请求的 Ajax 选项集，含有  url、type  和  body  三个属性.</p>
+</blockquote>
+<p>看来这个函数可以很好的满足我的需求，开搞！</p>
+<h2 id="具体步骤"><a href="#具体步骤" class="headerlink" title="具体步骤"></a>具体步骤</h2><p>闲话不表，贴上代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">Mock.setup(&#123;</span><br><span class="line">  timeout: <span class="string">'200-600'</span>, <span class="comment">// 模拟延时</span></span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 拦截  domain/nginx-path/test.do 的请求</span></span><br><span class="line">Mock.mock(<span class="regexp">/\/.*\/test.do/</span>, <span class="string">'post'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> arry = options.url.split(<span class="string">'/'</span>);</span><br><span class="line">  <span class="keyword">var</span> nginxPath;</span><br><span class="line">  <span class="comment">// 获取nginx代理路径</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; arry.length; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (arry[i] === <span class="string">'rmi.do'</span>) &#123;</span><br><span class="line">      nginxPath = arry[i - <span class="number">1</span>];</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> routePath = <span class="built_in">JSON</span>.parse(options.body).ROUTE; <span class="comment">// 获取路由</span></span><br><span class="line">  <span class="keyword">var</span> templateDir = <span class="string">'/path/to/tempalte/dir'</span>;</span><br><span class="line">  <span class="keyword">var</span> templateUrl = templateDir + <span class="string">'/'</span> + nginxPath + <span class="string">'/'</span> + routePath + <span class="string">'.json'</span>;</span><br><span class="line">  <span class="keyword">var</span> bodyTemplate; <span class="comment">// 响应body模板</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取mock数据模板</span></span><br><span class="line">  <span class="keyword">var</span> xhr = <span class="keyword">new</span> XMLHttpRequest();</span><br><span class="line">  xhr.onreadystatechange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (xhr.readyState === <span class="number">4</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> ((xhr.status &gt;= <span class="number">200</span> &amp;&amp; xhr.status &lt; <span class="number">300</span>) || xhr.status === <span class="number">304</span>) &#123;</span><br><span class="line">        bodyTemplate = <span class="built_in">JSON</span>.parse(xhr.responseText);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        alert(<span class="string">'获取mock数据模板失败, 模板路径: '</span> + templateUrl);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  xhr.open(<span class="string">'get'</span>, templateUrl, <span class="literal">false</span>);</span><br><span class="line">  xhr.send();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> finalData = &#123;</span><br><span class="line">    <span class="comment">// 最后响应格式</span></span><br><span class="line">    ROUTE: routePath,</span><br><span class="line">    DATA: Mock.mock(bodyTemplate), <span class="comment">// 根据模板mock数据</span></span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> finalData;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>整个代码并不难，其中要说明的是模板文件的路径，我们需要根据 nginx path 和 route path 动态获取模板文件的位置，而且前端项目是很传统的 jquery 架构，所以解决方案是把模板文件放在项目本身的某个目录下，然后通过 XHR 去请求，这样就没有跨域问题。</p>
+<h2 id="模板文件"><a href="#模板文件" class="headerlink" title="模板文件"></a>模板文件</h2><p>其实 mock.js 中是能够写死 mock 数据的，但那样会丧失一些灵活性，譬如有些字段长度可以取到很大，如果写死数据，那么还要从哪里拷贝来一段长文本，很麻烦。</p>
+<p>更推荐的是使用模板+各种 mock api。 例如我们的一个模板文件：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"Z1|2"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"todoId|0-1000"</span>: <span class="number">1000</span>,</span><br><span class="line">      <span class="attr">"todoTyp"</span>: <span class="string">"T"</span>,</span><br><span class="line">      <span class="attr">"busId"</span>: <span class="string">"@string('number',3,5)"</span>,</span><br><span class="line">      <span class="attr">"origUsrId"</span>: <span class="string">"@string('number',5)"</span>,</span><br><span class="line">      <span class="attr">"origUsrNm"</span>: <span class="string">"@cname()"</span>,</span><br><span class="line">      <span class="attr">"todoTit"</span>: <span class="string">"@title()"</span>,</span><br><span class="line">      <span class="attr">"todoCntnt"</span>: <span class="string">"@cparagraph()"</span>,</span><br><span class="line">      <span class="attr">"todoDscr"</span>: <span class="string">"【@cname()/@string('number',5)】于@datetime('yyyy-MM-dd HH:mm:ss')发起任务,并提交【@cname()/@string('number',5)】处理"</span>,</span><br><span class="line">      <span class="attr">"xpcCplTm"</span>: <span class="string">"@datetime('yyyy-MM-dd HH:mm:ss').0"</span>,</span><br><span class="line">      <span class="attr">"todoAflOrgId|1-100000"</span>: <span class="number">100003</span>,</span><br><span class="line">      <span class="attr">"dealUsrId"</span>: <span class="string">"@string('number',5)"</span>,</span><br><span class="line">      <span class="attr">"dealUsrNm"</span>: <span class="string">"@cname()"</span>,</span><br><span class="line">      <span class="attr">"actlOrigTm"</span>: <span class="string">"@datetime('yyyy-MM-dd HH:mm:ss').0"</span>,</span><br><span class="line">      <span class="attr">"todoSts|1"</span>: [<span class="string">"2"</span>, <span class="string">"3"</span>],</span><br><span class="line">      <span class="attr">"crtUsrId"</span>: <span class="string">"@string('number',5)"</span>,</span><br><span class="line">      <span class="attr">"crtTm"</span>: <span class="string">"@now().0"</span>,</span><br><span class="line">      <span class="attr">"updUsrId"</span>: <span class="string">"@string('number',5)"</span>,</span><br><span class="line">      <span class="attr">"updTm"</span>: <span class="string">"@now().0"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"Z2"</span>: [&#123; <span class="attr">"totalCount"</span>: <span class="number">100</span> &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>某次返回的 mock 数据为：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"Z1"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"todoId"</span>: <span class="number">285</span>,</span><br><span class="line">      <span class="attr">"todoTyp"</span>: <span class="string">"T"</span>,</span><br><span class="line">      <span class="attr">"busId"</span>: <span class="string">"8218"</span>,</span><br><span class="line">      <span class="attr">"origUsrId"</span>: <span class="string">"21177"</span>,</span><br><span class="line">      <span class="attr">"origUsrNm"</span>: <span class="string">"田伟"</span>,</span><br><span class="line">      <span class="attr">"todoTit"</span>: <span class="string">"Gvtjr Ovjxtp Pbdbiydf Jivsxjka"</span>,</span><br><span class="line">      <span class="attr">"todoCntnt"</span>: <span class="string">"又称即处维压山极深次四细及其民积容。价三议斗革的际电标共海保张许那前根。研管而任海去确多华报水克制。已什月准位展求确许连严政道个。调关产专力流组于位同反受制成确据。"</span>,</span><br><span class="line">      <span class="attr">"todoDscr"</span>: <span class="string">"【秦敏/51575】于2017-04-12 02:07:11发起任务,并提交【陈秀兰/36681】处理"</span>,</span><br><span class="line">      <span class="attr">"xpcCplTm"</span>: <span class="string">"1987-10-29 16:31:10.0"</span>,</span><br><span class="line">      <span class="attr">"todoAflOrgId"</span>: <span class="number">66279</span>,</span><br><span class="line">      <span class="attr">"dealUsrId"</span>: <span class="string">"61266"</span>,</span><br><span class="line">      <span class="attr">"dealUsrNm"</span>: <span class="string">"曹杰"</span>,</span><br><span class="line">      <span class="attr">"actlOrigTm"</span>: <span class="string">"1983-05-08 12:26:34.0"</span>,</span><br><span class="line">      <span class="attr">"todoSts"</span>: <span class="string">"3"</span>,</span><br><span class="line">      <span class="attr">"crtUsrId"</span>: <span class="string">"27321"</span>,</span><br><span class="line">      <span class="attr">"crtTm"</span>: <span class="string">"2017-11-21 10:48:55.0"</span>,</span><br><span class="line">      <span class="attr">"updUsrId"</span>: <span class="string">"15615"</span>,</span><br><span class="line">      <span class="attr">"updTm"</span>: <span class="string">"2017-11-21 10:48:55.0"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"todoId"</span>: <span class="number">457</span>,</span><br><span class="line">      <span class="attr">"todoTyp"</span>: <span class="string">"T"</span>,</span><br><span class="line">      <span class="attr">"busId"</span>: <span class="string">"0560"</span>,</span><br><span class="line">      <span class="attr">"origUsrId"</span>: <span class="string">"19264"</span>,</span><br><span class="line">      <span class="attr">"origUsrNm"</span>: <span class="string">"赵秀英"</span>,</span><br><span class="line">      <span class="attr">"todoTit"</span>: <span class="string">"Hhjhdvxo Tepwroqz Ymykl Rcztcsvq"</span>,</span><br><span class="line">      <span class="attr">"todoCntnt"</span>: <span class="string">"革名联北合都己平他温近采你。公代适设何清住音究务进两七。取解育干社交快适至积二日石清属。整本地为记回度议高义素派酸水。总气体平完回老周干直道热现如备年。"</span>,</span><br><span class="line">      <span class="attr">"todoDscr"</span>: <span class="string">"【郑敏/58925】于2002-03-26 12:41:49发起任务,并提交【曹超/83833】处理"</span>,</span><br><span class="line">      <span class="attr">"xpcCplTm"</span>: <span class="string">"2000-09-22 09:24:07.0"</span>,</span><br><span class="line">      <span class="attr">"todoAflOrgId"</span>: <span class="number">92030</span>,</span><br><span class="line">      <span class="attr">"dealUsrId"</span>: <span class="string">"77817"</span>,</span><br><span class="line">      <span class="attr">"dealUsrNm"</span>: <span class="string">"武伟"</span>,</span><br><span class="line">      <span class="attr">"actlOrigTm"</span>: <span class="string">"2001-02-02 15:45:27.0"</span>,</span><br><span class="line">      <span class="attr">"todoSts"</span>: <span class="string">"2"</span>,</span><br><span class="line">      <span class="attr">"crtUsrId"</span>: <span class="string">"84908"</span>,</span><br><span class="line">      <span class="attr">"crtTm"</span>: <span class="string">"2017-11-21 10:48:55.0"</span>,</span><br><span class="line">      <span class="attr">"updUsrId"</span>: <span class="string">"75655"</span>,</span><br><span class="line">      <span class="attr">"updTm"</span>: <span class="string">"2017-11-21 10:48:55.0"</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">"Z2"</span>: [&#123; <span class="attr">"totalCount"</span>: <span class="number">100</span> &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MOCK/" rel="tag"># MOCK</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/08/css-table-layout/" rel="next" title="使用table构建三列自适应布局">
+                <i class="fa fa-chevron-left"></i> 使用table构建三列自适应布局
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/03/css-grid-note/" rel="prev" title="css grid网格布局学习笔记">
+                css grid网格布局学习笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基本使用"><span class="nav-number">1.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">1.1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#基本使用-1"><span class="nav-number">1.2.</span> <span class="nav-text">基本使用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#项目实践"><span class="nav-number">2.</span> <span class="nav-text">项目实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景"><span class="nav-number">2.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#具体步骤"><span class="nav-number">2.2.</span> <span class="nav-text">具体步骤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模板文件"><span class="nav-number">2.3.</span> <span class="nav-text">模板文件</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

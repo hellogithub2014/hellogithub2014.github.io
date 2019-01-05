@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JAVASCRIPT,JQUERY,PAGINATOR,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近在做部门的项目时，有几个页面都是展示分页列表，页面中有专门的一块搜索区域。在写这些页面时，发现有很多通用的逻辑，这些通用逻辑的代码量大概 100~200 行，细节之处还是挺多的，容易出错。 如果能把他们抽象出来，做一个通用列表组件，那么之后再有相关页面要开发，就能节省很多代码同时大大提升开发效率。本文就是记录我在写这个组件时的思路以及详细技术细节。 组件的源码我已经放在了github上：jqu">
+<meta name="keywords" content="JAVASCRIPT,JQUERY,PAGINATOR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何写一个pc端通用的分页组件">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="最近在做部门的项目时，有几个页面都是展示分页列表，页面中有专门的一块搜索区域。在写这些页面时，发现有很多通用的逻辑，这些通用逻辑的代码量大概 100~200 行，细节之处还是挺多的，容易出错。 如果能把他们抽象出来，做一个通用列表组件，那么之后再有相关页面要开发，就能节省很多代码同时大大提升开发效率。本文就是记录我在写这个组件时的思路以及详细技术细节。 组件的源码我已经放在了github上：jqu">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://github.com/hellogithub2014/jquery-common-paginator.js/raw/master/common-paginator-images/paginator-for-present.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何写一个pc端通用的分页组件">
+<meta name="twitter:description" content="最近在做部门的项目时，有几个页面都是展示分页列表，页面中有专门的一块搜索区域。在写这些页面时，发现有很多通用的逻辑，这些通用逻辑的代码量大概 100~200 行，细节之处还是挺多的，容易出错。 如果能把他们抽象出来，做一个通用列表组件，那么之后再有相关页面要开发，就能节省很多代码同时大大提升开发效率。本文就是记录我在写这个组件时的思路以及详细技术细节。 组件的源码我已经放在了github上：jqu">
+<meta name="twitter:image" content="https://github.com/hellogithub2014/jquery-common-paginator.js/raw/master/common-paginator-images/paginator-for-present.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/">
+
+
+
+
+
+  <title>如何写一个pc端通用的分页组件 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">如何写一个pc端通用的分页组件</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-15T23:30:00+08:00">
+                2017-10-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近在做部门的项目时，有几个页面都是展示分页列表，页面中有专门的一块搜索区域。在写这些页面时，发现有很多通用的逻辑，这些通用逻辑的代码量大概 100~200 行，细节之处还是挺多的，容易出错。</p>
+<p>如果能把他们抽象出来，做一个通用列表组件，那么之后再有相关页面要开发，就能节省很多代码同时大大提升开发效率。本文就是记录我在写这个组件时的思路以及详细技术细节。</p>
+<p>组件的源码我已经放在了<code>github</code>上：<a href="https://github.com/hellogithub2014/jquery-common-paginator.js" target="_blank" rel="noopener">jquery-common-paginator.js</a>。 可以参见其中的<code>test.html</code>来学习如何使用。</p>
+<h1 id="抽象"><a href="#抽象" class="headerlink" title="抽象"></a>抽象</h1><p>一般来说一个带搜索的分页列表页面布局类似如下：</p>
+<p><img src="https://github.com/hellogithub2014/jquery-common-paginator.js/raw/master/common-paginator-images/paginator-for-present.png" alt="Image text"></p>
+<p>其中：</p>
+<p>搜索条件区域是每个页面所独有的；</p>
+<p>列表展示区域虽然也不一样，但是稍加思考，就会发现真正不一样的是每一个列表项的展示逻辑。整个列表区域只不过是迭代这个逻辑，最后将所有结果拼接起来渲染，<strong>这个迭代并拼接的过程就是通用的逻辑</strong>；</p>
+<p><strong>分页处理区域的逻辑是通用的</strong>：</p>
+<ul>
+<li>在点击页码时，利用当前搜索条件加上每页大小，来搜索对应页的数据。同时页码的展示样式也应当比较固定。</li>
+<li>分页的提示信息基本也是相同的，在同个项目组，这些信息应当是比较固定的</li>
+<li>在更改每页显示条数时，需要利用当前搜索条件及新的每页大小来搜索第一页的数据</li>
+</ul>
+<p><strong>其他通用逻辑</strong></p>
+<ul>
+<li>删除当前页的某条数据时，若当前页只剩一条数据，此时需要获取上一页的数据，同时页面选中的页码减 1；如果当前页还有多条数据，直接刷新当前列表</li>
+<li>删除当前页所有数据时，需要获取上一页的数据</li>
+<li>更新当前页数据时，若列表是以更新时间倒序排列的，那么更新后，页面需要跳转到第一页；若列表是以其他非时间敏感字段排序的，那么只需重新渲染当前页即可</li>
+</ul>
+<p><strong>我们的通用列表组件要做的就是封装这些通用逻辑</strong>，这样用户只用专注于：</p>
+<ol>
+<li>如何生成后台请求的搜索条件参数</li>
+<li>如何渲染每一个列表项</li>
+</ol>
+<p>如果想要列表保持灵活性，还需要让用户可以自定义如下配置：</p>
+<ol>
+<li>如何使用搜索条件参数+分页参数生成真正的后台接口请求参数</li>
+<li>如何发送请求</li>
+<li>如何从响应中提取列表数据</li>
+<li>如何从响应中提取数据总条数</li>
+<li>如何处理失败</li>
+<li>每页大小的数组</li>
+<li>分页区域的渲染逻辑</li>
+</ol>
+<h1 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h1><p>我设想中的组件是需要使用构造函数进行实例化，构造函数名就叫<code>JqueryCommonPaginator</code>，那么用户就会使用如下的代码进行初始化：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> paginator = <span class="keyword">new</span> JqueryCommonPaginator();</span><br></pre></td></tr></table></figure>
+<p>我们希望用户进行选项配置时更简单，那么就提供一组默认配置，同时在初始化时给用户一个覆盖所有配置的机会：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">JqueryCommonPaginator</span>(<span class="params">options</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 作用域安全的构造函数，防止用户手滑使用了</span></span><br><span class="line">  <span class="comment">// var paginator = JqueryCommonPaginator();  来初始化，那样就会报错</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span> <span class="keyword">instanceof</span> JqueryCommonPaginator) &#123;</span><br><span class="line">    <span class="keyword">this</span>.options = <span class="built_in">Object</span>.assign(&#123;&#125;, defaultOptions, options);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> JqueryCommonPaginator(options);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来我们就的重点关注如何编写默认逻辑<code>defaultOptions</code></p>
+<h1 id="默认配置defaultOptions"><a href="#默认配置defaultOptions" class="headerlink" title="默认配置defaultOptions"></a>默认配置<code>defaultOptions</code></h1><p>此处的默认配置是基础我们项目的前后台请求规范编写的。</p>
+<h3 id="基本配置"><a href="#基本配置" class="headerlink" title="基本配置"></a>基本配置</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用户自定义，用户的个性化搜索参数，Z21框架中的需要有path、prcCode两个属性.</span></span><br><span class="line"><span class="comment"> * 此对象有两个属性：</span></span><br><span class="line"><span class="comment"> * asistParam 可选的辅助参数，不会放在和mainParam、分页参数一起。</span></span><br><span class="line"><span class="comment"> *              主要目的是扮演对整个请求格式的辅助类信息,例如请求的url</span></span><br><span class="line"><span class="comment"> * mainParam  必选主要的参数，推荐在其中放置你的用户搜索条件参数</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 分页参数是一个拥有startIndex和pageSize属性的对象，用户不能更改格式</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">defaultOptions.userParam = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用户自定义，默认的每页显示条数数组</span></span><br><span class="line">defaultOptions.PAGE_SIZE_LIST = [<span class="number">5</span>, <span class="number">10</span>, <span class="number">20</span>];</span><br></pre></td></tr></table></figure>
+<h3 id="生成真正后台请求入参"><a href="#生成真正后台请求入参" class="headerlink" title="生成真正后台请求入参"></a>生成真正后台请求入参</h3><p>我们项目中的接口入参格式均是如下这样：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"> 		<span class="string">"TARSVR"</span>: <span class="string">""</span>,</span><br><span class="line">		<span class="string">"PRCCOD"</span>: <span class="string">""</span>, <span class="comment">// 用于控制后台路由的编码</span></span><br><span class="line"> 		<span class="string">"WEBCOD"</span>: <span class="string">""</span>,</span><br><span class="line">		<span class="string">"ISUDAT"</span>: <span class="string">""</span>,</span><br><span class="line">	   <span class="string">"ISUTIM"</span>: <span class="string">""</span>,</span><br><span class="line">		<span class="string">"DALCOD"</span>: <span class="string">""</span>,</span><br><span class="line"> 		<span class="string">"RTNLVL"</span>: <span class="string">""</span>,</span><br><span class="line"> 		<span class="string">"RTNCOD"</span>: <span class="string">""</span>,</span><br><span class="line"> 		<span class="string">"ERRMSG"</span>: <span class="string">""</span>,</span><br><span class="line"> 		<span class="string">"INFBDY"</span>: <span class="string">""</span>, <span class="comment">// 所有搜索条件X1和分页参数X2均放在这里</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 默认后台接口请求入参生成函数。用户可自定义</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">defaultOptions.backendParamGenerator = <span class="function"><span class="keyword">function</span>(<span class="params">userParam, paginatorParam</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> backendInterfaceParam = &#123;&#125;;</span><br><span class="line">  <span class="keyword">var</span> infoBodyData = &#123;&#125;;</span><br><span class="line">  <span class="keyword">if</span> (userParam.asistParam &amp;&amp; userParam.asistParam.prcCode &amp;&amp; <span class="keyword">typeof</span> userParam.asistParam.prcCode === <span class="string">'string'</span>) &#123;</span><br><span class="line">    <span class="keyword">var</span> prcCodeSuffix = userParam.asistParam.prcCode.substring(<span class="number">4</span>); <span class="comment">//去掉前4位</span></span><br><span class="line">    infoBodyData[prcCodeSuffix + <span class="string">'X1'</span>] = [].concat(userParam.mainParam);</span><br><span class="line">    infoBodyData[prcCodeSuffix + <span class="string">'X2'</span>] = [].concat(paginatorParam);</span><br><span class="line">    backendInterfaceParam = &#123;</span><br><span class="line">      TARSVR: <span class="string">''</span>,</span><br><span class="line">      PRCCOD: userParam.asistParam.prcCode,</span><br><span class="line">      WEBCOD: <span class="string">''</span>,</span><br><span class="line">      ISUDAT: <span class="string">''</span>,</span><br><span class="line">      ISUTIM: <span class="string">''</span>,</span><br><span class="line">      DALCOD: <span class="string">''</span>,</span><br><span class="line">      RTNLVL: <span class="string">''</span>,</span><br><span class="line">      RTNCOD: <span class="string">''</span>,</span><br><span class="line">      ERRMSG: <span class="string">''</span>,</span><br><span class="line">      INFBDY: infoBodyData,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.error(<span class="string">'请在userParam.asistParam对象中放置 PRCCode和path两个属性'</span>, userParam);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">JSON</span>.stringify(backendInterfaceParam);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="获取后台数据接口"><a href="#获取后台数据接口" class="headerlink" title="获取后台数据接口"></a>获取后台数据接口</h3><p>请求的 url 是一个由<code>userParam.asistParam.path</code>决定的反向代理路径。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 获取后台数据接口</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 注意：若想自定义此函数，要求是</span></span><br><span class="line"><span class="comment"> * 1. 在成功拿到想要的响应数据后，显式的调用this.getSuccessFunc(response)</span></span><br><span class="line"><span class="comment"> * 2. 失败时，显式的调用this.getFailedFunc(error)</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">defaultOptions.fetchData = <span class="function"><span class="keyword">function</span>(<span class="params">backendInterfaceParam</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> _this = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">var</span> userParam = <span class="keyword">this</span>.options.userParam;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 校验</span></span><br><span class="line"></span><br><span class="line">  $.ajax(&#123;</span><br><span class="line">    type: <span class="string">'POST'</span>,</span><br><span class="line">    url: <span class="string">'/'</span> + _this.options.userParam.asistParam.path + <span class="string">'/rmi.do'</span>,</span><br><span class="line">    cache: <span class="literal">false</span>,</span><br><span class="line">    data: backendInterfaceParam,</span><br><span class="line">    dataType: <span class="string">'json'</span>,</span><br><span class="line">    headers: &#123;</span><br><span class="line">      <span class="string">'Content-Type'</span>: <span class="string">'application/json;charset=UTF-8'</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    success: <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (response.ERRMSG === <span class="string">''</span> || response.ERRMSG === <span class="literal">null</span>) &#123;</span><br><span class="line">        _this.getSuccessFunc().call(_this, response);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        _this.getFailedFunc().call(_this, response.ERRMSG);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    error: <span class="function"><span class="keyword">function</span>(<span class="params">XMLHttpRequest, textStatus, errorThrown</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (errorThrown) &#123;</span><br><span class="line">        _this.getFailedFunc().call(_this, errorThrown);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="从响应中获取列表数据"><a href="#从响应中获取列表数据" class="headerlink" title="从响应中获取列表数据"></a>从响应中获取列表数据</h3><p>我们项目的接口响应格式是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TODO: 添加响应格式;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">defaultOptions.getListFromResponse = <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> dataList = [];</span><br><span class="line">  <span class="comment">//去掉前4位</span></span><br><span class="line">  <span class="keyword">var</span> prcCodeSuffix = <span class="keyword">this</span>.options.userParam.asistParam.prcCode.slice(<span class="number">4</span>);</span><br><span class="line">  dataList = response.INFBDY[prcCodeSuffix + <span class="string">'Z1'</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> dataList;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="从响应数据中获取总数据条数"><a href="#从响应数据中获取总数据条数" class="headerlink" title="从响应数据中获取总数据条数"></a>从响应数据中获取总数据条数</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">defaultOptions.getTotalCountFromResponse = <span class="function"><span class="keyword">function</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="comment">//去掉前4位</span></span><br><span class="line">  <span class="keyword">var</span> prcCodeSuffix = <span class="keyword">this</span>.options.userParam.asistParam.prcCode.slice(<span class="number">4</span>);</span><br><span class="line">  <span class="keyword">var</span> totalCount = response.INFBDY[prcCodeSuffix + <span class="string">'Z2'</span>][<span class="number">0</span>].totalCount;</span><br><span class="line">  <span class="keyword">return</span> totalCount;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="根据每个列表项数据生成对应的模板-HTML"><a href="#根据每个列表项数据生成对应的模板-HTML" class="headerlink" title="根据每个列表项数据生成对应的模板 HTML"></a>根据每个列表项数据生成对应的模板 HTML</h3><p>此函数在不同页面必然是不同的，所以这里仅仅做一个示范。 函数的要求是返回一个字符串：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">defaultOptions.itemRenderFunc = <span class="function"><span class="keyword">function</span>(<span class="params">itemModel, renderOptionFunc</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">"&lt;div style='border:1px solid red;margin:20px 0;'&gt;Hello World&lt;/div&gt;"</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注意到这个函数有一个<code>renderOptionFunc</code>参数，执行此函数会得到一个额外对象，此对象的作用是提供<code>itemModel</code>不能提供的额外数据，譬如页面的<code>URL</code>等等。当然如果不需要额外参数，直接忽略此参数即可。</p>
+<h3 id="提供给-itemRenderFunc-的参数"><a href="#提供给-itemRenderFunc-的参数" class="headerlink" title="提供给@itemRenderFunc 的参数"></a>提供给@itemRenderFunc 的参数</h3><p>作用如上所述。此函数如果需要返回值，那么基本是不同页面不一样。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">defaultOptions.itemRenderOptionFunc = <span class="function"><span class="keyword">function</span>(<span class="params">itemModel</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="当请求成功，但列表为空时，渲染空白的列表区域"><a href="#当请求成功，但列表为空时，渲染空白的列表区域" class="headerlink" title="当请求成功，但列表为空时，渲染空白的列表区域"></a>当请求成功，但列表为空时，渲染空白的列表区域</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">defaultOptions.renderEmptyList = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> html = <span class="string">'&lt;div style="height: 300 px;"&gt;无数据&lt;/div&gt;'</span>;</span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.LIST_SELECTOR).html(html);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="渲染分页区域"><a href="#渲染分页区域" class="headerlink" title="渲染分页区域"></a>渲染分页区域</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 渲染分页区域，并绑定点击事件</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">defaultOptions.renderPaginatorArea = <span class="function"><span class="keyword">function</span>(<span class="params">dataListLength, totalCount</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> _this = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 利用jquery-page渲染页码条，同时绑定页码点击函数</span></span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.PAGE_NUMBER_SELECTOR).createPage(&#123;</span><br><span class="line">    pageCount: <span class="built_in">Math</span>.ceil(totalCount / _this.curPaginatorParam.pageSize), <span class="comment">// 总页码</span></span><br><span class="line">    current: _this.curPageIndex, <span class="comment">// 初始页码</span></span><br><span class="line">    backFn: <span class="function"><span class="keyword">function</span>(<span class="params">page</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 页码条点击事件处理函数</span></span><br><span class="line">      <span class="keyword">if</span> (page !== _this.curPageIndex) &#123;</span><br><span class="line">        <span class="comment">// 只有点击的是不同的页码，才执行后续请求</span></span><br><span class="line">        _this.curPageIndex = page;</span><br><span class="line">        <span class="comment">// 更新当前分页参数</span></span><br><span class="line">        _this.curPaginatorParam = <span class="built_in">Object</span>.assign(_this.curPaginatorParam, &#123;</span><br><span class="line">          startIndex: _this.curPaginatorParam.pageSize * (page - <span class="number">1</span>),</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        _refresh.call(_this);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 渲染分页提示区域、每页大小下拉框</span></span><br><span class="line">  <span class="keyword">var</span> curStartIndex = <span class="keyword">this</span>.curPaginatorParam.startIndex;</span><br><span class="line">  <span class="keyword">var</span> paginatorHintHtml = <span class="string">'当前&lt;a&gt;'</span> + (curStartIndex + <span class="number">1</span>) + <span class="string">'-'</span> + (curStartIndex + dataListLength) + <span class="string">'&lt;/a&gt;,共&lt;b&gt;'</span> + totalCount + <span class="string">'&lt;/b&gt;条信息'</span>;</span><br><span class="line">  <span class="comment">// 分页提示</span></span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.PAGE_HINT_SELECTOR).html(paginatorHintHtml);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 渲染每页大小下拉框</span></span><br><span class="line">  <span class="keyword">var</span> pageSizeSelectorHtml = <span class="string">'每页显示&lt;select&gt;'</span>;</span><br><span class="line">  <span class="keyword">this</span>.options.PAGE_SIZE_LIST.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">pageSize</span>) </span>&#123;</span><br><span class="line">    pageSizeSelectorHtml += <span class="string">'&lt;option value="'</span> + pageSize + <span class="string">'"&gt;'</span> + pageSize + <span class="string">'&lt;/option&gt;'</span>;</span><br><span class="line">  &#125;);</span><br><span class="line">  pageSizeSelectorHtml += <span class="string">'&lt;/select&gt;'</span>;</span><br><span class="line"></span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.PAGE_SIZE_SELECTOR).html(pageSizeSelectorHtml);</span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.PAGE_SIZE_SELECTOR + <span class="string">'  select'</span>).val(<span class="keyword">this</span>.curPaginatorParam.pageSize); <span class="comment">// 当前每页的大小</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注意这里的<code>$(&quot;&quot;).createPage</code>方法，这是部门另一位同事写的一个<code>jquery</code>插件。它可以帮助我们渲染页码条，同时提供一个选项来让我们注册页码点击事件。具体源码可以参见<code>github</code>源码中的<code>jquery.page.js</code>。</p>
+<h1 id="覆盖默认配置"><a href="#覆盖默认配置" class="headerlink" title="覆盖默认配置"></a>覆盖默认配置</h1><p>可以看到<code>defaultOptions</code>中的默认配置还是挺多的，如果需要覆盖每一个配置，那么比较好的做法就是提供一一对应的<code>set</code>方法，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">JqueryCommonPaginator.prototype.setPageSizeList = <span class="function"><span class="keyword">function</span>(<span class="params">newPageSizeList</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// .....</span></span><br><span class="line">&#125;;</span><br><span class="line">JqueryCommonPaginator.prototype.setItemRenderFunc = <span class="function"><span class="keyword">function</span>(<span class="params">newItemRenderFunc</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// .....</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 其他set方法。。。。</span></span><br></pre></td></tr></table></figure>
+<p>它们的逻辑基本是相同的，即使用函数中提供的参数来替换<code>defaultOptions</code>的对应属性成员，同时校验参数类型。为此我们可以提供一个帮助函数，所有<code>set</code>方法均调用此函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 选项属性设置帮助函数.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param &#123;any&#125; tagetOptionName  选项的目标属性名称</span></span><br><span class="line"><span class="comment"> * @param &#123;any&#125; newOptionValue 想要设置的新值</span></span><br><span class="line"><span class="comment"> * @param &#123;any&#125; typeToCheck 校验类型字符串 如 Array、Function、Object等</span></span><br><span class="line"><span class="comment"> * @returns this</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_setterHelper</span>(<span class="params">tagetOptionName, newOptionValue, typeToCheck</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!newOptionValue || <span class="built_in">Object</span>.prototype.toString.call(newOptionValue).slice(<span class="number">8</span>, <span class="number">-1</span>) !== typeToCheck) &#123;</span><br><span class="line">    <span class="built_in">console</span>.error(<span class="string">'tagetOptionName 需要是一个'</span> + typeToCheck, <span class="string">'你设置的值是: '</span>, newOptionValue);</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> temp = &#123;&#125;;</span><br><span class="line">  temp[tagetOptionName] = newOptionValue;</span><br><span class="line">  <span class="keyword">this</span>.options = <span class="built_in">Object</span>.assign(<span class="keyword">this</span>.options, temp);</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意这里的<code>Object.prototype.toString.call(newOptionValue)</code>，它的返回值是一个字符串，格式诸如<code>&quot;[object Object]&quot;</code>,这是<code>JavaScript</code>的一个比较完善的类型检测技巧。其他检测类型的方式还有<code>typeof</code>和<code>instanceof</code>，但<code>typeof</code>只能检测基本值类型，<code>instanceof</code>缺乏通用性只能确定是否为某个特定的类型，而且涉及到继承时还有出现一些意料之外的情况。</p>
+<p>有了这个帮助函数之后，其他<code>set</code>方法只用简单调用它：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">JqueryCommonPaginator.prototype.setPageSizeList = <span class="function"><span class="keyword">function</span>(<span class="params">newPageSizeList</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.curPaginatorParam.pageSize = newPageSizeList[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> _setterHelper.call(<span class="keyword">this</span>, <span class="string">'PAGE_SIZE_LIST'</span>, newPageSizeList, <span class="string">'Array'</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">JqueryCommonPaginator.prototype.setDomSelectors = <span class="function"><span class="keyword">function</span>(<span class="params">newSelectors</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> _setterHelper.call(<span class="keyword">this</span>, <span class="string">'DOM_SELECTORS'</span>, newSelectors, <span class="string">'Object'</span>);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">JqueryCommonPaginator.prototype.setBackendParamGenerator = <span class="function"><span class="keyword">function</span>(<span class="params">newGenerator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> _setterHelper.call(<span class="keyword">this</span>, <span class="string">'backendParamGenerator'</span>, newGenerator, <span class="string">'Function'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>稍微细心点可以发现这些<code>set</code>都是返回<code>this</code>，这是为了方便链式调用，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">paginator.setPageSizeList(mockPageSizeList).setDomSelectors(mockDomSelectors);</span><br></pre></td></tr></table></figure>
+<h1 id="通用逻辑"><a href="#通用逻辑" class="headerlink" title="通用逻辑"></a>通用逻辑</h1><p>好了，上面介绍那么多，终于可以介绍通用逻辑的处理了。</p>
+<h3 id="成功拿到想要的-response-后的操作"><a href="#成功拿到想要的-response-后的操作" class="headerlink" title="成功拿到想要的 response 后的操作"></a>成功拿到想要的 response 后的操作</h3><p>这里只需拿到列表数据后，只需渲染列表和分页区域。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_successFunc</span>(<span class="params">response</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> dataList = <span class="keyword">this</span>.options.getListFromResponse.call(<span class="keyword">this</span>, response);</span><br><span class="line">  <span class="keyword">var</span> totalCount = <span class="keyword">this</span>.options.getTotalCountFromResponse.call(<span class="keyword">this</span>, response);</span><br><span class="line">  <span class="keyword">this</span>.currentList = dataList; <span class="comment">// 缓存当前页的列表数据</span></span><br><span class="line">  <span class="keyword">if</span> (dataList.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// 有数据时</span></span><br><span class="line">    <span class="comment">// 渲染分页区域</span></span><br><span class="line">    <span class="keyword">this</span>.options.renderPaginatorArea.call(<span class="keyword">this</span>, dataList.length, totalCount);</span><br><span class="line">    _renderList.call(<span class="keyword">this</span>, dataList); <span class="comment">// 渲染列表区域</span></span><br><span class="line">    _bindPageSizeChangeHandler.call(<span class="keyword">this</span>); <span class="comment">// 绑定每页大小变更事件</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 无数据时</span></span><br><span class="line">    <span class="keyword">this</span>.options.renderEmptyList.call(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用<code>call</code>是为了显示指定<code>this</code>的值，否则默认的<code>this</code>就是<code>this.options</code>了。</p>
+<h3 id="渲染列表区域"><a href="#渲染列表区域" class="headerlink" title="渲染列表区域"></a>渲染列表区域</h3><p>上面说了，单条数据项的渲染是使用<code>itemRenderFunc</code>决定的，我们只需迭代这个过程即可，返回最终拼接的 HTML，并最终渲染：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_renderList</span>(<span class="params">dataList</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> _this = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">var</span> toatlListHtml = dataList.reduce(<span class="function"><span class="keyword">function</span>(<span class="params">curListHtml, data</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (curListHtml += _this.options.itemRenderFunc.call(_this, data, _this.options.itemRenderOptionFunc.bind(_this)));</span><br><span class="line">  &#125;, <span class="string">''</span>);</span><br><span class="line"></span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.LIST_SELECTOR).html(toatlListHtml);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>this.options.DOM_SELECTORS.LIST_SELECTOR</code>是页面中渲染列表区域的<code>DOM</code>选择器，还有其他几种选择器：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 相关的页面dom选型器。用户可自定义</span></span><br><span class="line">defaultOptions.DOM_SELECTORS = &#123;</span><br><span class="line">  LIST_SELECTOR: <span class="string">'#data-list'</span>, <span class="comment">// 列表渲染区域</span></span><br><span class="line">  PAGE_NUMBER_SELECTOR: <span class="string">'#page-number-area'</span>, <span class="comment">// 页码条区域</span></span><br><span class="line">  PAGE_HINT_SELECTOR: <span class="string">'#page-hinter-area'</span>, <span class="comment">// 提示用户当前数据范围，总共有多少数据</span></span><br><span class="line">  PAGE_SIZE_SELECTOR: <span class="string">'#page-size-area'</span>, <span class="comment">// 每页条数区域</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="绑定每页大小变更事件"><a href="#绑定每页大小变更事件" class="headerlink" title="绑定每页大小变更事件"></a>绑定每页大小变更事件</h3><p>只需在改变每页大小后，使用新的页面大小重新获取第一页数据即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_bindPageSizeChangeHandler</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> _this = <span class="keyword">this</span>;</span><br><span class="line">  $(<span class="keyword">this</span>.options.DOM_SELECTORS.PAGE_SIZE_SELECTOR + <span class="string">'  select'</span>).change(<span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    _this.curPaginatorParam = &#123;</span><br><span class="line">      startIndex: <span class="number">0</span>,</span><br><span class="line">      pageSize: <span class="built_in">parseInt</span>($(<span class="keyword">this</span>).val()),</span><br><span class="line">    &#125;;</span><br><span class="line">    _this.curPageIndex = <span class="number">1</span>; <span class="comment">// 重置选中的页码</span></span><br><span class="line"></span><br><span class="line">    _refresh.call(_this); <span class="comment">// 刷新</span></span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此方法会在<code>_successFunc</code>渲染完分页区域后被调用。</p>
+<p><code>_refresh</code>也是一个帮助方法，用于根据当前的参数获取数据并刷新列表。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_refresh</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 生成真正的后台接口入参</span></span><br><span class="line">  <span class="keyword">var</span> backendInterfaceParam = <span class="keyword">this</span>.options.backendParamGenerator.call(<span class="keyword">this</span>, <span class="keyword">this</span>.options.userParam, <span class="keyword">this</span>.curPaginatorParam);</span><br><span class="line">  <span class="keyword">this</span>.options.fetchData.call(<span class="keyword">this</span>, backendInterfaceParam);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="列表项变更操作"><a href="#列表项变更操作" class="headerlink" title="列表项变更操作"></a>列表项变更操作</h1><p>通常渲染完列表后，可能会对列表项进行各种操作，可以归纳为删除和更新操作。 这两种操作的逻辑其实也是通用的。</p>
+<p><strong>删除</strong>：</p>
+<ul>
+<li>若当前页只剩一条数据，此时需要获取上一页的数据，同时页面选中的页码减 1；</li>
+<li>若当前页还有多条数据，直接刷新列表。或者可以优化一下，不是刷新整个页面，而是只删掉第 index 条，同时将下一页的第一条放到当前页末尾，同时提供可选的动画效果。</li>
+</ul>
+<p><strong>更新</strong>：</p>
+<ul>
+<li>若列表是以更新时间倒序排列的，那么更新此条时，页面需要跳转到第一页</li>
+<li>若列表是以其他非时间敏感字段排序的，那么只需重新渲染当前页即可</li>
+</ul>
+<p>除了单条变更，有时还会有批量的变更操作，例如批量删除、批量更新，他们的原理和单条操作大同小异。</p>
+<h3 id="单条删除"><a href="#单条删除" class="headerlink" title="单条删除"></a>单条删除</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除当前页第index条数据，以0开始</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">JqueryCommonPaginator.prototype.deleteItem = <span class="function"><span class="keyword">function</span>(<span class="params">index</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.currentList.length &gt; <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">//当前页还有多条数据</span></span><br><span class="line">    _refresh.call(<span class="keyword">this</span>); <span class="comment">// 直接刷新当前页</span></span><br><span class="line">    <span class="comment">// 体验优化：不是刷新整个页面，而是只删掉第index条，</span></span><br><span class="line">    <span class="comment">// 同时将下一页的第一条放到当前页末尾，可选的动画</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 只剩一条数据时</span></span><br><span class="line">  <span class="keyword">this</span>.curPageIndex = <span class="keyword">this</span>.curPageIndex &gt; <span class="number">1</span> ? <span class="keyword">this</span>.curPageIndex - <span class="number">1</span> : <span class="number">1</span>;</span><br><span class="line">  <span class="comment">// 更新当前分页参数</span></span><br><span class="line">  <span class="keyword">this</span>.curPaginatorParam = <span class="built_in">Object</span>.assign(<span class="keyword">this</span>.curPaginatorParam, &#123;</span><br><span class="line">    startIndex: <span class="keyword">this</span>.curPaginatorParam.pageSize * (<span class="keyword">this</span>.curPageIndex - <span class="number">1</span>),</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  _refresh.call(<span class="keyword">this</span>); <span class="comment">// 刷新</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="删除整页"><a href="#删除整页" class="headerlink" title="删除整页"></a>删除整页</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 删除当前页所有数据</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">JqueryCommonPaginator.prototype.deletePage = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 不要让页码变为0或负数</span></span><br><span class="line">  <span class="keyword">this</span>.curPageIndex = <span class="keyword">this</span>.curPageIndex &gt; <span class="number">1</span> ? <span class="keyword">this</span>.curPageIndex - <span class="number">1</span> : <span class="number">1</span>;</span><br><span class="line">  <span class="comment">// 更新当前分页参数</span></span><br><span class="line">  <span class="keyword">this</span>.curPaginatorParam = <span class="built_in">Object</span>.assign(<span class="keyword">this</span>.curPaginatorParam, &#123;</span><br><span class="line">    startIndex: <span class="keyword">this</span>.curPaginatorParam.pageSize * (<span class="keyword">this</span>.curPageIndex - <span class="number">1</span>),</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  _refresh.call(<span class="keyword">this</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="更新单条"><a href="#更新单条" class="headerlink" title="更新单条"></a>更新单条</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 更新当前页第index条数据, index从0开始计算</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 注意点：</span></span><br><span class="line"><span class="comment"> * 1. 若列表是以更新时间倒序排列的，那么更新此条时，页面需要跳转到第一页</span></span><br><span class="line"><span class="comment"> * 2. 若列表是以其他非时间敏感字段排序的，那么只需重新渲染当前页即可</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 为此提供goFirstPageAfterUpdate参数，让用户来决定</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">JqueryCommonPaginator.prototype.updateItem = <span class="function"><span class="keyword">function</span>(<span class="params">index, newItemModel, goFirstPageAfterUpdate</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> goFirst = goFirstPageAfterUpdate || <span class="literal">false</span>; <span class="comment">// 默认为false</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!goFirst) &#123;</span><br><span class="line">    <span class="comment">// 如果留在当前页</span></span><br><span class="line">    <span class="keyword">this</span>.currentList.splice(index, <span class="number">1</span>, newItemModel); <span class="comment">// 更新第index条数据</span></span><br><span class="line">    _renderList.call(<span class="keyword">this</span>, <span class="keyword">this</span>.currentList); <span class="comment">// 重新渲染列表区域</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 如果去第一页</span></span><br><span class="line">    <span class="keyword">this</span>.setUserParam(<span class="keyword">this</span>.options.userParam); <span class="comment">// 直接刷新数据即可</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="更新整页"><a href="#更新整页" class="headerlink" title="更新整页"></a>更新整页</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 更新当前页所有数据</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 注意点：</span></span><br><span class="line"><span class="comment"> * 1. 若列表是以更新时间倒序排列的，那么更新时，页面需要跳转到第一页</span></span><br><span class="line"><span class="comment"> * 2. 若列表是以其他非时间敏感字段排序的，那么只需重新渲染当前页即可</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 为此提供goFirstPageAfterUpdate参数，让用户来决定</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">JqueryCommonPaginator.prototype.updatePage = <span class="function"><span class="keyword">function</span>(<span class="params">newDataList, goFirstPageAfterUpdate</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> goFirst = goFirstPageAfterUpdate || <span class="literal">false</span>; <span class="comment">// 默认为false</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!goFirst) &#123;</span><br><span class="line">    <span class="comment">// 如果留在当前页</span></span><br><span class="line">    <span class="keyword">this</span>.currentList = newDataList; <span class="comment">// 更新列表数据</span></span><br><span class="line">    _renderList.call(<span class="keyword">this</span>, <span class="keyword">this</span>.currentList); <span class="comment">// 重新渲染列表区域</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 如果去第一页</span></span><br><span class="line">    <span class="keyword">this</span>.setUserParam(<span class="keyword">this</span>.options.userParam); <span class="comment">// 直接刷新数据即可</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>除此之外，如果想批量操作指定的多条数据，原理大同小异，在此就不赘述了。</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文详细阐述了如何写一个 pc 端的分页列表，给出了总体思路和详细技术方法，并提供具体代码供读者参考。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JAVASCRIPT/" rel="tag"># JAVASCRIPT</a>
+          
+            <a href="/tags/JQUERY/" rel="tag"># JQUERY</a>
+          
+            <a href="/tags/PAGINATOR/" rel="tag"># PAGINATOR</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/10/how-to-use-fiddler/" rel="next" title="Fiddler搭建指南">
+                <i class="fa fa-chevron-left"></i> Fiddler搭建指南
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/16/browser-cache-summary/" rel="prev" title="浏览器缓存机制总结">
+                浏览器缓存机制总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#抽象"><span class="nav-number">1.</span> <span class="nav-text">抽象</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#第一步"><span class="nav-number">2.</span> <span class="nav-text">第一步</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#默认配置defaultOptions"><span class="nav-number">3.</span> <span class="nav-text">默认配置defaultOptions</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本配置"><span class="nav-number">3.0.1.</span> <span class="nav-text">基本配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成真正后台请求入参"><span class="nav-number">3.0.2.</span> <span class="nav-text">生成真正后台请求入参</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取后台数据接口"><span class="nav-number">3.0.3.</span> <span class="nav-text">获取后台数据接口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从响应中获取列表数据"><span class="nav-number">3.0.4.</span> <span class="nav-text">从响应中获取列表数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从响应数据中获取总数据条数"><span class="nav-number">3.0.5.</span> <span class="nav-text">从响应数据中获取总数据条数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据每个列表项数据生成对应的模板-HTML"><span class="nav-number">3.0.6.</span> <span class="nav-text">根据每个列表项数据生成对应的模板 HTML</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提供给-itemRenderFunc-的参数"><span class="nav-number">3.0.7.</span> <span class="nav-text">提供给@itemRenderFunc 的参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#当请求成功，但列表为空时，渲染空白的列表区域"><span class="nav-number">3.0.8.</span> <span class="nav-text">当请求成功，但列表为空时，渲染空白的列表区域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染分页区域"><span class="nav-number">3.0.9.</span> <span class="nav-text">渲染分页区域</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#覆盖默认配置"><span class="nav-number">4.</span> <span class="nav-text">覆盖默认配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通用逻辑"><span class="nav-number">5.</span> <span class="nav-text">通用逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#成功拿到想要的-response-后的操作"><span class="nav-number">5.0.1.</span> <span class="nav-text">成功拿到想要的 response 后的操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#渲染列表区域"><span class="nav-number">5.0.2.</span> <span class="nav-text">渲染列表区域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#绑定每页大小变更事件"><span class="nav-number">5.0.3.</span> <span class="nav-text">绑定每页大小变更事件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#列表项变更操作"><span class="nav-number">6.</span> <span class="nav-text">列表项变更操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单条删除"><span class="nav-number">6.0.1.</span> <span class="nav-text">单条删除</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除整页"><span class="nav-number">6.0.2.</span> <span class="nav-text">删除整页</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新单条"><span class="nav-number">6.0.3.</span> <span class="nav-text">更新单条</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#更新整页"><span class="nav-number">6.0.4.</span> <span class="nav-text">更新整页</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

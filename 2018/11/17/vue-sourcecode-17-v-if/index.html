@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,Vue,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="parseprocessIf用于处理v-if： 123456789101112131415161718function processIf(el) &amp;#123;  const exp = getAndRemoveAttr(el, &apos;v-if&apos;); // 获取节点上的v-if属性值  if (exp) &amp;#123;    el.if = exp; // &apos;condition&apos;    addIfCon">
+<meta name="keywords" content="javascript,Vue">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析17-v-if的处理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-17-v-if/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="parseprocessIf用于处理v-if： 123456789101112131415161718function processIf(el) &amp;#123;  const exp = getAndRemoveAttr(el, &apos;v-if&apos;); // 获取节点上的v-if属性值  if (exp) &amp;#123;    el.if = exp; // &apos;condition&apos;    addIfCon">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.513Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析17-v-if的处理">
+<meta name="twitter:description" content="parseprocessIf用于处理v-if： 123456789101112131415161718function processIf(el) &amp;#123;  const exp = getAndRemoveAttr(el, &apos;v-if&apos;); // 获取节点上的v-if属性值  if (exp) &amp;#123;    el.if = exp; // &apos;condition&apos;    addIfCon">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-17-v-if/">
+
+
+
+
+
+  <title>Vue源码解析17-v-if的处理 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-17-v-if/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析17-v-if的处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-17T18:20:00+08:00">
+                2018-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h1><p><code>processIf</code>用于处理<code>v-if</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processIf</span>(<span class="params">el</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> exp = getAndRemoveAttr(el, <span class="string">'v-if'</span>); <span class="comment">// 获取节点上的v-if属性值</span></span><br><span class="line">  <span class="keyword">if</span> (exp) &#123;</span><br><span class="line">    el.if = exp; <span class="comment">// 'condition'</span></span><br><span class="line">    addIfCondition(el, &#123;</span><br><span class="line">      exp: exp,</span><br><span class="line">      block: el,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (getAndRemoveAttr(el, <span class="string">'v-else'</span>) != <span class="literal">null</span>) &#123;</span><br><span class="line">      el.else = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> elseif = getAndRemoveAttr(el, <span class="string">'v-else-if'</span>);</span><br><span class="line">    <span class="keyword">if</span> (elseif) &#123;</span><br><span class="line">      el.elseif = elseif; <span class="comment">// "condition2"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们照常用一个示范<code>html</code>帮助理解：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">"app"</span>&gt;</span><br><span class="line">  &lt;div v-<span class="keyword">if</span>=<span class="string">"condition"</span>&gt;<span class="keyword">this</span> is v-<span class="keyword">if</span>&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">  &lt;div v-else-if="condition2"&gt;this is v-else-if&lt;/</span>div&gt;</span><br><span class="line">  &lt;div v-<span class="keyword">else</span>&gt;<span class="keyword">this</span> is v-<span class="keyword">else</span>&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>div&gt;</span><br></pre></td></tr></table></figure>
+<p>上面这段<code>html</code>会调用<code>processIf</code>3 次，每次的差别在于<code>attrsMap</code>里的属性值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  attrsList:[],</span><br><span class="line">  attrsMap: &#123;</span><br><span class="line">    <span class="string">'v-if'</span>: <span class="string">'condition'</span></span><br><span class="line">    <span class="comment">// 或者 'v-else-if': "condition2"</span></span><br><span class="line">    <span class="comment">// 或者 'v-else': ""</span></span><br><span class="line">  &#125;,</span><br><span class="line">  tag: <span class="string">'div'</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>都处理完后，<code>el</code>上会多出 3 个属性值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span>: <span class="string">'condition'</span>,</span><br><span class="line">  elseif: <span class="string">'condition2'</span>,</span><br><span class="line">  <span class="keyword">else</span>: <span class="literal">true</span>,</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>addIfCondition</code>用于给<code>el.ifConditions</code>数组塞入新元素：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">addIfCondition</span>(<span class="params">el: ASTElement, condition: ASTIfCondition</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!el.ifConditions) &#123;</span><br><span class="line">    el.ifConditions = [];</span><br><span class="line">  &#125;</span><br><span class="line">  el.ifConditions.push(condition);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>细心的人可能发现了只有<code>if</code>分支才改变了<code>el.ifConditions</code>，另外两个分支应该也会有类似的操作，在什么地方做的呢？</p>
+<p>在调用完<code>processIf</code>后，还有一个地方调用了<code>processIfConditions</code>，它也会操作<code>el.ifConditions</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (currentParent &amp;&amp; !element.forbidden) &#123;</span><br><span class="line">  <span class="comment">// 在处理到v-else-if and v-else节点时，需要将其和v-if节点结合起来，</span></span><br><span class="line">  <span class="comment">// 通过在v-if节点上的ifConditions数组，来最终决定渲染哪个节点</span></span><br><span class="line">  <span class="keyword">if</span> (element.elseif || element.else) &#123;</span><br><span class="line">    processIfConditions(element, currentParent);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (element.slotScope) &#123;</span><br><span class="line">    <span class="comment">// 作用域插槽处理略去。。。</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    currentParent.children.push(element);</span><br><span class="line">    element.parent = currentParent;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显我们在处理到<code>v-else-if</code>和<code>v-else</code>时，<code>processIfConditions</code>都会被调用。另外注意这种情况下是不会把当前元素计入<code>currentParent.children</code>的，只有<code>v-if</code>节点才被计入了。看看<code>processIfConditions</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processIfConditions</span>(<span class="params">el, parent</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> prev = findPrevElement(parent.children); <span class="comment">// 找到v-else-if或v-else前面的v-if节点</span></span><br><span class="line">  <span class="keyword">if</span> (prev &amp;&amp; prev.if) &#123;</span><br><span class="line">    <span class="comment">// 添加prev.ifConditions数组元素</span></span><br><span class="line">    addIfCondition(prev, &#123;</span><br><span class="line">      exp: el.elseif,</span><br><span class="line">      block: el,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>findPrevElement</code>用来在前面找到紧挨着<code>v-else-if</code>和<code>v-else</code>的那个节点：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 找到children中第一个element节点</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">findPrevElement</span>(<span class="params">children: Array&lt;any&gt;</span>): <span class="title">ASTElement</span> | <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> i = children.length;</span><br><span class="line">  <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">    <span class="keyword">if</span> (children[i].type === <span class="number">1</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> children[i];</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      children.pop();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终经过<code>parse</code>处理，我们的<code>AST</code>节点上就有了所有分支的相关属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  type: <span class="number">1</span>,</span><br><span class="line">  tag: <span class="string">'div'</span>,</span><br><span class="line">  plain: <span class="literal">false</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">    type: <span class="number">1</span>,</span><br><span class="line">    tag: <span class="string">'p'</span>,</span><br><span class="line">    children: [&#123;</span><br><span class="line">      text: <span class="string">'this is v-if'</span>,</span><br><span class="line">      type: <span class="number">3</span></span><br><span class="line">    &#125;]</span><br><span class="line">    <span class="keyword">if</span>: <span class="string">'condition'</span>,</span><br><span class="line">    ifConditions: [&#123;</span><br><span class="line">      exp: <span class="string">"condition"</span>,</span><br><span class="line">      block: &#123;</span><br><span class="line">	    type: <span class="number">1</span>,</span><br><span class="line">	    tag: <span class="string">'p'</span>,</span><br><span class="line">	    children: [&#123;</span><br><span class="line">	      text: <span class="string">'this is v-if'</span>,</span><br><span class="line">	      type: <span class="number">3</span></span><br><span class="line">	    &#125;],</span><br><span class="line">	    <span class="keyword">if</span>: <span class="string">'condition'</span>,</span><br><span class="line">	    ifConditions: [],</span><br><span class="line">	    plain: <span class="literal">true</span></span><br><span class="line">	  &#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      exp: <span class="string">"condition2"</span>,</span><br><span class="line">      block: &#123;</span><br><span class="line">	    type: <span class="number">1</span>,</span><br><span class="line">	    tag: <span class="string">'p'</span>,</span><br><span class="line">	    children: [&#123;</span><br><span class="line">	      text: <span class="string">'this is v-else-if'</span>,</span><br><span class="line">	      type: <span class="number">3</span></span><br><span class="line">	    &#125;],</span><br><span class="line">	    elseif: <span class="string">'condition2'</span>,</span><br><span class="line">	    plain: <span class="literal">true</span></span><br><span class="line">	  &#125;</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">      exp: <span class="literal">undefined</span>,</span><br><span class="line">      block: &#123;</span><br><span class="line">	    type: <span class="number">1</span>,</span><br><span class="line">	    tag: <span class="string">'p'</span>,</span><br><span class="line">	    children: [&#123;</span><br><span class="line">	      text: <span class="string">'this is v-else'</span>,</span><br><span class="line">	      type: <span class="number">3</span></span><br><span class="line">	    &#125;],</span><br><span class="line">	    <span class="keyword">else</span>: <span class="literal">true</span>,</span><br><span class="line">	    plain: <span class="literal">true</span></span><br><span class="line">	  &#125;</span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意根节点的<code>children</code>只有一个元素，这与我们上面讲的一致，只有<code>v-if</code>才进入了父元素的<code>children</code>中。<code>Vue template</code>的一个细节就是有这个处理得出的，后面会说。</p>
+<h1 id="generate"><a href="#generate" class="headerlink" title="generate"></a>generate</h1><p>处理<code>v-if</code>的是<code>genIf</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">genIf</span>(<span class="params">el: any, state: CodegenState, altGen?: Function, altEmpty?: string</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  el.ifProcessed = <span class="literal">true</span>; <span class="comment">// avoid recursion</span></span><br><span class="line">  <span class="keyword">return</span> genIfConditions(el.ifConditions.slice(), state, altGen, altEmpty);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 循环处理ifConditions里面的每一个元素，直到找到exp返回true的元素。</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genIfConditions</span>(<span class="params">conditions: ASTIfConditions, state: CodegenState, altGen?: Function, altEmpty?: string</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!conditions.length) &#123;</span><br><span class="line">    <span class="keyword">return</span> altEmpty || <span class="string">'_e()'</span>; <span class="comment">// _e: createEmptyVNode</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> condition = conditions.shift();</span><br><span class="line">  <span class="keyword">if</span> (condition.exp) &#123;</span><br><span class="line">    <span class="comment">// exp确实设置了，如"value === 1" 而不是undefined或空串，</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">`(<span class="subst">$&#123;condition.exp&#125;</span>)?<span class="subst">$&#123;genTernaryExp(condition.block)&#125;</span>:<span class="subst">$&#123;genIfConditions(conditions, state, altGen, altEmpty)&#125;</span>`</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;genTernaryExp(condition.block)&#125;</span>`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// v-if with v-once should generate code like (a)?_m(0):_m(1)</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">genTernaryExp</span>(<span class="params">el</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 在genOnce中也有类似的设置：若v-once上同时存在v-if，则优先调用genIf</span></span><br><span class="line">    <span class="keyword">return</span> altGen ? altGen(el, state) : el.once ? genOnce(el, state) : genElement(el, state);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释很详细，我们直接看最终生成的<code>render</code>字符串：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">`</span></span><br><span class="line"><span class="string">with (this) &#123;</span></span><br><span class="line"><span class="string">  return _c('div', &#123; attrs: &#123; id: 'app' &#125; &#125;, [</span></span><br><span class="line"><span class="string">    condition ? _c('div', [_v('this is v-if')]) : condition2 ? _c('div', [_v('this is v-else-if')]) : _c('div', [_v('this is v-else')]),</span></span><br><span class="line"><span class="string">  ]);</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">`</span>;</span><br></pre></td></tr></table></figure>
+<p>没有涉及新的帮助函数，可以很清楚的看到核心是一个嵌套的三目运算，最终只有条件成立的那个分支才会生成对应的<code>vnode</code><br>。</p>
+<h1 id="template-小细节"><a href="#template-小细节" class="headerlink" title="template 小细节"></a>template 小细节</h1><p>通常情况下，我们的<code>Vue</code>组件只能有一个根元素，但是使用<code>v-if</code>可以有多个根元素分支：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">"app"</span>&gt;</span><br><span class="line">    &lt;my-comp&gt;<span class="xml"><span class="tag">&lt;/<span class="name">my-comp</span>&gt;</span></span></span><br><span class="line"><span class="xml">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  &lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">    <span class="keyword">var</span> vm = <span class="keyword">new</span> Vue( &#123;</span><br><span class="line">      el: <span class="string">'#app'</span>,</span><br><span class="line">      components: &#123;</span><br><span class="line">        myComp: &#123;</span><br><span class="line">          data()</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="keyword">return</span> &#123;</span><br><span class="line">              condition: <span class="literal">true</span>,</span><br><span class="line">              condition2: <span class="literal">false</span></span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">          template: <span class="string">`</span></span><br><span class="line"><span class="string">            &lt;div v-if="condition"&gt;this is v-if&lt;/div&gt;</span></span><br><span class="line"><span class="string">            &lt;div v-else-if="condition2"&gt;this is v-else-if&lt;/div&gt;</span></span><br><span class="line"><span class="string">            &lt;div v-else&gt;this is v-else&lt;/div&gt;</span></span><br><span class="line"><span class="string">          `</span>,</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; )</span><br><span class="line">  &lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<p>正是因为<code>parse</code>阶段处理<code>v-if</code>时的特殊代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!root) &#123;</span><br><span class="line">  root = element;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (!stack.length) &#123;</span><br><span class="line">  <span class="keyword">if</span> (root.if &amp;&amp; (element.elseif || element.else)) &#123;</span><br><span class="line">    addIfCondition(root, &#123;</span><br><span class="line">      exp: element.elseif,</span><br><span class="line">      block: element,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (currentParent &amp;&amp; !element.forbidden) &#123;</span><br><span class="line">  <span class="keyword">if</span> (element.elseif || element.else) &#123;</span><br><span class="line">    processIfConditions(element, currentParent);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    currentParent.children.push(element);</span><br><span class="line">    element.parent = currentParent;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>currentParent</code>的<code>children</code>中只会有<code>v-if</code>分支的节点，<code>v-else-if</code>、<code>v-else</code>节点都会放到<code>el.ifConditions</code>中，只在条件成立时才渲染出来。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/17/vue-sourcecode-16-v-for/" rel="next" title="Vue源码解析16-v-for的处理">
+                <i class="fa fa-chevron-left"></i> Vue源码解析16-v-for的处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/18/vue-sourcecode-18-v-model-of-custom-component/" rel="prev" title="Vue源码解析18-自定义组件的v-model">
+                Vue源码解析18-自定义组件的v-model <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#parse"><span class="nav-number">1.</span> <span class="nav-text">parse</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#generate"><span class="nav-number">2.</span> <span class="nav-text">generate</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#template-小细节"><span class="nav-number">3.</span> <span class="nav-text">template 小细节</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

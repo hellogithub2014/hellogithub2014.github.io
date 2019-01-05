@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,Vue,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
+<meta name="keywords" content="javascript,Vue">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析6-静态AST优化">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/01/vue-sourcecode-6-optimizer/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.508Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析6-静态AST优化">
+<meta name="twitter:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/01/vue-sourcecode-6-optimizer/">
+
+
+
+
+
+  <title>Vue源码解析6-静态AST优化 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/01/vue-sourcecode-6-optimizer/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析6-静态AST优化</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-01T08:20:00+08:00">
+                2018-11-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上篇文章说到了模板解析的第一步<code>parse</code>，现在来说第二步<code>optimize</code>，用于优化静态内容的渲染，主要是给静态节点打上一些标记。</p>
+<p><code>Vue</code>中对于生成的<code>AST</code>会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。</p>
+<p>这一步的代码比<code>parse</code>要少太多，应该压力会小很多 🙄，先看一下入口代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Goal of the optimizer: walk the generated template AST tree</span></span><br><span class="line"><span class="comment"> * and detect sub-trees that are purely static, i.e. parts of</span></span><br><span class="line"><span class="comment"> * the DOM that never needs to change.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * Once we detect these sub-trees, we can:</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 1. Hoist them into constants, so that we no longer need to</span></span><br><span class="line"><span class="comment"> *    create fresh nodes for them on each re-render;</span></span><br><span class="line"><span class="comment"> * 2. Completely skip them in the patching process.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">optimize</span>(<span class="params">root: ?ASTElement, options: CompilerOptions</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!root) <span class="keyword">return</span>;</span><br><span class="line">  <span class="comment">// isStaticKey: (key)=&gt; boolean，判断一个key是否是</span></span><br><span class="line">  <span class="comment">// type,tag,attrsList,attrsMap,plain,parent,children,attrs其中之一</span></span><br><span class="line">  isStaticKey = genStaticKeysCached(options.staticKeys || <span class="string">''</span>);</span><br><span class="line">  isPlatformReservedTag = options.isReservedTag || no;</span><br><span class="line">  <span class="comment">// first pass: mark all non-static nodes.</span></span><br><span class="line">  markStatic(root);</span><br><span class="line">  <span class="comment">// second pass: mark static roots.</span></span><br><span class="line">  markStaticRoots(root, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到代码非常简短，只有两步：<code>markStatic</code>和<code>markStaticRoots</code>。我们挨个把这里的每个子函数讲一下。</p>
+<h2 id="genStaticKeysCached、isStaticKey"><a href="#genStaticKeysCached、isStaticKey" class="headerlink" title="genStaticKeysCached、isStaticKey"></a>genStaticKeysCached、isStaticKey</h2><p><code>genStaticKeysCached</code>用于缓存一个函数的执行结果，这种技巧在很多地方有可以用到，比如求解斐波那契数列。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> genStaticKeysCached = cached(genStaticKeys); <span class="comment">// 缓存genStaticKeys结果，每次先从缓存中查找，找不到再执行genStaticKeys</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Create a cached version of a pure function.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">cached</span>&lt;<span class="title">F</span>: <span class="title">Function</span>&gt;(<span class="params">fn: F</span>): <span class="title">F</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> cache = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  <span class="keyword">return</span> (<span class="function"><span class="keyword">function</span> <span class="title">cachedFn</span>(<span class="params">str: string</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> hit = cache[str];</span><br><span class="line">    <span class="keyword">return</span> hit || (cache[str] = fn(str)); <span class="comment">// 缓存中有就直接返回，没有的话再执行求解函数</span></span><br><span class="line">  &#125;: any);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genStaticKeys</span>(<span class="params">keys: string</span>): <span class="title">Function</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> makeMap(<span class="string">'type,tag,attrsList,attrsMap,plain,parent,children,attrs'</span> + (keys ? <span class="string">','</span> + keys : <span class="string">''</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Make a map and return a function for checking if a key</span></span><br><span class="line"><span class="comment"> * is in that map.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">makeMap</span>(<span class="params">str: string, expectsLowerCase?: boolean</span>): (<span class="params">key: string</span>) =&gt; <span class="title">true</span> | <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> map = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  <span class="keyword">const</span> list: <span class="built_in">Array</span>&lt;string&gt; = str.split(<span class="string">','</span>);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; list.length; i++) &#123;</span><br><span class="line">    map[list[i]] = <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> expectsLowerCase ? <span class="function"><span class="params">val</span> =&gt;</span> map[val.toLowerCase()] : <span class="function"><span class="params">val</span> =&gt;</span> map[val];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以经过一系列嵌套，我们的<code>isStaticKey</code>就是查找指定<code>key</code>是否存在于<code>makeMap</code>的结果中，如果之前已经查找过这个<code>key</code>那么可以直接从<code>cache</code>中拿到缓存的结果。</p>
+<h2 id="markStatic"><a href="#markStatic" class="headerlink" title="markStatic"></a>markStatic</h2><p>这个函数会遍历整个 AST，为了更好的了解其中的过程，最好进行断点调试每一步，比如如下的<code>template</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  这里是文本<span class="tag">&lt;<span class="name">箭头之后的文本</span></span></span><br><span class="line">  &lt;p&gt;&#123;&#123;message&#125;&#125;&lt;/p&gt;</span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>静态文本<span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">"https://www.baidu.com"</span>&gt;</span>博客地址<span class="tag">&lt;/<span class="name">a</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">  <span class="keyword">var</span> vm = <span class="keyword">new</span> Vue(&#123;</span></span><br><span class="line"><span class="javascript">    el: <span class="string">'#app'</span>,</span></span><br><span class="line"><span class="undefined">    data: &#123;</span></span><br><span class="line"><span class="javascript">      message: <span class="string">'动态文本'</span>,</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">  &#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>生成的<code>AST</code>会是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  type: <span class="number">1</span>,</span><br><span class="line">  tag: <span class="string">"div"</span>,</span><br><span class="line">  attrsList: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"app"</span>&#125;],</span><br><span class="line">  attrsMap: &#123;<span class="attr">id</span>: <span class="string">"app"</span>&#125;,</span><br><span class="line">  parent: <span class="literal">undefined</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">	      type: <span class="number">3</span>,</span><br><span class="line">	      text: <span class="string">'这里是文本&lt;箭头之后的文本'</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">	      type: <span class="number">1</span>,</span><br><span class="line">	      tag: <span class="string">'p'</span>,</span><br><span class="line">	      attrsList: [],</span><br><span class="line">	      attrsMap: &#123;&#125;,</span><br><span class="line">	      parent: ,</span><br><span class="line">	      children: [&#123;</span><br><span class="line">	        type: <span class="number">2</span>,</span><br><span class="line">	        expression: <span class="string">'_s(message)'</span>,</span><br><span class="line">	        text: <span class="string">'&#123;&#123;message&#125;&#125;'</span></span><br><span class="line">	      &#125;],</span><br><span class="line">	      plain: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">	      text: <span class="string">" "</span>,</span><br><span class="line">	      type: <span class="number">3</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">	      type: <span class="number">1</span>,</span><br><span class="line">	      tag: <span class="string">'p'</span>,</span><br><span class="line">	      attrsList: [],</span><br><span class="line">	      attrsMap: &#123;&#125;,</span><br><span class="line">	      children: [&#123;</span><br><span class="line">			text: <span class="string">"静态文本"</span>,</span><br><span class="line">			type: <span class="number">3</span></span><br><span class="line">	  &#125;,</span><br><span class="line"> 	  &#123;</span><br><span class="line">	    	attrs: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'"http://www.baidu.com"'</span>&#125;],</span><br><span class="line">			attrsList: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'http://www.baidu.com'</span>&#125;],</span><br><span class="line">			attrsMap: &#123;<span class="attr">href</span>: <span class="string">'http://www.baidu.com'</span>&#125;</span><br><span class="line">			children: [&#123;</span><br><span class="line">				text: <span class="string">"博客地址"</span>,</span><br><span class="line">				type: <span class="number">3</span></span><br><span class="line">			&#125;]</span><br><span class="line">			plain: <span class="literal">false</span>,</span><br><span class="line">			tag: <span class="string">"a"</span>,</span><br><span class="line">			type: <span class="number">1</span></span><br><span class="line">	   &#125;</span><br><span class="line"> 	  ],</span><br><span class="line">     plain: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  plain: <span class="literal">false</span>,</span><br><span class="line">  attrs: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"'app'"</span>&#125;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在看看函数定义，它的目的是给 AST 上每个节点打上<code>static</code>标记。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">markStatic</span>(<span class="params">node: ASTNode</span>) </span>&#123;</span><br><span class="line">  node.static = isStatic(node);</span><br><span class="line">  <span class="keyword">if</span> (node.type === <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="comment">// do not make component slot content static. this avoids</span></span><br><span class="line">    <span class="comment">// 1. components not able to mutate slot nodes</span></span><br><span class="line">    <span class="comment">// 2. static slot content fails for hot-reloading</span></span><br><span class="line">    <span class="keyword">if</span> (!isPlatformReservedTag(node.tag) &amp;&amp; node.tag !== <span class="string">'slot'</span> &amp;&amp; node.attrsMap[<span class="string">'inline-template'</span>] == <span class="literal">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 若有其中一个child的static为false，则父节点的static也需要设置为false</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = node.children.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="keyword">const</span> child = node.children[i];</span><br><span class="line">      markStatic(child);</span><br><span class="line">      <span class="keyword">if</span> (!child.static) &#123;</span><br><span class="line">        node.static = <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 若节点属于v-if、v-else-if、v-else，则只要其中一个分支不是static的，整个node就设置为不是static</span></span><br><span class="line">    <span class="keyword">if</span> (node.ifConditions) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>, l = node.ifConditions.length; i &lt; l; i++) &#123;</span><br><span class="line">        <span class="keyword">const</span> block = node.ifConditions[i].block;</span><br><span class="line">        markStatic(block);</span><br><span class="line">        <span class="keyword">if</span> (!block.static) &#123;</span><br><span class="line">          node.static = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路是先利用<code>isStatic</code>判断自身是否是<code>static</code>的，然后判断所有<code>children</code>，只要其中一个<code>child</code>不是<code>static</code>的，那么自己也不是<code>static</code>的；最后如果处于<code>v-if、v-else-if、v-else</code>，则只要其中一个分支不是<code>static</code>的，整个<code>node</code>就设置为不是<code>static</code>。</p>
+<h3 id="isStatic"><a href="#isStatic" class="headerlink" title="isStatic"></a>isStatic</h3><p>判断一个 AST 节点是否为静态的，上面也提到静态内容是指和数据没有关系，不需要每次都刷新的内容。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isStatic</span>(<span class="params">node: ASTNode</span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (node.type === <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="comment">// expression</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (node.type === <span class="number">3</span>) &#123;</span><br><span class="line">    <span class="comment">// text</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> !!(</span><br><span class="line">    node.pre || <span class="comment">// 节点上有v-pre指令，节点的内容是不做编译的</span></span><br><span class="line">    (!node.hasBindings &amp;&amp; <span class="comment">// no dynamic bindings</span></span><br><span class="line">    !node.if &amp;&amp;</span><br><span class="line">    !node.for &amp;&amp; <span class="comment">// not v-if or v-for or v-else</span></span><br><span class="line">    !isBuiltInTag(node.tag) &amp;&amp; <span class="comment">// not a built-in</span></span><br><span class="line">    isPlatformReservedTag(node.tag) &amp;&amp; <span class="comment">// not a component</span></span><br><span class="line">      !isDirectChildOfTemplateFor(node) &amp;&amp;</span><br><span class="line">      <span class="built_in">Object</span>.keys(node).every(isStaticKey))</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 是否位于一个&lt;template v-for="xxx"&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isDirectChildOfTemplateFor</span>(<span class="params">node: ASTElement</span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (node.parent) &#123;</span><br><span class="line">    node = node.parent;</span><br><span class="line">    <span class="keyword">if</span> (node.tag !== <span class="string">'template'</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (node.for) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到标记<code>static</code>的条件有 2 个：</p>
+<ol>
+<li>节点上有<code>v-pre</code>指令，<a href="https://cn.vuejs.org/v2/api/#v-pre" target="_blank" rel="noopener">官网文档</a>也说了在编译时遇到这个指令会跳过它</li>
+<li>没有动态绑定属性 &amp;&amp; 不是<code>v-if</code> &amp;&amp; 不是<code>v-for</code> &amp;&amp; 不是内置的标签<code>slot</code>、<code>component</code> &amp;&amp; 是平台保留标签，即<code>HTML</code>或<code>SVG</code>标签 &amp;&amp; 不是位于一个<code>&lt;template v-for=&quot;xxx&quot;&gt;</code> &amp;&amp; 节点的所有属性均是<code>type,tag,attrsList,attrsMap,plain,parent,children,attrs</code>其中之一。</li>
+</ol>
+<p>第二个条件非常严格，想成为<code>static</code>的还真是不容易。。。</p>
+<p>经过这一步之后，我们的<code>AST</code>变为</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  type: <span class="number">1</span>,</span><br><span class="line">  tag: <span class="string">"div"</span>,</span><br><span class="line">  attrsList: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"app"</span>&#125;],</span><br><span class="line">  attrsMap: &#123;<span class="attr">id</span>: <span class="string">"app"</span>&#125;,</span><br><span class="line">  parent: <span class="literal">undefined</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">      type: <span class="number">3</span>,</span><br><span class="line">      text: <span class="string">'这里是文本&lt;箭头之后的文本'</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      type: <span class="number">1</span>,</span><br><span class="line">      tag: <span class="string">'p'</span>,</span><br><span class="line">      attrsList: [],</span><br><span class="line">      attrsMap: &#123;&#125;,</span><br><span class="line">      parent: ,</span><br><span class="line">      children: [&#123;</span><br><span class="line">        type: <span class="number">2</span>,</span><br><span class="line">        expression: <span class="string">'_s(message)'</span>,</span><br><span class="line">        text: <span class="string">'&#123;&#123;message&#125;&#125;'</span>,</span><br><span class="line">        <span class="keyword">static</span>: <span class="literal">false</span></span><br><span class="line">      &#125;],</span><br><span class="line">      plain: <span class="literal">true</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      text: <span class="string">" "</span>,</span><br><span class="line">      type: <span class="number">3</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      type: <span class="number">1</span>,</span><br><span class="line">      tag: <span class="string">'p'</span>,</span><br><span class="line">      attrsList: [],</span><br><span class="line">      attrsMap: &#123;&#125;,</span><br><span class="line">      children: [&#123;</span><br><span class="line">          text: <span class="string">"静态文本"</span>,</span><br><span class="line">          type: <span class="number">3</span>,</span><br><span class="line">          <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          attrs: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'"http://www.baidu.com"'</span>&#125;],</span><br><span class="line">          attrsList: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'http://www.baidu.com'</span>&#125;],</span><br><span class="line">          attrsMap: &#123;<span class="attr">href</span>: <span class="string">'http://www.baidu.com'</span>&#125;</span><br><span class="line">          children: [&#123;</span><br><span class="line">            text: <span class="string">"博客地址"</span>,</span><br><span class="line">            type: <span class="number">3</span>,</span><br><span class="line">            <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">          &#125;],</span><br><span class="line">          plain: <span class="literal">false</span>,</span><br><span class="line">          tag: <span class="string">"a"</span>,</span><br><span class="line">          type: <span class="number">1</span>,</span><br><span class="line">          <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      plain: <span class="literal">true</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  plain: <span class="literal">false</span>,</span><br><span class="line">  attrs: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"'app'"</span>&#125;],</span><br><span class="line">  <span class="keyword">static</span>: <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="markStaticRoots"><a href="#markStaticRoots" class="headerlink" title="markStaticRoots"></a>markStaticRoots</h2><p>用来找到那种本身是<code>static</code>的，同时只有唯一的一个<code>text</code>子节点，将他们标记为<code>staticRoot</code>,即静态根节点。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">markStaticRoots</span>(<span class="params">node: ASTNode, isInFor: boolean</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (node.type === <span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (node.static || node.once) &#123;</span><br><span class="line">      node.staticInFor = isInFor;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// For a node to qualify as a static root, it should have children that</span></span><br><span class="line">    <span class="comment">// are not just static text. Otherwise the cost of hoisting out will</span></span><br><span class="line">    <span class="comment">// outweigh the benefits and it's better off to just always render it fresh.</span></span><br><span class="line">    <span class="keyword">if</span> (node.static &amp;&amp; node.children.length &amp;&amp; !(node.children.length === <span class="number">1</span> &amp;&amp; node.children[<span class="number">0</span>].type === <span class="number">3</span>)) &#123;</span><br><span class="line">      <span class="comment">// node本身是static的，同时只有唯一的一个text子节点</span></span><br><span class="line">      node.staticRoot = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      node.staticRoot = <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 递归children，为它们标记staticRoot</span></span><br><span class="line">    <span class="keyword">if</span> (node.children) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = node.children.length; i &lt; l; i++) &#123;</span><br><span class="line">        markStaticRoots(node.children[i], isInFor || !!node.for); <span class="comment">// 注意这里比下面的递归多了一个node.for</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 若节点属于v-if、v-else-if、v-else，遍历所有分支</span></span><br><span class="line">    <span class="keyword">if</span> (node.ifConditions) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>, l = node.ifConditions.length; i &lt; l; i++) &#123;</span><br><span class="line">        markStaticRoots(node.ifConditions[i].block, isInFor);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终咱们<code>optimize</code>过的<code>AST</code>如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  type: <span class="number">1</span>,</span><br><span class="line">  tag: <span class="string">"div"</span>,</span><br><span class="line">  attrsList: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"app"</span>&#125;],</span><br><span class="line">  attrsMap: &#123;<span class="attr">id</span>: <span class="string">"app"</span>&#125;,</span><br><span class="line">  parent: <span class="literal">undefined</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">      type: <span class="number">3</span>,</span><br><span class="line">      text: <span class="string">'这里是文本&lt;箭头之后的文本'</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      type: <span class="number">1</span>,</span><br><span class="line">      tag: <span class="string">'p'</span>,</span><br><span class="line">      attrsList: [],</span><br><span class="line">      attrsMap: &#123;&#125;,</span><br><span class="line">      parent: ,</span><br><span class="line">      children: [&#123;</span><br><span class="line">        type: <span class="number">2</span>,</span><br><span class="line">        expression: <span class="string">'_s(message)'</span>,</span><br><span class="line">        text: <span class="string">'&#123;&#123;message&#125;&#125;'</span>,</span><br><span class="line">        <span class="keyword">static</span>: <span class="literal">false</span></span><br><span class="line">      &#125;],</span><br><span class="line">      plain: <span class="literal">true</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">false</span>,</span><br><span class="line">      staticRoot: <span class="literal">false</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      text: <span class="string">" "</span>,</span><br><span class="line">      type: <span class="number">3</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      type: <span class="number">1</span>,</span><br><span class="line">      tag: <span class="string">'p'</span>,</span><br><span class="line">      attrsList: [],</span><br><span class="line">      attrsMap: &#123;&#125;,</span><br><span class="line">      children: [&#123;</span><br><span class="line">          text: <span class="string">"静态文本"</span>,</span><br><span class="line">          type: <span class="number">3</span>,</span><br><span class="line">          <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          attrs: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'"http://www.baidu.com"'</span>&#125;],</span><br><span class="line">          attrsList: [&#123;<span class="attr">name</span>: <span class="string">"href"</span>, <span class="attr">value</span>: <span class="string">'http://www.baidu.com'</span>&#125;],</span><br><span class="line">          attrsMap: &#123;<span class="attr">href</span>: <span class="string">'http://www.baidu.com'</span>&#125;</span><br><span class="line">          children: [&#123;</span><br><span class="line">            text: <span class="string">"博客地址"</span>,</span><br><span class="line">            type: <span class="number">3</span>,</span><br><span class="line">            <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">          &#125;],</span><br><span class="line">          plain: <span class="literal">false</span>,</span><br><span class="line">          tag: <span class="string">"a"</span>,</span><br><span class="line">          type: <span class="number">1</span>,</span><br><span class="line">          <span class="keyword">static</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      plain: <span class="literal">true</span>,</span><br><span class="line">      <span class="keyword">static</span>: <span class="literal">true</span>,</span><br><span class="line">      staticInFor: <span class="literal">false</span>,</span><br><span class="line">      staticRoot: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  plain: <span class="literal">false</span>,</span><br><span class="line">  attrs: [&#123;<span class="attr">name</span>: <span class="string">"id"</span>, <span class="attr">value</span>: <span class="string">"'app'"</span>&#125;],</span><br><span class="line">  <span class="keyword">static</span>: <span class="literal">false</span>,</span><br><span class="line">  staticRoot: <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/31/vscode-experience/" rel="next" title="vscode使用经验">
+                <i class="fa fa-chevron-left"></i> vscode使用经验
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/03/vue-sourcecode-7-ast-to-render/" rel="prev" title="Vue源码解析7-生成render函数">
+                Vue源码解析7-生成render函数 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#genStaticKeysCached、isStaticKey"><span class="nav-number">1.</span> <span class="nav-text">genStaticKeysCached、isStaticKey</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#markStatic"><span class="nav-number">2.</span> <span class="nav-text">markStatic</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#isStatic"><span class="nav-number">2.1.</span> <span class="nav-text">isStatic</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#markStaticRoots"><span class="nav-number">3.</span> <span class="nav-text">markStaticRoots</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

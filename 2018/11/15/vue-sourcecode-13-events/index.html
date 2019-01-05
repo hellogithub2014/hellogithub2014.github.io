@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,Vue,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="到这里为止，Vue 的主要逻辑就已经全部介绍完了。接下来的文章会从其他角度来解析，如事件处理、各个指令的处理等等。先从事件处理开始。 Vue的事件处理分为两类：DOM事件和自定义事件，二者走的是完全不同的处理流程，不过在处理子组件时，会联系到一起，后面会说到。 DOM 事件在模板中通过@或v-on指令放在元素节点上的，如： 123456789101112131415&amp;lt;div id=&quot;app&quot;">
+<meta name="keywords" content="javascript,Vue">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析13-事件处理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/15/vue-sourcecode-13-events/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="到这里为止，Vue 的主要逻辑就已经全部介绍完了。接下来的文章会从其他角度来解析，如事件处理、各个指令的处理等等。先从事件处理开始。 Vue的事件处理分为两类：DOM事件和自定义事件，二者走的是完全不同的处理流程，不过在处理子组件时，会联系到一起，后面会说到。 DOM 事件在模板中通过@或v-on指令放在元素节点上的，如： 123456789101112131415&amp;lt;div id=&quot;app&quot;">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.511Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析13-事件处理">
+<meta name="twitter:description" content="到这里为止，Vue 的主要逻辑就已经全部介绍完了。接下来的文章会从其他角度来解析，如事件处理、各个指令的处理等等。先从事件处理开始。 Vue的事件处理分为两类：DOM事件和自定义事件，二者走的是完全不同的处理流程，不过在处理子组件时，会联系到一起，后面会说到。 DOM 事件在模板中通过@或v-on指令放在元素节点上的，如： 123456789101112131415&amp;lt;div id=&quot;app&quot;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/15/vue-sourcecode-13-events/">
+
+
+
+
+
+  <title>Vue源码解析13-事件处理 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/15/vue-sourcecode-13-events/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析13-事件处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-15T21:20:00+08:00">
+                2018-11-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>到这里为止，Vue 的主要逻辑就已经全部介绍完了。接下来的文章会从其他角度来解析，如事件处理、各个指令的处理等等。先从事件处理开始。</p>
+<p><code>Vue</code>的事件处理分为两类：<code>DOM</code>事件和自定义事件，二者走的是完全不同的处理流程，不过在处理子组件时，会联系到一起，后面会说到。</p>
+<h1 id="DOM-事件"><a href="#DOM-事件" class="headerlink" title="DOM 事件"></a>DOM 事件</h1><p>在模板中通过<code>@</code>或<code>v-on</code>指令放在元素节点上的，如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">"app"</span>&gt;</span><br><span class="line">  &lt;p @click=<span class="string">"log"</span>&gt;&#123;&#123;msg&#125;&#125;&lt;<span class="regexp">/p&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>div&gt;</span><br><span class="line">&lt;script type=<span class="string">"text/javascript"</span>&gt;</span><br><span class="line">  <span class="keyword">var</span> vm = <span class="keyword">new</span> Vue(&#123;</span><br><span class="line">    data: &#123;</span><br><span class="line">      msg: <span class="string">'ttttt'</span></span><br><span class="line">    &#125;,</span><br><span class="line">    methods: &#123;</span><br><span class="line">      log()&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="keyword">this</span>.msg);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;).$mount(<span class="string">'#app'</span>);</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<p>对于 DOM 事件的处理会依次经过<code>compile</code>、<code>render</code>和<code>patch</code>几个阶段。</p>
+<h2 id="compile-阶段转为-AST"><a href="#compile-阶段转为-AST" class="headerlink" title="compile 阶段转为 AST"></a>compile 阶段转为 AST</h2><p>在模板编译时，对于节点上的各种属性处理，如静态属性、动态绑定属性、事件绑定等都会放到<code>processAttrs</code>这个函数中处理，这个函数代码有点多，我只展示关键的逻辑：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processAttrs</span>(<span class="params">el</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="comment">// v-on，事件绑定</span></span><br><span class="line">  <span class="keyword">if</span> (onRE.test(name)) &#123;</span><br><span class="line">    <span class="comment">// onRE = /^@|^v-on:/ @或v-on开头</span></span><br><span class="line">    name = name.replace(onRE, <span class="string">''</span>); <span class="comment">// 获取单纯的事件名</span></span><br><span class="line">    <span class="comment">// 添加事件监听,处理el.nativeEvents或el.events对象，他们的格式为</span></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * &#123;</span></span><br><span class="line"><span class="comment">     *    [eventName]: handler | handler[],</span></span><br><span class="line"><span class="comment">     * &#125;，</span></span><br><span class="line"><span class="comment">     * handler格式</span></span><br><span class="line"><span class="comment">     * &#123;</span></span><br><span class="line"><span class="comment">     *    value: string,</span></span><br><span class="line"><span class="comment">     *    modifiers: &#123; [name: string]: true &#125;</span></span><br><span class="line"><span class="comment">     * &#125;</span></span><br><span class="line"><span class="comment">     * 针对不同的内置修饰符，eventName的格式有所不同，如name.once会变成 `~name`</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    addHandler(el, name, value, modifiers, <span class="literal">false</span>, warn);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>addHandler</code>会在<code>el.nativeEvents</code>或<code>el.events</code>对象上添加<code>handler</code>属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">addHandler</span>(<span class="params">el: ASTElement, name: string, value: string, modifiers: ?ASTModifiers, important?: boolean, warn?: Function</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// modifiers事件修饰符对象，如&#123; native: true &#125;</span></span><br><span class="line">  modifiers = modifiers || emptyObject;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// check capture modifier</span></span><br><span class="line">  <span class="keyword">if</span> (modifiers.capture) &#123;</span><br><span class="line">    <span class="keyword">delete</span> modifiers.capture;</span><br><span class="line">    name = <span class="string">'!'</span> + name; <span class="comment">// mark the event as captured</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (modifiers.once) &#123;</span><br><span class="line">    <span class="keyword">delete</span> modifiers.once;</span><br><span class="line">    name = <span class="string">'~'</span> + name; <span class="comment">// mark the event as once</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">  <span class="keyword">if</span> (modifiers.passive) &#123;</span><br><span class="line">    <span class="keyword">delete</span> modifiers.passive;</span><br><span class="line">    name = <span class="string">'&amp;'</span> + name; <span class="comment">// mark the event as passive</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// normalize click.right and click.middle since they don't actually fire</span></span><br><span class="line">  <span class="comment">// this is technically browser-specific, but at least for now browsers are</span></span><br><span class="line">  <span class="comment">// the only target envs that have right/middle clicks.</span></span><br><span class="line">  <span class="keyword">if</span> (name === <span class="string">'click'</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (modifiers.right) &#123;</span><br><span class="line">      name = <span class="string">'contextmenu'</span>; <span class="comment">// 将click.right修改为contextmenu事件</span></span><br><span class="line">      <span class="keyword">delete</span> modifiers.right;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (modifiers.middle) &#123;</span><br><span class="line">      name = <span class="string">'mouseup'</span>; <span class="comment">// 将click.middle修改为mouseup事件</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> events; <span class="comment">// 容纳所有事件处理器的包装对象</span></span><br><span class="line">  <span class="keyword">if</span> (modifiers.native) &#123;</span><br><span class="line">    <span class="keyword">delete</span> modifiers.native;</span><br><span class="line">    events = el.nativeEvents || (el.nativeEvents = &#123;&#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    events = el.events || (el.events = &#123;&#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> newHandler: any = &#123;</span><br><span class="line">    value: value.trim(),</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="comment">// 除了上述列举的修饰符，还有其他修饰符</span></span><br><span class="line">  <span class="keyword">if</span> (modifiers !== emptyObject) &#123;</span><br><span class="line">    newHandler.modifiers = modifiers;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> handlers = events[name];</span><br><span class="line">  <span class="comment">/* istanbul ignore if */</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(handlers)) &#123;</span><br><span class="line">    <span class="comment">// 在el上已有多个对此事件的处理器，将所有处理器放到一个数组里</span></span><br><span class="line">    important ? handlers.unshift(newHandler) : handlers.push(newHandler);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (handlers) &#123;</span><br><span class="line">    <span class="comment">// 在el上已有1个对此事件的处理器</span></span><br><span class="line">    events[name] = important ? [newHandler, handlers] : [handlers, newHandler];</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 在el上还没有对此事件的处理器</span></span><br><span class="line">    events[name] = newHandler;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  el.plain = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码还是不难的，主要分为两步： 先处理函数名，将一些内置修饰符转为函数名中的前缀； 之后将处理函数放到<code>events</code>上。</p>
+<h2 id="generate-阶段生成-render-字符串"><a href="#generate-阶段生成-render-字符串" class="headerlink" title="generate 阶段生成 render 字符串"></a>generate 阶段生成 render 字符串</h2><p>下一步就到了生成<code>render</code>了，在<code>genData</code>函数中会处理<code>el.events</code>、<code>el.nativeEvents</code>,放到<code>data.on</code>、<code>data.nativeOn</code>上:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">genData</span>(<span class="params">el: ASTElement, state: CodegenState</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> data = <span class="string">'&#123;'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// event handlers</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * el.nativeEvents或el.events对象的格式为:</span></span><br><span class="line"><span class="comment">   * &#123;</span></span><br><span class="line"><span class="comment">        [eventName]: handler | handler[],</span></span><br><span class="line"><span class="comment">      &#125;</span></span><br><span class="line"><span class="comment">      handler 格式:</span></span><br><span class="line"><span class="comment">      &#123;</span></span><br><span class="line"><span class="comment">        value: string,</span></span><br><span class="line"><span class="comment">        modifiers: &#123; [name: string]: true &#125;</span></span><br><span class="line"><span class="comment">      &#125;</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">if</span> (el.events) &#123;</span><br><span class="line">    data += <span class="string">`<span class="subst">$&#123;genHandlers(el.events, <span class="literal">false</span>, state.warn)&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (el.nativeEvents) &#123;</span><br><span class="line">    data += <span class="string">`<span class="subst">$&#123;genHandlers(el.nativeEvents, <span class="literal">true</span>, state.warn)&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>都是调用的同一个<code>genHandlers</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * events格式：</span></span><br><span class="line"><span class="comment"> *  &#123;</span></span><br><span class="line"><span class="comment">      [eventName]: handler | handler[],</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">    handler 格式:</span></span><br><span class="line"><span class="comment">    &#123;</span></span><br><span class="line"><span class="comment">      value: string,</span></span><br><span class="line"><span class="comment">      modifiers: &#123; [name: string]: true &#125;</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 若html为&lt;p @click.foo.bar.left="show"&gt;&#123;&#123;text&#125;&#125;&lt;/p&gt;，</span></span><br><span class="line"><span class="comment"> * 则返回</span></span><br><span class="line"><span class="comment"> * &#123;</span></span><br><span class="line"><span class="comment">    on: &#123;</span></span><br><span class="line"><span class="comment">      "click": function($event) &#123;</span></span><br><span class="line"><span class="comment">        if ( !( 'button' in $event ) &amp;&amp;</span></span><br><span class="line"><span class="comment">        _k( $event.keyCode, "foo", undefined, $event.key, undefined ) &amp;&amp;</span></span><br><span class="line"><span class="comment">        _k( $event.keyCode, "bar", undefined, $event.key, undefined ) )</span></span><br><span class="line"><span class="comment">          return null;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">        return show( $event )</span></span><br><span class="line"><span class="comment">      &#125;</span></span><br><span class="line"><span class="comment">    &#125;</span></span><br><span class="line"><span class="comment">  &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">genHandlers</span>(<span class="params">events: ASTElementHandlers, isNative: boolean, warn: Function</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> res = isNative ? <span class="string">'nativeOn:&#123;'</span> : <span class="string">'on:&#123;'</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> name <span class="keyword">in</span> events) &#123;</span><br><span class="line">    res += <span class="string">`"<span class="subst">$&#123;name&#125;</span>":<span class="subst">$&#123;genHandler(name, events[name])&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res.slice(<span class="number">0</span>, <span class="number">-1</span>) + <span class="string">'&#125;'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>针对<code>events</code>中每种类型的事件处理，调用<code>genHandler</code>处理<code>events[name]</code>，<code>events[name]</code>可能是数组也可能是独立对象，取决于<code>name</code>是否有多个处理函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genHandler</span>(<span class="params">name: string, handler: ASTElementHandler | Array&lt;ASTElementHandler&gt;</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!handler) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'function()&#123;&#125;'</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(handler)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`[<span class="subst">$&#123;handler.map(handler =&gt; genHandler(name, handler)).join(<span class="string">','</span>)&#125;</span>]`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> isMethodPath = simplePathRE.test(handler.value); <span class="comment">// 绑定的直接是函数定义，如 @click="()=&gt;test+=1"</span></span><br><span class="line">  <span class="keyword">const</span> isFunctionExpression = fnExpRE.test(handler.value); <span class="comment">// 绑定的是函数路径，如@click="obj['name']" 或@click="emitData"</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 没有修饰符</span></span><br><span class="line">  <span class="keyword">if</span> (!handler.modifiers) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isMethodPath || isFunctionExpression) &#123;</span><br><span class="line">      <span class="keyword">return</span> handler.value;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果绑定的直接是函数定义，也不是函数路径，那么就是一个内联的表达式了，如@click="test+=1"</span></span><br><span class="line">    <span class="keyword">return</span> <span class="string">`function($event)&#123;<span class="subst">$&#123;handler.value&#125;</span>&#125;`</span>; <span class="comment">// inline statement</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> code = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">let</span> genModifierCode = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">const</span> keys = [];</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> handler.modifiers) &#123;</span><br><span class="line">      <span class="keyword">if</span> (modifierCode[key]) &#123;</span><br><span class="line">        <span class="comment">// key为内置修饰符</span></span><br><span class="line">        genModifierCode += modifierCode[key];</span><br><span class="line">        <span class="comment">// left/right</span></span><br><span class="line">        <span class="keyword">if</span> (keyCodes[key]) &#123;</span><br><span class="line">          keys.push(key);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (key === <span class="string">'exact'</span>) &#123;</span><br><span class="line">        <span class="comment">// exact修饰符表示有且仅有指定的按键被按下时触发，而不能伴随这4个辅助按键</span></span><br><span class="line">        <span class="keyword">const</span> modifiers: ASTModifiers = (handler.modifiers: any);</span><br><span class="line">        <span class="comment">// genGuard = condition =&gt; `if($&#123;condition&#125;)return null;`</span></span><br><span class="line">        genModifierCode += genGuard(</span><br><span class="line">          [<span class="string">'ctrl'</span>, <span class="string">'shift'</span>, <span class="string">'alt'</span>, <span class="string">'meta'</span>]</span><br><span class="line">            .filter(<span class="function"><span class="params">keyModifier</span> =&gt;</span> !modifiers[keyModifier])</span><br><span class="line">            .map(<span class="function"><span class="params">keyModifier</span> =&gt;</span> <span class="string">`$event.<span class="subst">$&#123;keyModifier&#125;</span>Key`</span>)</span><br><span class="line">            .join(<span class="string">'||'</span>),</span><br><span class="line">        );</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        keys.push(key);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (keys.length) &#123;</span><br><span class="line">      code += genKeyFilter(keys);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Make sure modifiers like prevent and stop get executed after key filtering</span></span><br><span class="line">    <span class="keyword">if</span> (genModifierCode) &#123;</span><br><span class="line">      code += genModifierCode;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">const</span> handlerCode = isMethodPath ? <span class="string">`return <span class="subst">$&#123;handler.value&#125;</span>($event)`</span> : isFunctionExpression ? <span class="string">`return (<span class="subst">$&#123;handler.value&#125;</span>)($event)`</span> : handler.value;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="string">`function($event)&#123;<span class="subst">$&#123;code&#125;</span><span class="subst">$&#123;handlerCode&#125;</span>&#125;`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果绑定的是函数定义、一个函数路径、没有事件修饰符，处理都很简单。<code>genModifierCode</code>用于处理携带修饰符的情形，<code>modifierCode</code>生成内置修饰符的处理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> modifierCode: &#123; [key: string]: string &#125; = &#123;</span><br><span class="line">  stop: <span class="string">'$event.stopPropagation();'</span>,</span><br><span class="line">  prevent: <span class="string">'$event.preventDefault();'</span>,</span><br><span class="line">  self: genGuard(<span class="string">`$event.target !== $event.currentTarget`</span>),</span><br><span class="line">  ctrl: genGuard(<span class="string">`!$event.ctrlKey`</span>),</span><br><span class="line">  shift: genGuard(<span class="string">`!$event.shiftKey`</span>),</span><br><span class="line">  alt: genGuard(<span class="string">`!$event.altKey`</span>),</span><br><span class="line">  meta: genGuard(<span class="string">`!$event.metaKey`</span>),</span><br><span class="line">  left: genGuard(<span class="string">`'button' in $event &amp;&amp; $event.button !== 0`</span>),</span><br><span class="line">  middle: genGuard(<span class="string">`'button' in $event &amp;&amp; $event.button !== 1`</span>),</span><br><span class="line">  right: genGuard(<span class="string">`'button' in $event &amp;&amp; $event.button !== 2`</span>),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>keyCodes</code>是内置按键别名：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// KeyboardEvent.keyCode aliases</span></span><br><span class="line"><span class="keyword">const</span> keyCodes: &#123; [key: string]: number | <span class="built_in">Array</span>&lt;number&gt; &#125; = &#123;</span><br><span class="line">  esc: <span class="number">27</span>,</span><br><span class="line">  tab: <span class="number">9</span>,</span><br><span class="line">  enter: <span class="number">13</span>,</span><br><span class="line">  space: <span class="number">32</span>,</span><br><span class="line">  up: <span class="number">38</span>,</span><br><span class="line">  left: <span class="number">37</span>,</span><br><span class="line">  right: <span class="number">39</span>,</span><br><span class="line">  down: <span class="number">40</span>,</span><br><span class="line">  <span class="keyword">delete</span>: [<span class="number">8</span>, <span class="number">46</span>],</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>genKeyFilter</code>用于生成一段过滤的字符串：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 返回的是一个判断: 不符合一定条件就return null</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genKeyFilter</span>(<span class="params">keys: Array&lt;string&gt;</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">`if(!('button' in $event)&amp;&amp;<span class="subst">$&#123;keys.map(genFilterCode).join(<span class="string">'&amp;&amp;'</span>)&#125;</span>)return null;`</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genFilterCode</span>(<span class="params">key: string</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> keyVal = <span class="built_in">parseInt</span>(key, <span class="number">10</span>);</span><br><span class="line">  <span class="keyword">if</span> (keyVal) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">`$event.keyCode!==<span class="subst">$&#123;keyVal&#125;</span>`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> keyCode = keyCodes[key];</span><br><span class="line">  <span class="keyword">const</span> keyName = keyNames[key];</span><br><span class="line">  <span class="comment">// _k checkKeyCodes函数</span></span><br><span class="line">  <span class="keyword">return</span> <span class="string">`_k($event.keyCode,`</span> + <span class="string">`<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(key)&#125;</span>,`</span> + <span class="string">`<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(keyCode)&#125;</span>,`</span> + <span class="string">`$event.key,`</span> + <span class="string">`<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(keyName)&#125;</span>`</span> + <span class="string">`)`</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终我们的函数处理字符串被包裹在<code>function($event){}</code>函数体当中。</p>
+<h2 id="patch-阶段添加事件处理到-DOM-上"><a href="#patch-阶段添加事件处理到-DOM-上" class="headerlink" title="patch 阶段添加事件处理到 DOM 上"></a>patch 阶段添加事件处理到 DOM 上</h2><p>在<code>render</code>函数生成<code>vnode</code>期间不会处理生成的函数字符串，之后在<code>patch</code>阶段的<code>invokeCreateHooks</code>中会调用各个钩子来处理<code>data</code>对象上的属性（<code>data</code>对象就是我们上面<code>genData</code>的返回值），其中就会将<code>data.on</code>、<code>data.nativeOn</code>上的事件处理函数添加到<code>DOM</code>上。在<code>invokeDestroyHook</code>中又会卸载<code>DOM</code>上的事件处理函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">invokeCreateHooks</span>(<span class="params">vnode, insertedVnodeQueue</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 调用每个module的create钩子，一共8个module，见cbs定义处的注释</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cbs.create.length; ++i) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 各个子module的create功能：</span></span><br><span class="line"><span class="comment">     * 1. attrs：将新增data.attrs放入vnode.elm，同时移除旧的data.attrs</span></span><br><span class="line"><span class="comment">     * 2. style: 将data.staticStyle/style放入vnode.elm.style，同时移除旧的style</span></span><br><span class="line"><span class="comment">     * 3. class: 将静态class和动态class结合，直接覆盖到vnode.elm.class</span></span><br><span class="line"><span class="comment">     * 4. events：利用新旧vnode的data.on更新vnode.elm的事件处理函数，使用addEventListener/removeEventListener</span></span><br><span class="line"><span class="comment">     * 5. domProps:处理原生dom属性，如textContent、innerHTML、value等，将新的dom属性加到vnode.elm，移除旧的dom属性</span></span><br><span class="line"><span class="comment">     * 6. transition: 略</span></span><br><span class="line"><span class="comment">     * 7. ref: 处理data.ref，令 vnode.context.refs[data.ref] = vnode.elm, 即指向的是原生dom</span></span><br><span class="line"><span class="comment">     * 8. directives: 处理指令，根据不同阶段调用指令的不同钩子，例如新建时调用bind钩子、更新时调用update钩子</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    cbs.create[i](emptyNode, vnode);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 经过上面的for循环，vnode.data.hook可能会增加各种钩子，如insert或postpatch等</span></span><br><span class="line">  <span class="comment">// 另外自定义组件的data.hook在rendor生成vnode时会挂载4个钩子函数，见componentVNodeHooks</span></span><br><span class="line">  i = vnode.data.hook; <span class="comment">// Reuse variable</span></span><br><span class="line">  <span class="keyword">if</span> (isDef(i)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(i.create)) i.create(emptyNode, vnode);</span><br><span class="line">    <span class="keyword">if</span> (isDef(i.insert)) insertedVnodeQueue.push(vnode);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>处理事件的<code>module</code>定义在<code>src/platforms/web/runtime/modules/events.js</code>的<code>updateDOMListeners</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateDOMListeners</span>(<span class="params">oldVnode: VNodeWithData, vnode: VNodeWithData</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isUndef(oldVnode.data.on) &amp;&amp; isUndef(vnode.data.on)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> on = vnode.data.on || &#123;&#125;;</span><br><span class="line">  <span class="keyword">const</span> oldOn = oldVnode.data.on || &#123;&#125;;</span><br><span class="line">  target = vnode.elm;</span><br><span class="line">  normalizeEvents(on); <span class="comment">// 针对性的处理input[type=range]上的v-model</span></span><br><span class="line">  <span class="comment">// 更新vnode.elm上的事件处理函数</span></span><br><span class="line">  updateListeners(on, oldOn, add, remove, vnode.context);</span><br><span class="line">  target = <span class="literal">undefined</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此处的<code>add</code>、<code>remove</code>是两个帮助函数，核心是用<code>addEventListener</code>、<code>removeEventListener</code>添加事件处理到<code>DOM</code>上：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">event: string, handler: Function, once: boolean, capture: boolean, passive: boolean</span>) </span>&#123;</span><br><span class="line">  handler = withMacroTask(handler);</span><br><span class="line">  <span class="keyword">if</span> (once) handler = createOnceHandler(handler, event, capture);</span><br><span class="line">  target.addEventListener(event, handler, supportsPassive ? &#123; capture, passive &#125; : capture);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">remove</span>(<span class="params">event: string, handler: Function, capture: boolean, _target?: HTMLElement</span>) </span>&#123;</span><br><span class="line">  (_target || target).removeEventListener(event, handler._withTask || handler, capture);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>updateListeners</code>会将<code>data.on</code>上新增的事件处理利用<code>add</code>添加到<code>DOM</code>上，将<code>oldOn</code>上的过时的事件处理用<code>remove</code>移除掉：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">updateListeners</span>(<span class="params">on: Object, oldOn: Object, add: Function, remove: Function, vm: Component</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> name, def, cur, old, event;</span><br><span class="line">  <span class="keyword">for</span> (name <span class="keyword">in</span> on) &#123;</span><br><span class="line">    def = cur = on[name];</span><br><span class="line">    old = oldOn[name];</span><br><span class="line">    event = normalizeEvent(name); <span class="comment">// 处理事件名的前缀 ! ~ &amp;,转为 once passive capture标志</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (isUndef(old)) &#123;</span><br><span class="line">      <span class="comment">// 新增的事件处理</span></span><br><span class="line">      <span class="keyword">if</span> (isUndef(cur.fns)) &#123;</span><br><span class="line">        cur = on[name] = createFnInvoker(cur);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 在vnode.elm上使用addEventListener添加事件</span></span><br><span class="line">      add(event.name, cur, event.once, event.capture, event.passive, event.params);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cur !== old) &#123;</span><br><span class="line">      <span class="comment">// 更新的事件处理函数</span></span><br><span class="line">      old.fns = cur;</span><br><span class="line">      on[name] = old;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 遗弃的事件处理函数</span></span><br><span class="line">  <span class="keyword">for</span> (name <span class="keyword">in</span> oldOn) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isUndef(on[name])) &#123;</span><br><span class="line">      event = normalizeEvent(name);</span><br><span class="line">      <span class="comment">// 在vnode.elm上使用removeEventListener添加事件</span></span><br><span class="line">      remove(event.name, oldOn[name], event.capture);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的<code>normalizeEvent</code>就是用来处理在<code>compile</code>阶段为函数名添加的各种内置修饰符前缀如<code>~ ！</code>等，将他们反向解析会<code>passive</code>、<code>once</code>等：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> normalizeEvent = cached(</span><br><span class="line">  (</span><br><span class="line">    name: string,</span><br><span class="line">  ): &#123;</span><br><span class="line">    name: string,</span><br><span class="line">    once: boolean,</span><br><span class="line">    capture: boolean,</span><br><span class="line">    passive: boolean,</span><br><span class="line">    handler?: <span class="built_in">Function</span>,</span><br><span class="line">    params?: <span class="built_in">Array</span>&lt;any&gt;,</span><br><span class="line">  &#125; =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> passive = name.charAt(<span class="number">0</span>) === <span class="string">'&amp;'</span>;</span><br><span class="line">    name = passive ? name.slice(<span class="number">1</span>) : name;</span><br><span class="line">    <span class="keyword">const</span> once = name.charAt(<span class="number">0</span>) === <span class="string">'~'</span>; <span class="comment">// Prefixed last, checked first</span></span><br><span class="line">    name = once ? name.slice(<span class="number">1</span>) : name;</span><br><span class="line">    <span class="keyword">const</span> capture = name.charAt(<span class="number">0</span>) === <span class="string">'!'</span>;</span><br><span class="line">    name = capture ? name.slice(<span class="number">1</span>) : name;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      name,</span><br><span class="line">      once,</span><br><span class="line">      capture,</span><br><span class="line">      passive,</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>以上就是<code>Vue</code>对于<code>DOM</code>事件的处理流程了，还是比想象中复杂许多的。</p>
+<h1 id="自定义事件"><a href="#自定义事件" class="headerlink" title="自定义事件"></a>自定义事件</h1><p><code>Vue</code>也可以利用<code>$emit</code>、<code>$on</code>、<code>$off</code>、<code>once</code>等创建自定义事件，使用方法很简单大家自己去看官网即可。他们的内部实现其实主要也是利用了观察者模式，代码其实挺简单的，挨个看下：</p>
+<h2 id="on"><a href="#on" class="headerlink" title="$on"></a><code>$on</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$on = <span class="function"><span class="keyword">function</span>(<span class="params">event: string | Array&lt;string&gt;, fn: Function</span>): <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(event)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = event.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="keyword">this</span>.$on(event[i], fn);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    (vm._events[event] || (vm._events[event] = [])).push(fn);</span><br><span class="line">    <span class="comment">// optimize hook:event cost by using a boolean flag marked at registration</span></span><br><span class="line">    <span class="comment">// instead of a hash lookup</span></span><br><span class="line">    <span class="keyword">if</span> (hookRE.test(event)) &#123;</span><br><span class="line">      vm._hasHookEvent = <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> vm;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>所有的事件监听都会放到<code>vm</code>内部的<code>_events</code>上，按照事件名进行分类。</p>
+<h2 id="once"><a href="#once" class="headerlink" title="$once"></a><code>$once</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$once = <span class="function"><span class="keyword">function</span>(<span class="params">event: string, fn: Function</span>): <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">on</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    vm.$off(event, on);</span><br><span class="line">    fn.apply(vm, <span class="built_in">arguments</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  on.fn = fn;</span><br><span class="line">  vm.$on(event, on);</span><br><span class="line">  <span class="keyword">return</span> vm;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>$once</code>和<code>$on</code>很像，唯一的差别是<code>$once</code>在执行完一次后就会利用<code>$off</code>卸载掉。</p>
+<h2 id="off"><a href="#off" class="headerlink" title="$off"></a><code>$off</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$off = <span class="function"><span class="keyword">function</span>(<span class="params">event?: string | Array&lt;string&gt;, fn?: Function</span>): <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line">  <span class="comment">// all</span></span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">arguments</span>.length) &#123;</span><br><span class="line">    vm._events = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">    <span class="keyword">return</span> vm;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// array of events</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(event)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = event.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="keyword">this</span>.$off(event[i], fn);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> vm;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// specific event</span></span><br><span class="line">  <span class="keyword">const</span> cbs = vm._events[event];</span><br><span class="line">  <span class="keyword">if</span> (!cbs) &#123;</span><br><span class="line">    <span class="keyword">return</span> vm;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!fn) &#123;</span><br><span class="line">    vm._events[event] = <span class="literal">null</span>;</span><br><span class="line">    <span class="keyword">return</span> vm;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (fn) &#123;</span><br><span class="line">    <span class="comment">// specific handler</span></span><br><span class="line">    <span class="keyword">let</span> cb;</span><br><span class="line">    <span class="keyword">let</span> i = cbs.length;</span><br><span class="line">    <span class="keyword">while</span> (i--) &#123;</span><br><span class="line">      cb = cbs[i];</span><br><span class="line">      <span class="keyword">if</span> (cb === fn || cb.fn === fn) &#123;</span><br><span class="line">        cbs.splice(i, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> vm;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>用于卸载一个事件监听，代码虽然看起来挺长，其实就是考虑了多种参数情况而已，可能是卸载全部所有事件处理、卸载指定名称的全部事件处理、卸载指定名称的指定事件处理。</p>
+<h1 id="emit"><a href="#emit" class="headerlink" title="$emit"></a><code>$emit</code></h1><p>用于触发事件：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Vue.prototype.$emit = <span class="function"><span class="keyword">function</span>(<span class="params">event: string</span>): <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> vm: Component = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> cbs = vm._events[event];</span><br><span class="line">  <span class="keyword">if</span> (cbs) &#123;</span><br><span class="line">    cbs = cbs.length &gt; <span class="number">1</span> ? toArray(cbs) : cbs;</span><br><span class="line">    <span class="keyword">const</span> args = toArray(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = cbs.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        cbs[i].apply(vm, args);</span><br><span class="line">      &#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">        handleError(e, vm, <span class="string">`event handler for "<span class="subst">$&#123;event&#125;</span>"`</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> vm;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>以上就是自定义事件的全部处理，很简单。</p>
+<h1 id="自定义组件-DOM-事件"><a href="#自定义组件-DOM-事件" class="headerlink" title="自定义组件 DOM 事件"></a>自定义组件 DOM 事件</h1><p>相信大家也看出来了，上面说的<code>DOM</code>事件和自定义事件完全没有任何关联。但在处理自定义组件时，貌似又说不通，例如：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span><span class="tag">&lt;<span class="name">my-component</span> @<span class="attr">click</span>=<span class="string">"change"</span>&gt;</span><span class="tag">&lt;/<span class="name">my-component</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">  <span class="keyword">var</span> vm = <span class="keyword">new</span> Vue(&#123;</span></span><br><span class="line"><span class="javascript">    el: <span class="string">'#app'</span>,</span></span><br><span class="line"><span class="undefined">    methods: &#123;</span></span><br><span class="line"><span class="undefined">      change() &#123;</span></span><br><span class="line"><span class="javascript">        <span class="built_in">console</span>.log(<span class="string">'change'</span>);</span></span><br><span class="line"><span class="undefined">      &#125;,</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    components: &#123;</span></span><br><span class="line"><span class="undefined">      myComponent: &#123;</span></span><br><span class="line"><span class="undefined">        data() &#123;</span></span><br><span class="line"><span class="javascript">          <span class="keyword">return</span> &#123;</span></span><br><span class="line"><span class="javascript">            msg: <span class="string">'testtesttest'</span>,</span></span><br><span class="line"><span class="undefined">          &#125;;</span></span><br><span class="line"><span class="undefined">        &#125;,</span></span><br><span class="line"><span class="xml">        template: `<span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123;msg&#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span>`,</span></span><br><span class="line"><span class="undefined">      &#125;,</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">  &#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>我们在<code>my-component</code>上添加了一个<code>DOM</code>事件，并期望点击时可以出现<code>log</code>日志，但实际上<code>change</code>事件并没有被调用。</p>
+<p>如果我们修改下<code>template</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">my-component</span> @<span class="attr">click.native</span>=<span class="string">"change"</span>&gt;</span><span class="tag">&lt;/<span class="name">my-component</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>很神奇此时<code>log</code>可以出现。</p>
+<p>或者只改写子组件自身的逻辑：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">myComponent: &#123;</span><br><span class="line">        data() &#123;</span><br><span class="line">          <span class="keyword">return</span> &#123;</span><br><span class="line">            msg: <span class="string">'testtesttest'</span>,</span><br><span class="line">          &#125;;</span><br><span class="line">        &#125;,</span><br><span class="line">        methods: &#123;</span><br><span class="line">          emit()&#123;</span><br><span class="line">            <span class="keyword">this</span>.$emit(<span class="string">'click'</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        template: <span class="string">`&lt;p @click="emit"&gt;&#123;&#123;msg&#125;&#125;&lt;/p&gt;`</span>,</span><br><span class="line">      &#125;,</span><br></pre></td></tr></table></figure>
+<p>不出所料，此时<code>log</code>也是可以出现的。</p>
+<p>很明显，在处理自定义组件时，<code>Vue</code>会做一些处理以将二者联系起来。回顾下我们此前介绍的<code>Vue</code>生命周期，最开始处理子组件的地方就是<code>render</code>生成<code>vnode</code>了。在<code>src/core/vdom/create-component.js</code>的<code>createComponent</code>方法就是用于生成自定义组件的<code>vnode</code>，其中有一段：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createComponent</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  Ctor: Class&lt;Component&gt; | Function | Object | void,</span></span></span><br><span class="line"><span class="function"><span class="params">  data: ?VNodeData,</span></span></span><br><span class="line"><span class="function"><span class="params">  context: Component,</span></span></span><br><span class="line"><span class="function"><span class="params">  children: ?Array&lt;VNode&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  tag?: string,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">VNode</span> | <span class="title">Array</span>&lt;<span class="title">VNode</span>&gt; | <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// extract listeners, since these needs to be treated as</span></span><br><span class="line">  <span class="comment">// child component listeners instead of DOM listeners</span></span><br><span class="line">  <span class="comment">// 保存的是我们绑定在元素上的事件，且该事件没有加native修饰符</span></span><br><span class="line">  <span class="keyword">const</span> listeners = data.on;</span><br><span class="line">  <span class="comment">// replace with listeners with .native modifier</span></span><br><span class="line">  <span class="comment">// so it gets processed during parent component patch.</span></span><br><span class="line">  <span class="comment">// 保存的是添加了native修饰符的事件</span></span><br><span class="line">  data.on = data.nativeOn;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// install component management hooks onto the placeholder node</span></span><br><span class="line">  installComponentHooks(data);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// return a placeholder vnode</span></span><br><span class="line">  <span class="keyword">const</span> name = Ctor.options.name || tag;</span><br><span class="line">  <span class="keyword">const</span> vnode = <span class="keyword">new</span> VNode(</span><br><span class="line">    <span class="string">`vue-component-<span class="subst">$&#123;Ctor.cid&#125;</span><span class="subst">$&#123;name ? <span class="string">`-<span class="subst">$&#123;name&#125;</span>`</span> : <span class="string">''</span>&#125;</span>`</span>,</span><br><span class="line">    data,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    context,</span><br><span class="line">    &#123; Ctor, propsData, listeners, tag, children &#125;, <span class="comment">// 将父组件上的data.on处理放到listeners, 子组件在初始化时会调用initEvents处理</span></span><br><span class="line">    asyncFactory,</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> vnode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到上面关于事件处理的两句赋值：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> listeners = data.on;</span><br><span class="line">data.on = data.nativeOn;</span><br></pre></td></tr></table></figure>
+<p>我们<code>.native</code>事件处理放到<code>data.on</code>上，再将其他事件监听放到<code>listeners</code>上，那么再什么时候会处理这两个属性呢？没错，还是在<code>patch</code>阶段。</p>
+<p><code>patch</code>会在不同时候调用在<code>vnode.data</code>上不同的钩子，这些钩子是在<code>installComponentHooks</code>方法中被赋值的，主要有 4 个钩子：<code>init</code>、<code>prepatch</code>、<code>insert</code>、<code>destroy</code>，他们定义在<code>src/core/vdom/create-component.js</code>的<code>componentVNodeHooks</code>对象上，只有自定义子组件会拥有这些钩子。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> componentVNodeHooks = &#123;</span><br><span class="line">  init(vnode: VNodeWithData, <span class="attr">hydrating</span>: boolean): ?boolean &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  prepatch(oldVnode: MountedComponentVNode, <span class="attr">vnode</span>: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  insert(vnode: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  destroy(vnode: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>接下来我们看看这些钩子具体在何时调用。</p>
+<p><code>patch</code>在初始化的某个时候会调用<code>createComponent</code>方法，在这里会调用<code>init</code>钩子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createComponent</span>(<span class="params">vnode, insertedVnodeQueue, parentElm, refElm</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> i = vnode.data;</span><br><span class="line">  <span class="keyword">if</span> (isDef(i)) &#123;</span><br><span class="line">    <span class="keyword">const</span> isReactivated = isDef(vnode.componentInstance) &amp;&amp; i.keepAlive;</span><br><span class="line">    <span class="keyword">if</span> (isDef((i = i.hook)) &amp;&amp; isDef((i = i.init))) &#123;</span><br><span class="line">      <span class="comment">// 执行子组件的init，在componentVNodeHooks中,</span></span><br><span class="line">      <span class="comment">// 会进行$mount，所以之后vnode.componentInstance.$el就会被赋值</span></span><br><span class="line">      i(vnode, <span class="literal">false</span> <span class="comment">/* hydrating */</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// after calling the init hook, if the vnode is a child component</span></span><br><span class="line">    <span class="comment">// it should've created a child instance and mounted it. the child</span></span><br><span class="line">    <span class="comment">// component also has set the placeholder vnode's elm.</span></span><br><span class="line">    <span class="comment">// in that case we can just return the element and be done.</span></span><br><span class="line">    <span class="keyword">if</span> (isDef(vnode.componentInstance)) &#123;</span><br><span class="line">      initComponent(vnode, insertedVnodeQueue); <span class="comment">// 初始化子组件</span></span><br><span class="line">      insert(parentElm, vnode.elm, refElm);</span><br><span class="line">      <span class="keyword">if</span> (isTrue(isReactivated)) &#123;</span><br><span class="line">        reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>init</code>钩子主要会将子组件挂载到<code>vnode.elm</code>上：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">init (vnode: VNodeWithData, <span class="attr">hydrating</span>: boolean): ?boolean &#123;</span><br><span class="line">    <span class="keyword">const</span> child = (vnode.componentInstance = createComponentInstanceForVnode(vnode, activeInstance))</span><br><span class="line">    child.$mount(hydrating ? vnode.elm : <span class="literal">undefined</span>, hydrating)</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p><code>$mount</code>操作就又回到了我们很早前将的<code>Vue</code>生命周期了，只不过针对子组件会特殊处理<code>listeners</code>属性，回顾上我们刚刚说的在子组件<code>render</code>时会将<code>data.on</code>赋值给<code>listeners</code>。处理<code>listeners</code>是在<code>src/core/instance/events.js</code>的<code>initEvents</code>方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">initEvents</span>(<span class="params">vm: Component</span>) </span>&#123;</span><br><span class="line">  vm._events = <span class="built_in">Object</span>.create(<span class="literal">null</span>);</span><br><span class="line">  vm._hasHookEvent = <span class="literal">false</span>;</span><br><span class="line">  <span class="comment">// init parent attached events</span></span><br><span class="line">  <span class="comment">// 生成vnode时的createComponent方法会将父组件上的data.on处理放到listeners,</span></span><br><span class="line">  <span class="comment">// 在这里子组件会来处理。大体处理是将所有处理函数利用$on放到vm._events上，这样组件自身$emit时就会</span></span><br><span class="line">  <span class="comment">// 在vm._events上找到父组件传入的处理函数。</span></span><br><span class="line">  <span class="comment">// 要注意的是： 即使父组件的处理函数传给了子组件，但每个处理函数的this仍然是父组件，因为已经经过了bind操作</span></span><br><span class="line">  <span class="keyword">const</span> listeners = vm.$options._parentListeners;</span><br><span class="line">  <span class="keyword">if</span> (listeners) &#123;</span><br><span class="line">    updateComponentListeners(vm, listeners);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>updateComponentListeners</code>底层依然调用的是<code>updateListeners</code>，这与我们此前说<code>DOM</code>事件处理时调用的是同一个函数，不同的是<code>add</code>和<code>remove</code>参数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span>(<span class="params">event, fn, once</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (once) &#123;</span><br><span class="line">    target.$once(event, fn);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    target.$on(event, fn);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">remove</span>(<span class="params">event, fn</span>) </span>&#123;</span><br><span class="line">  target.$off(event, fn);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">updateComponentListeners</span>(<span class="params">vm: Component, listeners: Object, oldListeners: ?Object</span>) </span>&#123;</span><br><span class="line">  target = vm;</span><br><span class="line">  updateListeners(listeners, oldListeners || &#123;&#125;, add, remove, vm);</span><br><span class="line">  target = <span class="literal">undefined</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>target</code>是子组件的<code>vm</code>，<code>listeners</code>是父组件<code>template</code>中定义在子组件标签上的事件处理函数。我们的<code>add</code>和<code>remove</code>在这里其实利用的是<code>$on/$once</code>和<code>$off</code>，而不是<code>addEventListeners</code>和<code>removeEventListeners</code>。</p>
+<p>所以真相大白了：<strong>父组件针对子组件的非<code>native</code>事件监听函数，其实最后是传到了子组件内部的自定义事件处理流程中，只不过这些函数已经绑定了父组件的<code>this</code>。</strong></p>
+<p>那么<code>native</code>事件呢？</p>
+<p>在<code>patch</code>中调用完子组件的<code>init</code>钩子后，会继续调用<code>initComponent</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initComponent</span>(<span class="params">vnode, insertedVnodeQueue</span>) </span>&#123;</span><br><span class="line">  vnode.elm = vnode.componentInstance.$el;</span><br><span class="line">  <span class="keyword">if</span> (isPatchable(vnode)) &#123;</span><br><span class="line">    <span class="comment">// 此时vnode是子组件的vnode如vue-component-1-my-component，同时vnode.elm指向子组件的根元素，</span></span><br><span class="line">    <span class="comment">// 所以在经过invokeCreateHooks的8个钩子处理后，会将vnode.data上的</span></span><br><span class="line">    <span class="comment">// 各种属性都放到vnode.elm上，比如class、style、data.on</span></span><br><span class="line">    invokeCreateHooks(vnode, insertedVnodeQueue);</span><br><span class="line">    setScope(vnode); <span class="comment">// 尝试为vnode.elm添加scopeId attribute</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们的<code>native</code>事件在生成<code>vnode</code>时被放到了<code>data.on</code>上，在<code>invokeCreateHooks</code>中就会被处理：<code>events</code>这个子<code>module</code>会将<code>data.on</code>上的事件处理函数放到<code>vnode.elm</code>也就是子组件的根元素上，底层用的是<code>addEventListener/removeEventListener</code>，具体请看此前讲解<code>patch</code>处理的文章。</p>
+<p>这样我们就知道了：<strong>父组件放到子组件标签上的<code>native</code>事件处理，其实最后还是放到了子组件的根元素上，这样当子组件中的元素节点触发事件时，就会冒泡到子组件根元素上，事件得到处理。事件处理函数的<code>this</code>依然事先就被绑定到了父组件的<code>vm</code>上。</strong></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/10/vue-sourcecode-12-patch-diff/" rel="next" title="Vue源码解析12-patch中的diff算法">
+                <i class="fa fa-chevron-left"></i> Vue源码解析12-patch中的diff算法
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/17/vue-sourcecode-14-directives-overview/" rel="prev" title="Vue源码解析14-指令处理概述">
+                Vue源码解析14-指令处理概述 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#DOM-事件"><span class="nav-number">1.</span> <span class="nav-text">DOM 事件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#compile-阶段转为-AST"><span class="nav-number">1.1.</span> <span class="nav-text">compile 阶段转为 AST</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#generate-阶段生成-render-字符串"><span class="nav-number">1.2.</span> <span class="nav-text">generate 阶段生成 render 字符串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#patch-阶段添加事件处理到-DOM-上"><span class="nav-number">1.3.</span> <span class="nav-text">patch 阶段添加事件处理到 DOM 上</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义事件"><span class="nav-number">2.</span> <span class="nav-text">自定义事件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#on"><span class="nav-number">2.1.</span> <span class="nav-text">$on</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#once"><span class="nav-number">2.2.</span> <span class="nav-text">$once</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#off"><span class="nav-number">2.3.</span> <span class="nav-text">$off</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#emit"><span class="nav-number">3.</span> <span class="nav-text">$emit</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义组件-DOM-事件"><span class="nav-number">4.</span> <span class="nav-text">自定义组件 DOM 事件</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

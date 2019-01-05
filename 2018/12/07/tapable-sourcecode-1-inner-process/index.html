@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,Tabpable,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="最近在尝试学习webpack的源码，其实很早前就知道webpack的plugin体系核心是tapable，然后在webpack的入口代码里就看到了它的身影，索性先来研读下tapable的内部原理，这篇文章就是用来帮助大家理解它。 直接看仓库的readme其实还是挺抽象的，容易被那些钩子概念弄晕，所以这篇文章会针对每个钩子举一些例子，并将tapable在内部的相应运行代码贴出来，个人经验觉得这样对于">
+<meta name="keywords" content="javascript,Tabpable">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tapable源码解析1-内部逻辑处理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/12/07/tapable-sourcecode-1-inner-process/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="最近在尝试学习webpack的源码，其实很早前就知道webpack的plugin体系核心是tapable，然后在webpack的入口代码里就看到了它的身影，索性先来研读下tapable的内部原理，这篇文章就是用来帮助大家理解它。 直接看仓库的readme其实还是挺抽象的，容易被那些钩子概念弄晕，所以这篇文章会针对每个钩子举一些例子，并将tapable在内部的相应运行代码贴出来，个人经验觉得这样对于">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://user-gold-cdn.xitu.io/2018/3/31/1627c9c828c20aa1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.514Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tapable源码解析1-内部逻辑处理">
+<meta name="twitter:description" content="最近在尝试学习webpack的源码，其实很早前就知道webpack的plugin体系核心是tapable，然后在webpack的入口代码里就看到了它的身影，索性先来研读下tapable的内部原理，这篇文章就是用来帮助大家理解它。 直接看仓库的readme其实还是挺抽象的，容易被那些钩子概念弄晕，所以这篇文章会针对每个钩子举一些例子，并将tapable在内部的相应运行代码贴出来，个人经验觉得这样对于">
+<meta name="twitter:image" content="https://user-gold-cdn.xitu.io/2018/3/31/1627c9c828c20aa1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/12/07/tapable-sourcecode-1-inner-process/">
+
+
+
+
+
+  <title>tapable源码解析1-内部逻辑处理 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/12/07/tapable-sourcecode-1-inner-process/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tapable源码解析1-内部逻辑处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-07T12:20:00+08:00">
+                2018-12-07
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>最近在尝试学习<code>webpack</code>的源码，其实很早前就知道<code>webpack</code>的<code>plugin</code>体系核心是<a href="https://github.com/webpack/tapable" target="_blank" rel="noopener"><code>tapable</code></a>，然后在<code>webpack</code>的入口代码里就看到了它的身影，索性先来研读下<code>tapable</code>的内部原理，这篇文章就是用来帮助大家理解它。</p>
+<p>直接看仓库的<code>readme</code>其实还是挺抽象的，容易被那些钩子概念弄晕，所以这篇文章会针对每个钩子举一些例子，并将<code>tapable</code>在内部的相应运行代码贴出来，个人经验觉得这样对于理解各个钩子帮助很大。</p>
+<p>个人在学习源码时参考了<a href="https://juejin.im/post/5abf33f16fb9a028e46ec352#heading-13" target="_blank" rel="noopener"><code>掘金上的这篇博客</code></a></p>
+<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><p><code>tapable</code>可以理解为一个高级的事件发布订阅系统。相信很多人或多或少知道观察者模式实现的事件监听模型，例如<code>window.addEventListeners</code>或<code>vue</code>里的<code>$emit、$on</code>，他们的共同特点是所有的事件回调之间完全独立，针对一个特定<code>event</code>的回调函数列表在调用时是顺序同步执行的。</p>
+<p><code>tapable</code>打破了这一限制，扩展了事件订阅和发布的各种执行时机，包括同步顺序执行、异步顺序执行、异步并行执行等等，同时回调函数之间也可以进行一定程度关联，例如<code>BailHook</code>可以将前一个回调函数的返回值当做后一个回调函数的入参。</p>
+<p><code>tapable</code>包含的钩子类型有：</p>
+<ul>
+<li><code>SyncHook</code></li>
+<li><code>SyncBailHook</code></li>
+<li><code>SyncWaterfallHook</code></li>
+<li><code>SyncLoopHook</code></li>
+<li><code>AsyncParallelHook</code></li>
+<li><code>AsyncParallelBailHook</code></li>
+<li><code>AsyncSeriesHook</code></li>
+<li><code>AsyncSeriesBailHook</code></li>
+<li><code>AsyncSeriesWaterfallHook</code></li>
+</ul>
+<p>上述以<code>Async</code>开头的是异步钩子，异步又分为并发执行和串行执行，<code>Sync</code>开头的是同步钩子，用一个图来分类：</p>
+<p><img src="https://user-gold-cdn.xitu.io/2018/3/31/1627c9c828c20aa1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1" alt="https://user-gold-cdn.xitu.io/2018/3/31/1627c9c828c20aa1?imageView2/0/w/1280/h/960/format/webp/ignore-error/1"></p>
+<p>另外先简要总结下各个钩子的用法：</p>
+<table>
+<thead>
+<tr>
+<th>钩子名称</th>
+<th>执行方式</th>
+<th>作用顺序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SyncHook</code></td>
+<td>同步串行</td>
+<td>监听函数之间完全独立</td>
+</tr>
+<tr>
+<td><code>SyncBailHook</code></td>
+<td>同步串行</td>
+<td>上一个回调函数的返回值如果不为空，后面的回调就再也不会执行</td>
+</tr>
+<tr>
+<td><code>SyncWaterfallHook</code></td>
+<td>同步串行</td>
+<td>上一个回调函数的返回值如果不为空，就会传给下一个回调函数当做参数</td>
+</tr>
+<tr>
+<td><code>SyncLoopHook</code></td>
+<td>同步循环</td>
+<td>只要某个监听的回调返回值不为空就会一直循环执行这个回调，直到返回空才会执行下一个回调</td>
+</tr>
+<tr>
+<td><code>AsyncParallelHook</code></td>
+<td>异步并行</td>
+<td>只要前一个回调函数不抛异常，在执行完后就会顺序执行后一个回调。若抛异常，会直接执行<code>callAsync</code>等触发函数绑定的回调，并将异常当做参数</td>
+</tr>
+<tr>
+<td><code>AsyncParallelBailHook</code></td>
+<td>异步并行</td>
+<td>只要前一个回调的返回值不为空或者抛异常，就会直接执行<code>callAsync</code>等触发函数绑定的回调，后续的tap回调不会被执行</td>
+</tr>
+<tr>
+<td><code>AsyncSeriesHook</code></td>
+<td>异步串行</td>
+<td>不关心每个tap回调参数的返回值，除非抛出异常会直接调用<code>callAsync</code>等触发函数绑定的回调,此时后续tap回调均不会执行</td>
+</tr>
+<tr>
+<td><code>AsyncSeriesBailHook</code></td>
+<td>异步串行</td>
+<td>回调的返回值不为空，或者回调抛出异常，就会直接执行<code>callAsync</code>等触发函数绑定的回调函数</td>
+</tr>
+<tr>
+<td><code>AsyncSeriesWaterfallHook</code></td>
+<td>异步串行</td>
+<td>上一个监听函数的返回值, 可以作为下一个监听函数的参数。 如果监听函数报错，直接执行<code>callAsync</code>等触发函数绑定的回调,后续tap回调不会被执行</td>
+</tr>
+</tbody>
+</table>
+<p>上述的异步钩子在注册监听和触发时有多种组合，这里会讲述3种：</p>
+<ul>
+<li><code>tap</code> <--> <code>callAsync</code></--></li>
+<li><code>tapAsync</code> <---> <code>callAsync</code></---></li>
+<li><code>tapPromise</code> <---> <code>promise</code></---></li>
+</ul>
+<h1 id="主体逻辑"><a href="#主体逻辑" class="headerlink" title="主体逻辑"></a>主体逻辑</h1><p>各个钩子最后都是生成一段匿名函数来执行的，生成这段函数的代码视钩子不同而不同，这里会以最简单的<code>SyncHook</code>为例，其他的钩子都类似，大家自己去看就好。</p>
+<p>我们所用的测试代码为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> &#123; SyncHook &#125; = <span class="built_in">require</span>(<span class="string">"tapable"</span>);</span><br><span class="line"><span class="comment">// 所有的构造函数都接收一个可选的参数，这个参数是一个字符串的数组，表示所有注册的监听函数会接收的参数</span></span><br><span class="line"><span class="keyword">let</span> queue = <span class="keyword">new</span> SyncHook([<span class="string">"name"</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 各个钩子回调顺序执行，回调之间没有关联</span></span><br><span class="line"></span><br><span class="line">queue.tap( <span class="string">"1"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"> name</span>) </span>&#123;</span><br><span class="line">	<span class="comment">// tap 的第一个参数是用来标识订阅的函数的</span></span><br><span class="line">  <span class="built_in">console</span>.log(name, <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"1"</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">queue.tap(<span class="string">"2"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(name, <span class="number">2</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发布</span></span><br><span class="line">queue.call(<span class="string">"webpack"</span>);</span><br></pre></td></tr></table></figure>
+<p>上述代码的执行结果为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">webpack <span class="number">1</span></span><br><span class="line">webpack <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><p>我们从入口<code>SyncHook</code>着手:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SyncHook</span> <span class="keyword">extends</span> <span class="title">Hook</span> </span>&#123;</span><br><span class="line">	tapAsync() &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">"tapAsync is not supported on a SyncHook"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	tapPromise() &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">"tapPromise is not supported on a SyncHook"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	compile(options) &#123;</span><br><span class="line">		factory.setup(<span class="keyword">this</span>, options);</span><br><span class="line">		<span class="keyword">return</span> factory.create(options);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到继承了<code>Hook</code>父类：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hook</span> </span>&#123;</span><br><span class="line">	<span class="keyword">constructor</span>(args) &#123;</span><br><span class="line">		<span class="keyword">if</span> (!<span class="built_in">Array</span>.isArray(args)) args = [];</span><br><span class="line">		<span class="keyword">this</span>._args = args;</span><br><span class="line">		<span class="keyword">this</span>.taps = [];</span><br><span class="line">		<span class="keyword">this</span>.call = <span class="keyword">this</span>._call;</span><br><span class="line">		<span class="keyword">this</span>._x = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	compile(options) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">"Abstract: should be overriden"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_createCall(type) &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 注册事件监听回调</span></span><br><span class="line">	tap(options, fn) &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  tapAsync(options, fn) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">  tapPromise(options, fn) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">	_resetCompilation() &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_insert(item) &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>省略了一些无关代码，可以看到<code>new SyncHook</code>并没有做什么事，只是一些变量的初始化。<code>SyncHook.prototype.tap</code>会开始注册事件监听：</p>
+<h2 id="注册监听"><a href="#注册监听" class="headerlink" title="注册监听"></a>注册监听</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">tap(options, fn) &#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> options === <span class="string">"string"</span>) options = &#123; <span class="attr">name</span>: options &#125;;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> options !== <span class="string">"object"</span> || options === <span class="literal">null</span>)</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(</span><br><span class="line">				<span class="string">"Invalid arguments to tap(options: Object, fn: function)"</span></span><br><span class="line">			);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> options.name !== <span class="string">"string"</span> || options.name === <span class="string">""</span>)</span><br><span class="line">			<span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">"Missing name for tap"</span>);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> options.context !== <span class="string">"undefined"</span>) deprecateContext();</span><br><span class="line">		options = <span class="built_in">Object</span>.assign(&#123; <span class="attr">type</span>: <span class="string">"sync"</span>, <span class="attr">fn</span>: fn &#125;, options);</span><br><span class="line">		options = <span class="keyword">this</span>._runRegisterInterceptors(options);</span><br><span class="line">		<span class="keyword">this</span>._insert(options);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>tap</code>的第一个参数可以是字符串或对象，最后我们的<code>options</code>通常包含3个属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">options = &#123;</span><br><span class="line">  type: <span class="built_in">String</span>,</span><br><span class="line">  name: <span class="built_in">String</span>,</span><br><span class="line">  fn: <span class="function">(<span class="params">...args</span>) =&gt;</span> any</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有了这3个属性，我们就知道每个事件监听的基本信息。之后的<code>_insert</code>会将这个事件监听插入到内部的<code>taps</code>数组中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">	_insert(item) &#123;</span><br><span class="line">		<span class="keyword">this</span>._resetCompilation();</span><br><span class="line">    <span class="comment">// before、stage属性我们先略过。。。</span></span><br><span class="line">		<span class="keyword">let</span> before;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> item.before === <span class="string">"string"</span>) &#123;</span><br><span class="line">			before = <span class="keyword">new</span> <span class="built_in">Set</span>([item.before]);</span><br><span class="line">		&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(item.before)) &#123;</span><br><span class="line">			before = <span class="keyword">new</span> <span class="built_in">Set</span>(item.before);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">let</span> stage = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> item.stage === <span class="string">"number"</span>) &#123;</span><br><span class="line">			stage = item.stage;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">let</span> i = <span class="keyword">this</span>.taps.length;</span><br><span class="line">    <span class="comment">// 插入排序</span></span><br><span class="line">		<span class="keyword">while</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">			i--;</span><br><span class="line">			<span class="keyword">const</span> x = <span class="keyword">this</span>.taps[i];</span><br><span class="line">			<span class="keyword">this</span>.taps[i + <span class="number">1</span>] = x;</span><br><span class="line">			<span class="keyword">const</span> xStage = x.stage || <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">if</span> (before) &#123;</span><br><span class="line">				<span class="keyword">if</span> (before.has(x.name)) &#123;</span><br><span class="line">					before.delete(x.name);</span><br><span class="line">					<span class="keyword">continue</span>;</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">if</span> (before.size &gt; <span class="number">0</span>) &#123;</span><br><span class="line">					<span class="keyword">continue</span>;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (xStage &gt; stage) &#123;</span><br><span class="line">				<span class="keyword">continue</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			i++;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">this</span>.taps[i] = item;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>_insert</code>会将<code>taps</code>数组按照<code>stage</code>字段升序，这样我们的注册步骤就完成了，其他的两种注册方式<code>tapAsync</code>、<code>tapPromise</code>类似就不说了。</p>
+<h2 id="触发回调"><a href="#触发回调" class="headerlink" title="触发回调"></a>触发回调</h2><p><code>Hook.prototype.call</code>用于触发回调，类似的还有<code>callAsync</code>、<code>promise</code>，这里我们只说<code>call</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createCompileDelegate</span>(<span class="params">name, type</span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="function"><span class="keyword">function</span> <span class="title">lazyCompileHook</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">		<span class="keyword">this</span>[name] = <span class="keyword">this</span>._createCall(type);</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>[name](...args);</span><br><span class="line">	&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.defineProperties(Hook.prototype, &#123;</span><br><span class="line">	_call: &#123;</span><br><span class="line">		value: createCompileDelegate(<span class="string">"call"</span>, <span class="string">"sync"</span>),</span><br><span class="line">		configurable: <span class="literal">true</span>,</span><br><span class="line">		writable: <span class="literal">true</span></span><br><span class="line">	&#125;,</span><br><span class="line">	_promise: &#123;</span><br><span class="line">		value: createCompileDelegate(<span class="string">"promise"</span>, <span class="string">"promise"</span>),</span><br><span class="line">		configurable: <span class="literal">true</span>,</span><br><span class="line">		writable: <span class="literal">true</span></span><br><span class="line">	&#125;,</span><br><span class="line">	_callAsync: &#123;</span><br><span class="line">		value: createCompileDelegate(<span class="string">"callAsync"</span>, <span class="string">"async"</span>),</span><br><span class="line">		configurable: <span class="literal">true</span>,</span><br><span class="line">		writable: <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>_createCall</code>用于生成每种钩子的匿名调用函数，然后我们调用<code>call</code>时传入的参数会透传给这个匿名函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">_createCall(type) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>.compile(&#123;</span><br><span class="line">		taps: <span class="keyword">this</span>.taps, <span class="comment">// tap、tapPromsie、tapAsync的事件监听对象，通常包含type、fn、name 3个成员</span></span><br><span class="line">		interceptors: <span class="keyword">this</span>.interceptors,</span><br><span class="line">		args: <span class="keyword">this</span>._args, <span class="comment">// new Hook时传入的数组</span></span><br><span class="line">		type: type <span class="comment">// sync、promise、async 3种</span></span><br><span class="line">	&#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此处<code>compile</code>就是各种钩子的差别了，这里我们还是以<code>SyncHook</code>为例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SyncHookCodeFactory</span> <span class="keyword">extends</span> <span class="title">HookCodeFactory</span> </span>&#123;</span><br><span class="line">	content(&#123; onError, onResult, onDone, rethrowIfPossible &#125;) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.callTapsSeries(&#123;</span><br><span class="line">			onError: <span class="function">(<span class="params">i, err</span>) =&gt;</span> onError(err),</span><br><span class="line">			onDone,</span><br><span class="line">			rethrowIfPossible</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> factory = <span class="keyword">new</span> SyncHookCodeFactory();</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SyncHook</span> <span class="keyword">extends</span> <span class="title">Hook</span> </span>&#123;</span><br><span class="line">	compile(options) &#123;</span><br><span class="line">		factory.setup(<span class="keyword">this</span>, options);</span><br><span class="line">		<span class="keyword">return</span> factory.create(options);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到内部调用了<code>HookCodeFactory</code>的<code>setup</code>和<code>create</code>方法，只能继续往下看了。。。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HookCodeFactory</span> </span>&#123;</span><br><span class="line">  setup(instance, options) &#123;</span><br><span class="line">    <span class="comment">// t.fn是每个事件监听函数，t通常还包含name和type两个属性</span></span><br><span class="line">		instance._x = options.taps.map(<span class="function"><span class="params">t</span> =&gt;</span> t.fn);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	create(options) &#123;</span><br><span class="line">		<span class="keyword">this</span>.init(options);</span><br><span class="line">		<span class="keyword">let</span> fn;</span><br><span class="line">		<span class="keyword">switch</span> (<span class="keyword">this</span>.options.type) &#123;</span><br><span class="line">			<span class="keyword">case</span> <span class="string">"sync"</span>:</span><br><span class="line">				fn = <span class="keyword">new</span> <span class="built_in">Function</span>(</span><br><span class="line">					<span class="keyword">this</span>.args(),</span><br><span class="line">					<span class="string">'"use strict";\n'</span> +</span><br><span class="line">						<span class="keyword">this</span>.header() +</span><br><span class="line">            <span class="comment">// content随不同钩子的不同调用方式不同，构造生成函数的主体部分</span></span><br><span class="line">						<span class="keyword">this</span>.content(&#123;</span><br><span class="line">							onError: <span class="function"><span class="params">err</span> =&gt;</span> <span class="string">`throw <span class="subst">$&#123;err&#125;</span>;\n`</span>,</span><br><span class="line">							onResult: <span class="function"><span class="params">result</span> =&gt;</span> <span class="string">`return <span class="subst">$&#123;result&#125;</span>;\n`</span>,</span><br><span class="line">							onDone: <span class="function"><span class="params">()</span> =&gt;</span> <span class="string">""</span>,</span><br><span class="line">							rethrowIfPossible: <span class="literal">true</span></span><br><span class="line">						&#125;)</span><br><span class="line">				);</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			<span class="comment">// ...</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">this</span>.deinit();</span><br><span class="line">		<span class="keyword">return</span> fn;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * @param &#123;&#123; type: "sync" | "promise" | "async", taps: Array&lt;Tap&gt;, interceptors: Array&lt;Interceptor&gt; &#125;&#125; options</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	init(options) &#123;</span><br><span class="line">		<span class="keyword">this</span>.options = options;</span><br><span class="line">		<span class="keyword">this</span>._args = options.args.slice();</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后返回的<code>fn</code>就是我们真正会调用的匿名函数，它是先用字符串拼接然后<code>new Function</code>构造而成。</p>
+<p>匿名函数由3个部分组成，<code>args()</code>用于生成参数列表，<code>header()</code>用于生成一些初始化语句，<code>content()</code>是函数的主体部分。</p>
+<p><strong>args</strong>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 构造生成函数的参数</span></span><br><span class="line">args(&#123; before, after &#125; = &#123;&#125;) &#123;</span><br><span class="line">	<span class="keyword">let</span> allArgs = <span class="keyword">this</span>._args;</span><br><span class="line">	<span class="keyword">if</span> (before) allArgs = [before].concat(allArgs);</span><br><span class="line">	<span class="keyword">if</span> (after) allArgs = allArgs.concat(after);</span><br><span class="line">	<span class="keyword">if</span> (allArgs.length === <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> allArgs.join(<span class="string">", "</span>);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在我们的测试代码中，最后会返回<code>&quot;name&quot;</code>这个字符串。</p>
+<p><strong>header</strong>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 构造生成函数的一些初始化语句</span></span><br><span class="line">header() &#123;</span><br><span class="line">	<span class="keyword">let</span> code = <span class="string">""</span>;</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.needContext()) &#123;</span><br><span class="line">     <span class="comment">// context特定即将废弃，这里可以认为始终为false</span></span><br><span class="line">		code += <span class="string">"var _context = &#123;&#125;;\n"</span>;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		code += <span class="string">"var _context;\n"</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	code += <span class="string">"var _x = this._x;\n"</span>;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 暂且忽略interceptors...</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> code;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>嗯，<code>args</code>和<code>header</code>都很简单，随后就是最复杂的<code>content</code>部分了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SyncHookCodeFactory</span> <span class="keyword">extends</span> <span class="title">HookCodeFactory</span> </span>&#123;</span><br><span class="line">	content(&#123; onError, onResult, onDone, rethrowIfPossible &#125;) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.callTapsSeries(&#123;</span><br><span class="line">			onError: <span class="function">(<span class="params">i, err</span>) =&gt;</span> onError(err),</span><br><span class="line">			onDone,</span><br><span class="line">			rethrowIfPossible</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>内部调用了<code>HookCodeFactory.prototype.callTapsSeries</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">callTapsSeries(&#123; onError, onResult, onDone, rethrowIfPossible &#125;) &#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.options.taps.length === <span class="number">0</span>) <span class="keyword">return</span> onDone();</span><br><span class="line">	<span class="keyword">const</span> firstAsync = <span class="keyword">this</span>.options.taps.findIndex(<span class="function"><span class="params">t</span> =&gt;</span> t.type !== <span class="string">"sync"</span>);</span><br><span class="line">	<span class="keyword">const</span> next = <span class="function"><span class="params">i</span> =&gt;</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (i &gt;= <span class="keyword">this</span>.options.taps.length) &#123;</span><br><span class="line">			<span class="keyword">return</span> onDone();</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">const</span> done = <span class="function"><span class="params">()</span> =&gt;</span> next(i + <span class="number">1</span>);</span><br><span class="line">		<span class="keyword">const</span> doneBreak = <span class="function"><span class="params">skipDone</span> =&gt;</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (skipDone) <span class="keyword">return</span> <span class="string">""</span>;</span><br><span class="line">			<span class="keyword">return</span> onDone();</span><br><span class="line">		&#125;;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.callTap(i, &#123;</span><br><span class="line">			onError: <span class="function"><span class="params">error</span> =&gt;</span> onError(i, error, done, doneBreak),</span><br><span class="line">			onResult:</span><br><span class="line">				onResult &amp;&amp;</span><br><span class="line">				(<span class="function"><span class="params">result</span> =&gt;</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> onResult(i, result, done, doneBreak);</span><br><span class="line">				&#125;),</span><br><span class="line">			onDone:</span><br><span class="line">				!onResult &amp;&amp;</span><br><span class="line">				(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">					<span class="keyword">return</span> done();</span><br><span class="line">				&#125;),</span><br><span class="line">			rethrowIfPossible:</span><br><span class="line">				rethrowIfPossible &amp;&amp; (firstAsync &lt; <span class="number">0</span> || i &lt; firstAsync)</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">return</span> next(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">callTap(tapIndex, &#123; onError, onResult, onDone, rethrowIfPossible &#125;) &#123;</span><br><span class="line">	<span class="keyword">let</span> code = <span class="string">""</span>;</span><br><span class="line">	<span class="keyword">let</span> hasTapCached = <span class="literal">false</span>;</span><br><span class="line">	<span class="comment">// interceptors暂且忽略。。。</span></span><br><span class="line">	code += <span class="string">`var _fn<span class="subst">$&#123;tapIndex&#125;</span> = <span class="subst">$&#123;<span class="keyword">this</span>.getTapFn(tapIndex)&#125;</span>;\n`</span>;</span><br><span class="line">	<span class="keyword">const</span> tap = <span class="keyword">this</span>.options.taps[tapIndex];</span><br><span class="line">	<span class="keyword">switch</span> (tap.type) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="string">"sync"</span>:</span><br><span class="line">			<span class="keyword">if</span> (!rethrowIfPossible) &#123;</span><br><span class="line">				code += <span class="string">`var _hasError<span class="subst">$&#123;tapIndex&#125;</span> = false;\n`</span>;</span><br><span class="line">				code += <span class="string">"try &#123;\n"</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (onResult) &#123;</span><br><span class="line">				code += <span class="string">`var _result<span class="subst">$&#123;tapIndex&#125;</span> = _fn<span class="subst">$&#123;tapIndex&#125;</span>(<span class="subst">$&#123;<span class="keyword">this</span>.args(&#123;</span></span></span><br><span class="line"><span class="string"><span class="subst">					before: tap.context ? <span class="string">"_context"</span> : <span class="literal">undefined</span></span></span></span><br><span class="line"><span class="string"><span class="subst">				&#125;</span>)&#125;);\n`</span>;</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				code += <span class="string">`_fn<span class="subst">$&#123;tapIndex&#125;</span>(<span class="subst">$&#123;<span class="keyword">this</span>.args(&#123;</span></span></span><br><span class="line"><span class="string"><span class="subst">					before: tap.context ? <span class="string">"_context"</span> : <span class="literal">undefined</span></span></span></span><br><span class="line"><span class="string"><span class="subst">				&#125;</span>)&#125;);\n`</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (!rethrowIfPossible) &#123;</span><br><span class="line">				code += <span class="string">"&#125; catch(_err) &#123;\n"</span>;</span><br><span class="line">				code += <span class="string">`_hasError<span class="subst">$&#123;tapIndex&#125;</span> = true;\n`</span>;</span><br><span class="line">				code += onError(<span class="string">"_err"</span>);</span><br><span class="line">				code += <span class="string">"&#125;\n"</span>;</span><br><span class="line">				code += <span class="string">`if(!_hasError<span class="subst">$&#123;tapIndex&#125;</span>) &#123;\n`</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (onResult) &#123;</span><br><span class="line">				code += onResult(<span class="string">`_result<span class="subst">$&#123;tapIndex&#125;</span>`</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (onDone) &#123;</span><br><span class="line">				code += onDone();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (!rethrowIfPossible) &#123;</span><br><span class="line">				code += <span class="string">"&#125;\n"</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="comment">// async和promise忽略。。。</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> code;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码很容易看晕，基本上是不断的调用<code>next</code>函数，从<code>next(0)</code>开始生成执行第一个事件监听的代码，随后<code>next(1)</code>生成第二个。。。</p>
+<p>最后我们生成的<code>fn</code>匿名函数为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">anonymous</span> (<span class="params"> name</span>) </span>&#123;</span><br><span class="line"><span class="meta">  "use strict"</span>;</span><br><span class="line">  <span class="keyword">var</span> _context;</span><br><span class="line">  <span class="keyword">var</span> _x = <span class="keyword">this</span>._x;</span><br><span class="line">  <span class="keyword">var</span> _fn0 = _x[ <span class="number">0</span> ];</span><br><span class="line">  _fn0( name );</span><br><span class="line">  <span class="keyword">var</span> _fn1 = _x[ <span class="number">1</span> ];</span><br><span class="line">  _fn1( name );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说我们示范代码中的<code>queue.call(&quot;webpack&quot;)</code>最终是执行<code>anonymous(&#39;webpack&#39;)</code>，<code>_x</code>是每个具体的监听函数数组，如第一次调用<code>tap</code>时传入的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span>(<span class="params"> name</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(name, <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"1"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以<code>SyncHook</code>生成的匿名函数逻辑就是同步顺序执行各个<code>tap</code>回调函数。</p>
+<h1 id="interceptor"><a href="#interceptor" class="headerlink" title="interceptor"></a>interceptor</h1><p>可以监听钩子的各个生命周期，按照官网的解释，一个<code>interceptor</code>是一个对象，可以包含的成员有：</p>
+<ul>
+<li><code>call: (...args) =&gt; void</code> 在事件监听函数执行前被调用，获得的<code>args</code>参数与监听函数相同，每个<code>interceptor</code>只会调用一次<code>call</code></li>
+<li><code>tap: (tap: Tap) =&gt; void</code> 在<code>HookCodeFactory.prototype.callTap</code>中生成，针对每个回调均会调用一次。</li>
+<li><code>loop: (...args) =&gt; void</code> 用于<code>LoopHook</code></li>
+<li><code>register: (tap: Tap) =&gt; Tap | undefined</code> 在注册事件监听回调时被调用。</li>
+</ul>
+<p>上面的<code>tapInfo</code>对象是<code>Hook.tapXXX</code>时构造的，通常包含<code>name、type、fn</code> 3个成员。</p>
+<p>我们先看看添加了<code>interceptor</code>后的匿名函数变成什么样,需要修改测试代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">queue.tap( <span class="string">"tap1"</span>, <span class="function"><span class="keyword">function</span>(<span class="params"> name</span>) </span>&#123;</span><br><span class="line">	<span class="comment">// tap 的第一个参数是用来标识订阅的函数的</span></span><br><span class="line">  <span class="built_in">console</span>.log(name, <span class="number">1</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="string">"1"</span>;</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">queue.tap(<span class="string">"tap2"</span>, <span class="function"><span class="keyword">function</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">	<span class="built_in">console</span>.log(name, <span class="number">2</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">queue.intercept( &#123;</span><br><span class="line">  <span class="comment">// tapInfo是Hook.tapXXX时构造的，包含name、type、fn3个参数</span></span><br><span class="line">  tap: <span class="function">(<span class="params"> tapInfo </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`<span class="subst">$&#123;tapInfo.name1&#125;</span>：`</span>, tapInfo );</span><br><span class="line">  &#125;,</span><br><span class="line">  call: <span class="function">(<span class="params"> name </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`intercept call, <span class="subst">$&#123;name&#125;</span>`</span> );</span><br><span class="line">  &#125;,</span><br><span class="line">  register: <span class="function">(<span class="params"> tapInfo </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`intercept register <span class="subst">$&#123; tapInfo.name&#125;</span>`</span> );</span><br><span class="line">    <span class="keyword">return</span> tapInfo;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; )</span><br><span class="line"></span><br><span class="line">queue.intercept( &#123;</span><br><span class="line">  <span class="comment">// tapInfo是Hook.tapXXX时构造的，包含name、type、fn3个参数</span></span><br><span class="line">  tap: <span class="function">(<span class="params"> tapInfo </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`<span class="subst">$&#123;tapInfo.name&#125;</span> taped`</span> );</span><br><span class="line">  &#125;,</span><br><span class="line">  call: <span class="function">(<span class="params"> name </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`intercept called, <span class="subst">$&#123;name&#125;</span>`</span> );</span><br><span class="line">  &#125;,</span><br><span class="line">  register: <span class="function">(<span class="params"> tapInfo </span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">`intercept register <span class="subst">$&#123; tapInfo.name&#125;</span>`</span> );</span><br><span class="line">    <span class="keyword">return</span> tapInfo;</span><br><span class="line">  &#125;</span><br><span class="line">&#125; )</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发布</span></span><br><span class="line">queue.call(<span class="string">"webpack"</span>);</span><br></pre></td></tr></table></figure>
+<p>运行结果为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">`</span></span><br><span class="line"><span class="string">intercept register tap1</span></span><br><span class="line"><span class="string">intercept register tap2</span></span><br><span class="line"><span class="string">intercept called, webpack</span></span><br><span class="line"><span class="string">tap1 taped</span></span><br><span class="line"><span class="string">webpack 1</span></span><br><span class="line"><span class="string">tap2 taped</span></span><br><span class="line"><span class="string">webpack 2</span></span><br><span class="line"><span class="string">`</span></span><br></pre></td></tr></table></figure>
+<p>可以看到先是触发了<code>interceptor</code>的<code>register</code>回调，随后执行了一次<code>call</code>回调，最后针对每个事件监听都执行了一次<code>tap</code>回调。接下来看看<code>tapable</code>内部分别是在什么时候处理了<code>interceptor</code>。</p>
+<h2 id="Hook-prototype-intercept-添加新的interceptor"><a href="#Hook-prototype-intercept-添加新的interceptor" class="headerlink" title="Hook.prototype.intercept 添加新的interceptor"></a>Hook.prototype.intercept 添加新的interceptor</h2><p>在<code>Hook.prototype.intercept</code>添加每一个<code>interceptor</code>，在此时会立即执行一次<code>register</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">/**</span></span><br><span class="line"><span class="comment">  * interceptor类似于切面，在钩子的register和call阶段分别会触发interceptor.register和call钩子</span></span><br><span class="line"><span class="comment">  *</span></span><br><span class="line"><span class="comment">  * @author liubin.frontend</span></span><br><span class="line"><span class="comment">  * @param &#123;&#123;</span></span><br><span class="line"><span class="comment">  *  call: (...params)=&gt;void,</span></span><br><span class="line"><span class="comment">  *  register:(tap)=&gt;Tap,</span></span><br><span class="line"><span class="comment">  *  loop: (...args) =&gt; void,</span></span><br><span class="line"><span class="comment">  *  tap: (tap: Tap) =&gt; void</span></span><br><span class="line"><span class="comment">  * &#125;&#125; interceptor</span></span><br><span class="line"><span class="comment">  * @memberof Hook</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line"> intercept(interceptor) &#123;</span><br><span class="line">	<span class="keyword">this</span>._resetCompilation();</span><br><span class="line">	<span class="keyword">this</span>.interceptors.push(<span class="built_in">Object</span>.assign(&#123;&#125;, interceptor));</span><br><span class="line">	<span class="keyword">if</span> (interceptor.register) &#123;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.taps.length; i++) &#123;</span><br><span class="line">       <span class="comment">// 调用interceptor.register钩子</span></span><br><span class="line">			<span class="keyword">this</span>.taps[i] = interceptor.register(<span class="keyword">this</span>.taps[i]);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Hook-prototype-tapXXX新注册的事件监听接受老的interceptor洗礼"><a href="#Hook-prototype-tapXXX新注册的事件监听接受老的interceptor洗礼" class="headerlink" title="Hook.prototype.tapXXX新注册的事件监听接受老的interceptor洗礼"></a>Hook.prototype.tapXXX新注册的事件监听接受老的interceptor洗礼</h2><p>在<code>Hook.prototype.tapXXX</code>中除了<code>_insert</code>外还执行了<code>_runRegisterInterceptors</code>，在这里会执行<code>register</code>回调：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">_runRegisterInterceptors(options) &#123;</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">const</span> interceptor <span class="keyword">of</span> <span class="keyword">this</span>.interceptors) &#123;</span><br><span class="line">			<span class="keyword">if</span> (interceptor.register) &#123;</span><br><span class="line">				<span class="keyword">const</span> newOptions = interceptor.register(options);</span><br><span class="line">				<span class="keyword">if</span> (newOptions !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">					options = newOptions;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> options;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="HookCodeFactory-prototype-header执行interceptor-call"><a href="#HookCodeFactory-prototype-header执行interceptor-call" class="headerlink" title="HookCodeFactory.prototype.header执行interceptor.call"></a>HookCodeFactory.prototype.header执行interceptor.call</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 构造生成函数的一些初始化语句</span></span><br><span class="line">	header() &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.options.interceptors.length; i++) &#123;</span><br><span class="line">			<span class="keyword">const</span> interceptor = <span class="keyword">this</span>.options.interceptors[i];</span><br><span class="line">			<span class="keyword">if</span> (interceptor.call) &#123;</span><br><span class="line">				code += <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.getInterceptor(i)&#125;</span>.call(<span class="subst">$&#123;<span class="keyword">this</span>.args(&#123;</span></span></span><br><span class="line"><span class="string"><span class="subst">					before: interceptor.context ? <span class="string">"_context"</span> : <span class="literal">undefined</span></span></span></span><br><span class="line"><span class="string"><span class="subst">				&#125;</span>)&#125;);\n`</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> code;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>很容易可以看出来，每个<code>interceptor</code>会执行一次<code>call</code>钩子。</p>
+<h2 id="HookCodeFactory-prototype-callTap执行interceptor-tap"><a href="#HookCodeFactory-prototype-callTap执行interceptor-tap" class="headerlink" title="HookCodeFactory.prototype.callTap执行interceptor.tap"></a>HookCodeFactory.prototype.callTap执行interceptor.tap</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">callTap(tapIndex, &#123; onError, onResult, onDone, rethrowIfPossible &#125;) &#123;</span><br><span class="line">	<span class="keyword">let</span> code = <span class="string">""</span>;</span><br><span class="line">	<span class="keyword">let</span> hasTapCached = <span class="literal">false</span>;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; <span class="keyword">this</span>.options.interceptors.length; i++) &#123;</span><br><span class="line">		<span class="keyword">const</span> interceptor = <span class="keyword">this</span>.options.interceptors[i];</span><br><span class="line">		<span class="keyword">if</span> (interceptor.tap) &#123;</span><br><span class="line">			<span class="keyword">if</span> (!hasTapCached) &#123;</span><br><span class="line">				code += <span class="string">`var _tap<span class="subst">$&#123;tapIndex&#125;</span> = <span class="subst">$&#123;<span class="keyword">this</span>.getTap(tapIndex)&#125;</span>;\n`</span>; <span class="comment">// 如 var _tap0 = _taps[0];</span></span><br><span class="line">				hasTapCached = <span class="literal">true</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			code += <span class="string">`<span class="subst">$&#123;<span class="keyword">this</span>.getInterceptor(i)&#125;</span>.tap(<span class="subst">$&#123;</span></span></span><br><span class="line"><span class="string"><span class="subst">				interceptor.context ? <span class="string">"_context, "</span> : <span class="string">""</span></span></span></span><br><span class="line"><span class="string"><span class="subst">			&#125;</span>_tap<span class="subst">$&#123;tapIndex&#125;</span>);\n`</span>; <span class="comment">// 如 _interceptors[0].tap( _tap0 )</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">   <span class="comment">// ...</span></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>每一个事件监听都会执行一次<code>callTap</code>，每一次<code>callTap</code>会挨个执行所有的<code>interceptors</code>的<code>tap</code>钩子。</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>以上我们通过分析<code>tapable</code>的内部代码初步了解了其内部逻辑，虽然使用的是最简单的<code>SyncHook</code>作为示范，不过其他钩子也是遵照类似的逻辑，大家可以像上面那样将最终生成的匿名函数打印出来，这样就对每种钩子的运行逻辑非常清楚了。我会在下一篇文章挨个讲解每种钩子，会直接对照例子和生成的代码来帮助大家理解。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Tabpable/" rel="tag"># Tabpable</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/18/vue-sourcecode-18-v-model-of-custom-component/" rel="next" title="Vue源码解析18-自定义组件的v-model">
+                <i class="fa fa-chevron-left"></i> Vue源码解析18-自定义组件的v-model
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/12/07/tapable-sourcecode-2-explain-all-hooks/" rel="prev" title="tapable源码解析2-解析各个钩子内部原理">
+                tapable源码解析2-解析各个钩子内部原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#主体逻辑"><span class="nav-number">2.</span> <span class="nav-text">主体逻辑</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#初始化"><span class="nav-number">2.1.</span> <span class="nav-text">初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注册监听"><span class="nav-number">2.2.</span> <span class="nav-text">注册监听</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#触发回调"><span class="nav-number">2.3.</span> <span class="nav-text">触发回调</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#interceptor"><span class="nav-number">3.</span> <span class="nav-text">interceptor</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Hook-prototype-intercept-添加新的interceptor"><span class="nav-number">3.1.</span> <span class="nav-text">Hook.prototype.intercept 添加新的interceptor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Hook-prototype-tapXXX新注册的事件监听接受老的interceptor洗礼"><span class="nav-number">3.2.</span> <span class="nav-text">Hook.prototype.tapXXX新注册的事件监听接受老的interceptor洗礼</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HookCodeFactory-prototype-header执行interceptor-call"><span class="nav-number">3.3.</span> <span class="nav-text">HookCodeFactory.prototype.header执行interceptor.call</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HookCodeFactory-prototype-callTap执行interceptor-tap"><span class="nav-number">3.4.</span> <span class="nav-text">HookCodeFactory.prototype.callTap执行interceptor.tap</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#小结"><span class="nav-number">4.</span> <span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

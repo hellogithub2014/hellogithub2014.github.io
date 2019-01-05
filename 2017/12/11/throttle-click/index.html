@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JavaScript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="我们的移动端项目上一直有一个 BUG：在很多页面里点击某些元素会跳转到另一个页面（如点击列表项进入详情页）。但是如果手机配置较低，有时候如果快速多次点击，可能会重复显示多个目标页面。 即使在微信上也会这种情况，试试快速多次点击“朋友圈”按钮。 解决这个问题需要第一次点击元素总会立即生效，但接下来的一段时间内内如果继续点击这个元素，会直接被忽略掉。 正好一直有在学习 RXJS，它是解决这种事件流的利">
+<meta name="keywords" content="JavaScript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="移动端点击元素重复跳转同一页面BUG解决方案">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/12/11/throttle-click/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="我们的移动端项目上一直有一个 BUG：在很多页面里点击某些元素会跳转到另一个页面（如点击列表项进入详情页）。但是如果手机配置较低，有时候如果快速多次点击，可能会重复显示多个目标页面。 即使在微信上也会这种情况，试试快速多次点击“朋友圈”按钮。 解决这个问题需要第一次点击元素总会立即生效，但接下来的一段时间内内如果继续点击这个元素，会直接被忽略掉。 正好一直有在学习 RXJS，它是解决这种事件流的利">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://reactivex.io/documentation/operators/images/debounce.png">
+<meta property="og:image" content="http://reactivex.io/rxjs/img/throttleTime.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.483Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="移动端点击元素重复跳转同一页面BUG解决方案">
+<meta name="twitter:description" content="我们的移动端项目上一直有一个 BUG：在很多页面里点击某些元素会跳转到另一个页面（如点击列表项进入详情页）。但是如果手机配置较低，有时候如果快速多次点击，可能会重复显示多个目标页面。 即使在微信上也会这种情况，试试快速多次点击“朋友圈”按钮。 解决这个问题需要第一次点击元素总会立即生效，但接下来的一段时间内内如果继续点击这个元素，会直接被忽略掉。 正好一直有在学习 RXJS，它是解决这种事件流的利">
+<meta name="twitter:image" content="http://reactivex.io/documentation/operators/images/debounce.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/12/11/throttle-click/">
+
+
+
+
+
+  <title>移动端点击元素重复跳转同一页面BUG解决方案 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/12/11/throttle-click/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">移动端点击元素重复跳转同一页面BUG解决方案</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-11T21:00:00+08:00">
+                2017-12-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们的移动端项目上一直有一个 BUG：在很多页面里点击某些元素会跳转到另一个页面（如点击列表项进入详情页）。但是如果手机配置较低，有时候如果快速多次点击，可能会重复显示多个目标页面。 即使在微信上也会这种情况，试试快速多次点击“朋友圈”按钮。</p>
+<p>解决这个问题需要第一次点击元素总会立即生效，但接下来的一段时间内内如果继续点击这个元素，会直接被忽略掉。</p>
+<p>正好一直有在学习 RXJS，它是解决这种事件流的利器。</p>
+<h1 id="尝试-debounce"><a href="#尝试-debounce" class="headerlink" title="尝试 debounce"></a>尝试 debounce</h1><p>最开始想到的是<code>debounce</code>操作符，它的“珠宝图”如下：<br><img src="http://reactivex.io/documentation/operators/images/debounce.png" alt=""></p>
+<p>仔细想想发现不对，它会延迟第一次的点击，第一次点击后的指定时间内没有第二次点击才会生效。</p>
+<h1 id="throttleTime"><a href="#throttleTime" class="headerlink" title="throttleTime"></a>throttleTime</h1><p>我们需要的是一种和 debounce 正好相反的操作符，也就是我们的<code>throttleTime</code>。如果指定时间内发射了两个值，<code>debounce</code>会忽略前一个，<code>throttleTime</code>会忽略后一个。它的“珠宝图”：</p>
+<p><img src="http://reactivex.io/rxjs/img/throttleTime.png" alt=""></p>
+<p>他还有一个相关的操作符<code>throttle</code>，不是写死的时间间隔，具体参见<a href="http://reactivex.io/rxjs/class/es6/Observable.js~Observable.html#instance-method-throttle" target="_blank" rel="noopener">throttle</a></p>
+<h1 id="封装代码"><a href="#封装代码" class="headerlink" title="封装代码"></a>封装代码</h1><p>可以肯定，在整个移动应用间都需要解决上述 BUG，最好的办法是写一个通用的指令，这样大家在用起来时最方便。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">import &#123; Directive, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output &#125; from "@angular/core";</span><br><span class="line">import &#123; Subject &#125; from "rxjs/Subject";</span><br><span class="line">import &#123; Subscription &#125; from "rxjs/Subscription";</span><br><span class="line"></span><br><span class="line">@<span class="keyword">Directive</span>( &#123;</span><br><span class="line">  // tslint:disable-next-line:directive-selector</span><br><span class="line">  <span class="selector-tag">selector</span>: "<span class="selector-attr">[throttleClick]</span>",</span><br><span class="line">&#125; )</span><br><span class="line"><span class="selector-tag">export</span> <span class="selector-tag">class</span> <span class="selector-tag">ThrottleClickDirective</span> <span class="selector-tag">implements</span> <span class="selector-tag">OnInit</span>, <span class="selector-tag">OnDestroy</span> &#123;</span><br><span class="line">  @Input() public throttleTime = 3000;</span><br><span class="line">  @<span class="keyword">Output</span>() public throttleClick = new EventEmitter();</span><br><span class="line">  private clicks = new Subject&lt;any&gt;();</span><br><span class="line">  <span class="selector-tag">private</span> <span class="selector-tag">subscription</span>: <span class="selector-tag">Subscription</span>;</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">constructor</span>() &#123;</span><br><span class="line">    //</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">public</span> <span class="selector-tag">ngOnInit</span>() &#123;</span><br><span class="line">    this.subscription = this.clicks</span><br><span class="line">      <span class="selector-class">.throttleTime</span>( <span class="selector-tag">this</span><span class="selector-class">.throttleTime</span> )</span><br><span class="line">      .subscribe(( e ) =&gt; this.throttleClick.emit( e ) );</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="selector-tag">public</span> <span class="selector-tag">ngOnDestroy</span>() &#123;</span><br><span class="line">    this.subscription.unsubscribe();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  @<span class="keyword">HostListener</span>( <span class="string">"click"</span>, [ <span class="string">"$event"</span> ] )</span><br><span class="line">  public clickEvent( event: MouseEvent ) &#123;</span><br><span class="line">    <span class="selector-tag">event</span><span class="selector-class">.preventDefault</span>();</span><br><span class="line">    <span class="selector-tag">event</span><span class="selector-class">.stopPropagation</span>();</span><br><span class="line">    <span class="selector-tag">this</span><span class="selector-class">.clicks</span><span class="selector-class">.next</span>( <span class="selector-tag">event</span> );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h1><p>在需要解决上述 BUG 上元素上，将 click 改为  throttleClick 即可，例如</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">tappable</span> (<span class="attr">click</span>)=<span class="string">"test()"</span>&gt;</span>以前大家是这么写的<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>改为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">tappable</span> (<span class="attr">throttleClick</span>)=<span class="string">"test()"</span>&gt;</span>现在把click改成throttleClick就行啦~~~<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果觉得 3 秒不合适，也可以改掉</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">tappable</span> (<span class="attr">throttleClick</span>)=<span class="string">"test()"</span> [<span class="attr">throttleTime</span>]=<span class="string">"5000"</span>&gt;</span>现在时间的阈值改成5秒啦~~~<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/11/using-storage-event-for-communication-between-webapp/" rel="next" title="使用StorageEvent在web app间通信">
+                <i class="fa fa-chevron-left"></i> 使用StorageEvent在web app间通信
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/14/pre-cache-static-files-of-web-app/" rel="prev" title="一种web app资源预缓存方案">
+                一种web app资源预缓存方案 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#尝试-debounce"><span class="nav-number">1.</span> <span class="nav-text">尝试 debounce</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#throttleTime"><span class="nav-number">2.</span> <span class="nav-text">throttleTime</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#封装代码"><span class="nav-number">3.</span> <span class="nav-text">封装代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何使用"><span class="nav-number">4.</span> <span class="nav-text">如何使用</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

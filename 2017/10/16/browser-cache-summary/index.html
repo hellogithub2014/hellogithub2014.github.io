@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CACHE,HTTP,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前段时间在优化我们的一个前端项目，其中利用了浏览器的缓存机制，学习了一部分相关的HTTP头部的作用。索性翻出以前收藏的关于浏览器缓存机制的文章，做一个总结。相关参考文章放在了最后。 相关 Http 头部缓存过期策略Cache-Control介绍一个复合规则, 包含多种值, 横跨 存储策略, 过期策略 两种, 同时在请求头和响应头都可设置.语法为: 1Cache-Control : cache-di">
+<meta name="keywords" content="CACHE,HTTP">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器缓存机制总结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/10/16/browser-cache-summary/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前段时间在优化我们的一个前端项目，其中利用了浏览器的缓存机制，学习了一部分相关的HTTP头部的作用。索性翻出以前收藏的关于浏览器缓存机制的文章，做一个总结。相关参考文章放在了最后。 相关 Http 头部缓存过期策略Cache-Control介绍一个复合规则, 包含多种值, 横跨 存储策略, 过期策略 两种, 同时在请求头和响应头都可设置.语法为: 1Cache-Control : cache-di">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_jpg/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiaKQwGVkpNouAbTtzny711xHhvaqx17f4LW0Q0pRd8QNyV3zHav5FJoA/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8QQY6OlmIfZneIDnRHLhMdVoMgRiaZhibRDzG7VZBwmeKex2cpsrytl4g/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8Cg1zJUEs2bxE7RwfeibUW9dn8YFEzrgRUn5ZPJxghtZtoTicxnYZNVWQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8OL46IMZjco3MibibBb1ZHQkLibIhpryUtssj6hwvAngxMaiaSqNjBUtjrA/640?tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8HmoFicWNkZ8GO2O5p5zFVmHE9QFVeyuAy7AdDL8T6iavSxqpx16fG6JA/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8Dncr9JUkdCoEAzR0hNbLFy5ibQMEpRrtKeibFxaw3Kvof30jFMiaTxDOw/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8LHN0WGnaGXBDicP53guP8a8WC6z86MUnaI9FYzlGtUPArXQ5TBuFVZw/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_png/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiatpllYvmaSkITypicxGYoibFsf8uYZc6oQVZCwkjJOKxn2VkZgicJAWZlw/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_png/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiaJLiaBJlOqZhGhSLkCAyEwUaTSFRBgwbE6Ikn2zfyb4G45uz8k7XQR2A/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8QPtnpWibru4c8oWYr4M7sVZ8BD3uyZ5aRGOswgjIiajWf1qLlFaia2lwQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhzibibjvTnvDefteCshCIl3YiaZr6HjicmUxWfbBT3tBlmI0PlyMicj8oelw/640?tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhyicOTeTavSBYGSicyt8ac5hvbZ2ZLDVyLXfaW1Qicb23sYrAOFepfk6sA/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhEt5013jpXNj73fH1HyMvBHRYo9EKibcIvC6JH6unUED7KKWnIdx7sbg/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器缓存机制总结">
+<meta name="twitter:description" content="前段时间在优化我们的一个前端项目，其中利用了浏览器的缓存机制，学习了一部分相关的HTTP头部的作用。索性翻出以前收藏的关于浏览器缓存机制的文章，做一个总结。相关参考文章放在了最后。 相关 Http 头部缓存过期策略Cache-Control介绍一个复合规则, 包含多种值, 横跨 存储策略, 过期策略 两种, 同时在请求头和响应头都可设置.语法为: 1Cache-Control : cache-di">
+<meta name="twitter:image" content="http://mmbiz.qpic.cn/mmbiz_jpg/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiaKQwGVkpNouAbTtzny711xHhvaqx17f4LW0Q0pRd8QNyV3zHav5FJoA/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/10/16/browser-cache-summary/">
+
+
+
+
+
+  <title>浏览器缓存机制总结 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/10/16/browser-cache-summary/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浏览器缓存机制总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-16T23:00:00+08:00">
+                2017-10-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前段时间在优化我们的一个前端项目，其中利用了浏览器的缓存机制，学习了一部分相关的<code>HTTP</code>头部的作用。索性翻出以前收藏的关于浏览器缓存机制的文章，做一个总结。相关参考文章放在了最后。</p>
+<h1 id="相关-Http-头部"><a href="#相关-Http-头部" class="headerlink" title="相关 Http 头部"></a>相关 Http 头部</h1><h2 id="缓存过期策略"><a href="#缓存过期策略" class="headerlink" title="缓存过期策略"></a>缓存过期策略</h2><h3 id="Cache-Control"><a href="#Cache-Control" class="headerlink" title="Cache-Control"></a>Cache-Control</h3><h4 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h4><p>一个复合规则, 包含多种值, 横跨 存储策略, 过期策略 两种, 同时在请求头和响应头都可设置.语法为:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control : cache-directive</span><br></pre></td></tr></table></figure>
+<p><code>Cache-directive</code>共有如下 12 种(其中请求中指令 7 种, 响应中指令 9 种):</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz_jpg/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiaKQwGVkpNouAbTtzny711xHhvaqx17f4LW0Q0pRd8QNyV3zHav5FJoA/640?wx_fmt=jpeg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<p><strong><code>Cache-Control</code>有三种属性：缓冲能力、过期时间和二次验证</strong>。</p>
+<p>首先是<strong>缓冲能力，它关注的是缓存到什么地方，和是否应该被缓存</strong>。他的几个重要的属性是：</p>
+<ul>
+<li><code>private</code>：表示它只应该存在本地缓存；</li>
+<li><code>public</code>：表示它既可以存在共享缓存，也可以被存在本地缓存；</li>
+<li><code>no-cache</code>：表示不论是本地缓存还是共享缓存，在使用它以前必须用缓存里的值来重新验证；</li>
+<li><code>no-store</code>：表示不允许被缓存。</li>
+</ul>
+<p>第二个是<strong>过期时间，很显然它关注的是内容可以被缓存多久</strong>。它的几个重要的属性是：</p>
+<ul>
+<li><code>max-age=&lt;seconds&gt;</code>：设置缓存时间，设置单位为秒。本地缓存和共享缓存都可以；</li>
+<li><code>s-maxage=&lt;seconds&gt;</code>：覆盖 max-age 属性。只在共享缓存中起作用。</li>
+</ul>
+<p>最后一个是<strong>二次验证，表示精细控制</strong>。它的几个重要属性是：</p>
+<ul>
+<li><code>immutable</code>：表示文档是不能更改的。</li>
+<li><code>must-revalidate</code>：表示客户端（浏览器）必须检查代理服务器上是否存在，即使它已经本地缓存了也要检查。</li>
+<li><code>proxy-revalidata</code>：表示共享缓存（CDN）必须要检查源是否存在，即使已经有缓存。</li>
+</ul>
+<h4 id="详细解释"><a href="#详细解释" class="headerlink" title="详细解释"></a>详细解释</h4><ol>
+<li><p><strong><code>max-age</code></strong></p>
+<p>指定设置缓存最大的有效时间，定义的是时间长短。当浏览器向服务器发送请求后，在 max-age 这段时间浏览器就不会再向服务器发送请求了。</p>
+<p><strong><code>max-age</code>会覆盖掉<code>Expires</code></strong></p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8QQY6OlmIfZneIDnRHLhMdVoMgRiaZhibRDzG7VZBwmeKex2cpsrytl4g/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+</li>
+<li><p><strong><code>s-maxage</code></strong></p>
+<p>同<code>max-age</code>，只用于共享缓存（比如 CDN 缓存）</p>
+<p>比如，当<code>s-maxage</code>=60 时，在这 60 秒中，即使更新了<code>CDN</code>的内容，浏览器也不会进行请求。也就是说<code>max-age</code>用于普通缓存，而<code>s-maxage</code>用于代理缓存。<strong>如果存在<code>s-maxage</code>，则会覆盖掉<code>max-age</code>和<code>Expires</code></strong>。</p>
+</li>
+<li><p><strong><code>public</code></strong></p>
+<p>指定响应会被缓存，并且在多用户间共享。也就是下图的意思。<strong>如果没有指定<code>public</code>还是<code>private</code>，则默认为<code>public</code></strong></p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8Cg1zJUEs2bxE7RwfeibUW9dn8YFEzrgRUn5ZPJxghtZtoTicxnYZNVWQ/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+</li>
+<li><p><strong><code>private</code></strong></p>
+<p>只作为私有的缓存（见下图），不能在用户间共享。<strong>如果要求<code>HTTP</code>认证，响应会自动设置为<code>private</code></strong>。</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8OL46IMZjco3MibibBb1ZHQkLibIhpryUtssj6hwvAngxMaiaSqNjBUtjrA/640?tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+</li>
+<li><p><strong><code>no-cache</code></strong></p>
+<p>指定不缓存响应，表明资源不进行缓存.</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8HmoFicWNkZ8GO2O5p5zFVmHE9QFVeyuAy7AdDL8T6iavSxqpx16fG6JA/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<p><strong>但是设置了<code>no-cache</code>之后并不代表浏览器不缓存，而是在缓存前要向服务器确认资源是否被更改</strong>。因此有的时候只设置 no-cache 防止缓存还是不够保险，还可以加上 private 指令，将过期时间设为过去的时间。</p>
+</li>
+<li><p><strong><code>no-store</code></strong></p>
+<p>绝对禁止缓存，每次请求资源都要从服务器重新获取.</p>
+</li>
+</ol>
+<h4 id="如何选-cache-control"><a href="#如何选-cache-control" class="headerlink" title="如何选 cache-control"></a>如何选 cache-control</h4><p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8Dncr9JUkdCoEAzR0hNbLFy5ibQMEpRrtKeibFxaw3Kvof30jFMiaTxDOw/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h3 id="Expires"><a href="#Expires" class="headerlink" title="Expires"></a>Expires</h3><p>缓存过期时间，用来指定资源到期的时间，是服务器端的具体的时间点。<code>Expires</code>是 Web 服务器响应消息头字段，在响应 http 请求时告诉浏览器在过期时间前浏览器可以直接从浏览器缓存取数据，而无需再次请求。</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8LHN0WGnaGXBDicP53guP8a8WC6z86MUnaI9FYzlGtUPArXQ5TBuFVZw/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h3 id="Pragma"><a href="#Pragma" class="headerlink" title="Pragma"></a>Pragma</h3><p>http1.0 字段, 通常设置为<code>Pragma:no-cache</code>, 作用同<code>Cache-Control:no-cache</code>. 当一个<code>no-cache</code>请求发送给一个不遵循 HTTP/1.1 的服务器时, 客户端应该包含 pragma 指令.</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz_png/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiatpllYvmaSkITypicxGYoibFsf8uYZc6oQVZCwkjJOKxn2VkZgicJAWZlw/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h3 id="浏览器默认过期时间"><a href="#浏览器默认过期时间" class="headerlink" title="浏览器默认过期时间"></a>浏览器默认过期时间</h3><p>如果<code>Expires</code>、<code>Cache-Control: max-age</code> 或 <code>Cache-Control:s-maxage</code> 都没有在响应头中出现, 并且也没有其它缓存的设置, 那么浏览器默认会采用一个启发式的算法, 通常会取响应头的<code>Date</code>值- <code>Last-Modified</code>值的 10%作为缓存时间.</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz_png/meG6Vo0Mevh6ZLFbFgzubdHxOMcGJqZiaJLiaBJlOqZhGhSLkCAyEwUaTSFRBgwbE6Ikn2zfyb4G45uz8k7XQR2A/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h2 id="缓存协商"><a href="#缓存协商" class="headerlink" title="缓存协商"></a>缓存协商</h2><h3 id="Last-modified-、If-Modified-Since、If-Unmodified-Since"><a href="#Last-modified-、If-Modified-Since、If-Unmodified-Since" class="headerlink" title="Last-modified 、If-Modified-Since、If-Unmodified-Since"></a>Last-modified 、If-Modified-Since、If-Unmodified-Since</h3><p><code>Last-modified</code>是服务器端文件的最后修改时间，是检查服务器端资源是否更新的一种方式。当浏览器本地缓存过期时，会向服务器传送<code>If-Modified-Since</code>报头，询问<code>Last-Modified</code>时间点之后资源是否被修改过。如果没有修改，则返回码为 304，使用缓存；如果修改过，则再次去服务器请求资源，返回码和首次请求相同为 200，资源为服务器最新资源。</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib2D4WtKTwFjia6LOoTP8ZGh8QPtnpWibru4c8oWYr4M7sVZ8BD3uyZ5aRGOswgjIiajWf1qLlFaia2lwQ/640?wx_fmt=png&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h3 id="ETag、If-Match、If-None-Match"><a href="#ETag、If-Match、If-None-Match" class="headerlink" title="ETag、If-Match、If-None-Match"></a>ETag、If-Match、If-None-Match</h3><p><code>ETag</code>是服务器根据实体内容生成的一段 hash 字符串，标识资源的状态。浏览器本地缓存过期时会将这串字符串放入<code>If-None-Match</code>请求头部传回服务器，验证资源是否已经修改。如果修改了返回 200，反之返回 304.</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhzibibjvTnvDefteCshCIl3YiaZr6HjicmUxWfbBT3tBlmI0PlyMicj8oelw/640?tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<p><strong><code>ETag</code>的优先级高于<code>Last-modified</code>.使用<code>ETag</code>可以解决<code>Last-modified</code>存在的一些问题</strong>：</p>
+<ul>
+<li><p>某些服务器不能精确得到资源的最后修改时间，这样就无法通过最后修改时间判断资源是否更新</p>
+</li>
+<li><p>如果资源修改非常频繁，在秒以下的时间内进行修改，而<code>Last-modified</code>只能精确到秒</p>
+</li>
+<li><p>一些资源的最后修改时间改变了，但是内容没改变，使用<code>ETag</code>就认为资源还是没有修改的。</p>
+</li>
+</ul>
+<h1 id="from-memory-cache-和-from-disk-cache"><a href="#from-memory-cache-和-from-disk-cache" class="headerlink" title="from memory cache 和 from disk cache"></a>from memory cache 和 from disk cache</h1><p>浏览器读取缓存的顺序是 <code>memory</code> -&gt; <code>disk</code>.</p>
+<p><strong>from memory cache</strong> 表示使用内存中的缓存</p>
+<ul>
+<li>快速读取： 会将编译解析后的文件，直接存入该进程的内存中，占据该进程一定的内存资源，以方便下次运行时的快速读取</li>
+<li>时效性： 一旦该进程关闭，则该进程的内存会清空。</li>
+</ul>
+<p><strong>from disk cache</strong>表示使用的是硬盘中的缓存， 读取缓存需要对该缓存存放的硬盘文件进行 IO 操作，然后重新解析该缓存内容，读取复杂，比 memory cache 慢。</p>
+<blockquote>
+<p>在浏览器中，会在 js 和图片等文件解析执行后直接放在内存缓存中，那么当刷新页面时只需直接从内从缓存中读取；而 css 文件则会存入硬盘文件中，每次都是<code>from disk cache</code>.</p>
+</blockquote>
+<h1 id="LocalStorage、SessionStorage"><a href="#LocalStorage、SessionStorage" class="headerlink" title="LocalStorage、SessionStorage"></a>LocalStorage、SessionStorage</h1><p>参考【4】描述了微信文章是如何使用<code>LocalStorage</code>缓存资源的。</p>
+<h1 id="缓存机制流程图"><a href="#缓存机制流程图" class="headerlink" title="缓存机制流程图"></a>缓存机制流程图</h1><p>盗用两张图</p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhyicOTeTavSBYGSicyt8ac5hvbZ2ZLDVyLXfaW1Qicb23sYrAOFepfk6sA/640?wx_fmt=jpeg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<p><img src="http://mmbiz.qpic.cn/mmbiz/zPh0erYjkib1skDuWvye9Lj3nYy9xy9ZhEt5013jpXNj73fH1HyMvBHRYo9EKibcIvC6JH6unUED7KKWnIdx7sbg/640?wx_fmt=jpeg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<h1 id="CDN-缓存"><a href="#CDN-缓存" class="headerlink" title="CDN 缓存"></a>CDN 缓存</h1><p>我们的内网项目中没有用到<code>CDN</code>，对这块也没有实际经验，不过参考【6】、【7】对这块有很详细的描述。</p>
+<p>其中【7】中描述了<code>cookie</code>对缓存的影响，值得一看。</p>
+<h1 id="禁用缓存"><a href="#禁用缓存" class="headerlink" title="禁用缓存"></a>禁用缓存</h1><ol>
+<li>文件添加版本号</li>
+<li><code>CDN</code>清除缓存，见参考【7】</li>
+<li>利用<code>Cache-Control</code>中的指令，比如<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cache-Control:no-store,max-age=0</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="http://mp.weixin.qq.com/s/MLmxeIlX6Zy7Uy98SEWbFw" target="_blank" rel="noopener">浅谈 Web 缓存</a></li>
+<li><a href="http://mp.weixin.qq.com/s/yf0pWRFM7v9Ru3D9_JhGPQ" target="_blank" rel="noopener">浏览器缓存机制剖析</a></li>
+<li><a href="http://mp.weixin.qq.com/s/F5gvzdi6MTwCFXV9LKs9NQ" target="_blank" rel="noopener">浏览器缓存机制浅析</a></li>
+<li><a href="http://mp.weixin.qq.com/s/NplDQkr2JYaEwTVcRd0vwQ" target="_blank" rel="noopener">localStorage 的黑科技-js 和 css 缓存机制</a></li>
+<li><a href="http://mp.weixin.qq.com/s/yf0pWRFM7v9Ru3D9_JhGPQ" target="_blank" rel="noopener">浏览器缓存机制剖析</a></li>
+<li><a href="http://mp.weixin.qq.com/s/tluGR6Xc2tCjtaOLWO9q6Q" target="_blank" rel="noopener">掌握 HTTP 缓存——从请求到响应过程的一切（上）</a></li>
+<li><a href="http://mp.weixin.qq.com/s/0ZgM2jW2a0OUziBMYVnsOg" target="_blank" rel="noopener">掌握 HTTP 缓存——从请求到响应过程的一切（下）</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CACHE/" rel="tag"># CACHE</a>
+          
+            <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/" rel="next" title="如何写一个pc端通用的分页组件">
+                <i class="fa fa-chevron-left"></i> 如何写一个pc端通用的分页组件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/18/chrome-devtools-elemnts&console/" rel="prev" title="Chrome开发者工具之elements&console面板使用总结">
+                Chrome开发者工具之elements&console面板使用总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#相关-Http-头部"><span class="nav-number">1.</span> <span class="nav-text">相关 Http 头部</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存过期策略"><span class="nav-number">1.1.</span> <span class="nav-text">缓存过期策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cache-Control"><span class="nav-number">1.1.1.</span> <span class="nav-text">Cache-Control</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#详细解释"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">详细解释</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何选-cache-control"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">如何选 cache-control</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Expires"><span class="nav-number">1.1.2.</span> <span class="nav-text">Expires</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Pragma"><span class="nav-number">1.1.3.</span> <span class="nav-text">Pragma</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#浏览器默认过期时间"><span class="nav-number">1.1.4.</span> <span class="nav-text">浏览器默认过期时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缓存协商"><span class="nav-number">1.2.</span> <span class="nav-text">缓存协商</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Last-modified-、If-Modified-Since、If-Unmodified-Since"><span class="nav-number">1.2.1.</span> <span class="nav-text">Last-modified 、If-Modified-Since、If-Unmodified-Since</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ETag、If-Match、If-None-Match"><span class="nav-number">1.2.2.</span> <span class="nav-text">ETag、If-Match、If-None-Match</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#from-memory-cache-和-from-disk-cache"><span class="nav-number">2.</span> <span class="nav-text">from memory cache 和 from disk cache</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#LocalStorage、SessionStorage"><span class="nav-number">3.</span> <span class="nav-text">LocalStorage、SessionStorage</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#缓存机制流程图"><span class="nav-number">4.</span> <span class="nav-text">缓存机制流程图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CDN-缓存"><span class="nav-number">5.</span> <span class="nav-text">CDN 缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#禁用缓存"><span class="nav-number">6.</span> <span class="nav-text">禁用缓存</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

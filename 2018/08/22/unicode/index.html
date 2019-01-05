@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="unicode,javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="UnicodeUnicode 是一个字符集，它把目前世界上所有字符包含在内了。每个符号都与一个称为代码点（Code Point）的十六进制数对应，代码点通常有一个U+前缀，例如： 1234U+0041 =&amp;gt;  AU+0061 =&amp;gt;   aU+2603 =&amp;gt;   ☃U+1F4A9  =&amp;gt; 💩 Code Point 的取值范围是U+0000~U+10FFFF，大约有 110">
+<meta name="keywords" content="unicode,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unicode">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/08/22/unicode/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="UnicodeUnicode 是一个字符集，它把目前世界上所有字符包含在内了。每个符号都与一个称为代码点（Code Point）的十六进制数对应，代码点通常有一个U+前缀，例如： 1234U+0041 =&amp;gt;  AU+0061 =&amp;gt;   aU+2603 =&amp;gt;   ☃U+1F4A9  =&amp;gt; 💩 Code Point 的取值范围是U+0000~U+10FFFF，大约有 110">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/Unicode-Panel.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/u-flag-compatiable.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/utf-8编码.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/utf-8编码示例.jpeg">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.502Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Unicode">
+<meta name="twitter:description" content="UnicodeUnicode 是一个字符集，它把目前世界上所有字符包含在内了。每个符号都与一个称为代码点（Code Point）的十六进制数对应，代码点通常有一个U+前缀，例如： 1234U+0041 =&amp;gt;  AU+0061 =&amp;gt;   aU+2603 =&amp;gt;   ☃U+1F4A9  =&amp;gt; 💩 Code Point 的取值范围是U+0000~U+10FFFF，大约有 110">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/Unicode/Unicode-Panel.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/08/22/unicode/">
+
+
+
+
+
+  <title>Unicode | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/08/22/unicode/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Unicode</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-22T22:20:00+08:00">
+                2018-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Unicode"><a href="#Unicode" class="headerlink" title="Unicode"></a>Unicode</h1><p>Unicode 是一个字符集，它把目前世界上所有字符包含在内了。每个符号都与一个称为代码点（<code>Code Point</code>）的十六进制数对应，代码点通常有一个<code>U+</code>前缀，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">U+<span class="number">0041</span> =&gt;  A</span><br><span class="line">U+<span class="number">0061</span> =&gt;   a</span><br><span class="line">U+<span class="number">2603</span> =&gt;   ☃</span><br><span class="line">U+<span class="number">1</span>F4A9  =&gt; 💩</span><br></pre></td></tr></table></figure>
+<p>Code Point 的取值范围是<code>U+0000</code>~<code>U+10FFFF</code>，大约有 110 万个。 为了好组织，所有<code>Code Point</code>被分为了 17 个<code>Plane</code>，每个<code>Plane</code>中大约包含 65K 个<code>Code Point</code>。 见<a href="https://en.wikipedia.org/wiki/Unicode" target="_blank" rel="noopener">维基百科</a></p>
+<p><img src="/images/Unicode/Unicode-Panel.png" alt=""></p>
+<p>其中第一个<code>Plane</code>（U+0000~ U+FFFF）被称为<code>BMP</code>（<code>Basic Multilingual Plane</code>）,包含了几乎所有的常用字符。</p>
+<p>剩下的其他<code>Plane</code>（U+10000~ U+10FFFF）被称为<code>supplementary planes（SMP）</code>或者  <code>astral planes</code>，对应的字符通常称为<code>astral symbols</code>。</p>
+<p>另： 汉字的 Unicode 码点范围<a href="http://www.qqxiuzi.cn/zh/hanzi-unicode-bianma.php" target="_blank" rel="noopener">可以参照这里</a></p>
+<h1 id="JavaScript-中的字符表示"><a href="#JavaScript-中的字符表示" class="headerlink" title="JavaScript 中的字符表示"></a>JavaScript 中的字符表示</h1><h2 id="转义"><a href="#转义" class="headerlink" title="转义"></a>转义</h2><p>在 js 中的字符串中可以使用<code>\u</code>来转义各种 Unicode 字符：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'\u0041'</span>; <span class="comment">// A</span></span><br><span class="line"><span class="string">'\u0061'</span>; <span class="comment">// a</span></span><br><span class="line"><span class="string">'\u4E25'</span>; <span class="comment">// 严</span></span><br><span class="line"><span class="string">'\u2603'</span>; <span class="comment">// ☃</span></span><br></pre></td></tr></table></figure>
+<p>如果是<code>astral symbols</code>，在 ES5 中是不能被正常转义的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Ὂ<span class="number">9</span>; <span class="comment">// Ὂ9</span></span><br></pre></td></tr></table></figure>
+<p>除非使用他在 js 内部表示的<code>&lt;H，L&gt;</code>形式(下节会描述)：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'\uD83D\uDCA9'</span>; <span class="comment">// 💩    code point: U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>不过在 ES6 可以将代码点放到<code>{}</code>中,也能正常转义了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\u&#123;<span class="number">1</span>F4A9&#125;  <span class="comment">// 💩</span></span><br></pre></td></tr></table></figure>
+<h2 id="内部表示"><a href="#内部表示" class="headerlink" title="内部表示"></a>内部表示</h2><blockquote>
+<p>Internally, JavaScript represents astral symbols as surrogate pairs, and it exposes the separate surrogate halves as separate “characters”. If you represent the symbols using nothing but ECMAScript 5-compatible escape sequences, you’ll see that two escapes are needed for each astral symbol. This is confusing, because humans generally think in terms of Unicode symbols or graphemes instead.</p>
+</blockquote>
+<blockquote>
+<p>大意： 对于 astral symbols，JavaScript 实际上把它拆成了上下两半（H、L）分别来表示，H 和 L 都是 2 个字节。</p>
+</blockquote>
+<p>H、L 的计算公式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">H = <span class="built_in">Math</span>.floor((C - <span class="number">0x10000</span>) / <span class="number">0x400</span>) + <span class="number">0xd800</span>;</span><br><span class="line">L = ((C - <span class="number">0x10000</span>) % <span class="number">0x400</span>) + <span class="number">0xdc00</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// result is : &lt;H,L&gt;</span></span><br></pre></td></tr></table></figure>
+<p>因为 astral symbols 的范围是<code>U+010000 → U+10FFFF</code>，故</p>
+<p><code>H</code>的范围就是 <code>0xD800</code>~<code>0xDBFF</code>， 一共 2^10 个字符<br><code>L</code>的范围就是 <code>0xDC00</code> ~ <code>0xDFFF</code>，一共 2^10 个字符</p>
+<p>因为<code>astral symbols</code>的范围是<code>U+10000</code>~<code>U+10FFFF</code>,一共 2^20 个字符，所以 H 和 L 结合起来，正巧能表示全部的<code>astral symbols</code>。</p>
+<p>例如 “💩”(0x1F4A9)，在 javascript 中实际上使用的 0xD83D 和 0xDCA9 来表示的。</p>
+<p><strong>实际上上述方法就是 UTF-16 编码的思路，具体参见<a href="http://www.ruanyifeng.com/blog/2014/12/unicode.html" target="_blank" rel="noopener">阮一峰的分享</a></strong></p>
+<p>另外，对于 BMP 区间的码点，js 中会直接将码点转为十六进制形式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">U+<span class="number">4E25</span>  =&gt; <span class="number">0x4E25</span></span><br></pre></td></tr></table></figure>
+<h1 id="JavaScript-中的字符串操作"><a href="#JavaScript-中的字符串操作" class="headerlink" title="JavaScript 中的字符串操作"></a>JavaScript 中的字符串操作</h1><h2 id="计算-Unicode-字符长度"><a href="#计算-Unicode-字符长度" class="headerlink" title="计算 Unicode 字符长度"></a>计算 Unicode 字符长度</h2><p>这个长度指的是<strong>人眼</strong>直观的长度（即 Unicode 字符个数）。</p>
+<p>可以利用 H、L 的取值范围构造正则匹配<code>astral symbols</code>，把他们替换成普通字符，然后计算长度：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> regexAstralSymbols = <span class="regexp">/[\uD800-\uDBFF][\uDC00-\uDFFF]/g</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将每个astral symbols装换成一个BMP字符，然后直接计算最终结果的length即可。</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countSymbols</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> string.replace(regexAstralSymbols, <span class="string">'_'</span>).length;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">countSymbols(<span class="string">'😄你好阿，test©'</span>); <span class="comment">// 10</span></span><br></pre></td></tr></table></figure>
+<p>如果使用 ES6 的语法，也可以使用<code>Array.from</code>或者扩散运算符<code>...</code>(二者本质上是同一个东西)：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function countSymbols2(string) &#123;</span><br><span class="line">	return Array.from(string).length;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">countSymbols2(&quot;😄你好阿，test©&quot;) // 10</span><br><span class="line"></span><br><span class="line">function countSymbols3(string) &#123;</span><br><span class="line">	return [...string].length;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">countSymbols3(&quot;😄你好阿，test©&quot;) // 10</span><br></pre></td></tr></table></figure>
+<h2 id="翻转字符串"><a href="#翻转字符串" class="headerlink" title="翻转字符串"></a>翻转字符串</h2><ol>
+<li><p><strong>此前的做法</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reverse</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> string</span><br><span class="line">    .split(<span class="string">''</span>)</span><br><span class="line">    .reverse()</span><br><span class="line">    .join(<span class="string">''</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">reverse(<span class="string">'abc'</span>); <span class="comment">// 'cba'</span></span><br></pre></td></tr></table></figure>
+<p>此方法在处理<code>astral symbols</code>会出现问题：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reverse(<span class="string">'💩'</span>); <span class="comment">// '��'</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>ES6 提供了好一点的解决方法</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reverse2</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(string)</span><br><span class="line">    .reverse()</span><br><span class="line">    .join(<span class="string">''</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">reverse2(<span class="string">'💩珍香'</span>); <span class="comment">// "香珍💩"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>有一个开源库专门针对字符串反转做了处理： <a href="https://github.com/mathiasbynens/esrever" target="_blank" rel="noopener">esrever</a></p>
+</li>
+</ol>
+<h2 id="其他字符串处理方法在面对-Unicode-时的问题"><a href="#其他字符串处理方法在面对-Unicode-时的问题" class="headerlink" title="其他字符串处理方法在面对 Unicode 时的问题"></a>其他字符串处理方法在面对 Unicode 时的问题</h2><ol>
+<li><p><code>fromCharcode</code> - 可以基于<code>code point</code>创建字符串，但只能处理位于 BMP 区间(<code>U+0000</code>~<code>U+FFFF</code>)的 unicode 字符,会直接截断<code>astral symbols</code>的高位字节。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0x0041</span>); <span class="comment">// A</span></span><br><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0x1f4a9</span>); <span class="comment">// ''  U+F4A9, not U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>解决的办法是根据上面计算 H、L 的公式先计算出 H、L,然后再传入<code>String.fromCharCode</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0x1F4A9</span> =&gt; H: D83D  L: DCA9</span><br><span class="line"></span><br><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0xd83d</span>,<span class="number">0xdca9</span>) <span class="comment">// "💩"</span></span><br></pre></td></tr></table></figure>
+<p>或者直接使用 ES6 的<code>fromCodePoint</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.fromCodePoint(<span class="number">0x1f4a9</span>); <span class="comment">// "💩"</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>String.prototype.charAt(position)</code>对于<code>astral symbols</code>获取的只是 H 或者 L 的部分：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.charAt(<span class="number">0</span>); <span class="comment">// '\uD83D'</span></span><br><span class="line"><span class="string">'💩'</span>.charAt(<span class="number">1</span>); <span class="comment">// '\uDCA9'</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>String.prototype.charCodeAt(position)</code>，与<code>charAt</code>类似，对于<code>astral symbols</code>获取的只是 H 或者 L 的数字形式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.charCodeAt(<span class="number">0</span>); <span class="comment">// 0xD83D</span></span><br><span class="line"><span class="string">'💩'</span>.charCodeAt(<span class="number">1</span>); <span class="comment">// 0xDCA9</span></span><br></pre></td></tr></table></figure>
+<p>取而代之应该使用<code>codePointAt</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.codePointAt(<span class="number">0</span>); <span class="comment">// 0x1F4A9</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="正则表达式与-Unicode"><a href="#正则表达式与-Unicode" class="headerlink" title="正则表达式与 Unicode"></a>正则表达式与 Unicode</h1><h2 id="匹配-BMP-区间字符"><a href="#匹配-BMP-区间字符" class="headerlink" title="匹配 BMP 区间字符"></a>匹配 BMP 区间字符</h2><p>可以直接使用转义形式的正则来匹配 BMP 区间字符：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/\u0061/.test(<span class="string">'a'</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h2 id="匹配-astral-symbol"><a href="#匹配-astral-symbol" class="headerlink" title="匹配 astral symbol"></a>匹配 astral symbol</h2><p>直接用对应的代码点构成的正则是不能匹配<code>astral symbol</code>的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/\u&#123;<span class="number">1</span>F4A9&#125;/.test(<span class="string">'💩'</span>); <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>由于<code>astral symbol</code>在 js 中是由 H/L 分开表示，<code>.</code>点号也不能匹配<code>astral symbol</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/foo.bar/.test(<span class="string">'foo💩bar'</span>) <span class="comment">// fasle</span></span><br><span class="line">/^.$/.test(<span class="string">'💩'</span>) <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>如果只从代码点的角度出发，这里是一个完整的匹配 Unicode 的正则（之后会介绍 ES6 新增的<code>u</code>修饰符）：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// match BMP、astral symbol H/L pair、 lone H/L</span></span><br><span class="line"><span class="keyword">const</span> unicodeReg = <span class="regexp">/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/</span>;</span><br><span class="line"></span><br><span class="line">unicodeReg.test(<span class="string">'💩'</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>如果注意到上面正则的第一个部分是分为了两段： <code>\0-\uD7FF</code>和<code>\uE000-\uFFFF</code>，这是因为<code>BMP</code>内的<code>U+D800</code>到<code>U+DFFF</code>是一个空段，期间的代码点没有映射到任何字符。实际上<code>UTF-16</code>编码正是利用的这个空段来映射<code>astral symbols</code>的。</p>
+<h2 id="范围匹配与-Unicode"><a href="#范围匹配与-Unicode" class="headerlink" title="范围匹配与 Unicode"></a>范围匹配与 Unicode</h2><p>正则表达式中经常会用到范围匹配：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/[a-c]/.test(<span class="string">'a'</span>) <span class="comment">// true</span></span><br><span class="line">/[a-c]/.test(<span class="string">'b'</span>) <span class="comment">// true</span></span><br><span class="line">/[a-c]/.test(<span class="string">'c'</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>但是这种方法在遇到 Unicode 字符时可能会出问题：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/[💩-💫]/;</span><br><span class="line"><span class="comment">// Uncaught SyntaxError: Invalid regular expression: /[💩-💫]/: Range out of order in character class</span></span><br></pre></td></tr></table></figure>
+<p>因为上面的正则表达式等价于：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/[\uD83D\uDCA9-\uD83D\uDCAB]/;</span><br></pre></td></tr></table></figure>
+<p><code>-</code>前后分别是两个字符的 H、L 部分，这个表达式其实是在匹配：</p>
+<ul>
+<li><code>\uD83D</code> 一个 H</li>
+<li><code>\uDCA9-\uD83D</code> 这里是出错的原因，因为左边的值比右边大</li>
+<li><code>\uDCAB</code> 一个 L</li>
+</ul>
+<p><strong>解决办法</strong> - 使用 ES6 新增的<strong><code>u</code></strong>正则修饰符，后面会描述。</p>
+<h2 id="数量匹配与-astral-symbol"><a href="#数量匹配与-astral-symbol" class="headerlink" title="数量匹配与 astral symbol"></a>数量匹配与 astral symbol</h2><p>正则中可以用一些量词来匹配某个选项多次,如<code>*</code>,<code>+</code>, <code>?</code>, and <code>{n}</code>, <code>{n,}</code>, <code>{n,m}</code>，这些在处理 BMP 字符时没问题：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/a&#123;<span class="number">2</span>&#125;/.test(<span class="string">'aa'</span>) <span class="comment">//true</span></span><br><span class="line">/\u0061&#123;<span class="number">2</span>&#125;/.test(<span class="string">'aa'</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>但是遇到<code>astral symbol</code>也会出问题：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/💩&#123;<span class="number">2</span>&#125;/.test(<span class="string">'💩💩'</span>) <span class="comment">// false</span></span><br><span class="line">/\u&#123;<span class="number">1</span>F4A9&#125;&#123;<span class="number">2</span>&#125;/.test(<span class="string">'💩💩'</span>) <span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>原因是因为这些正则表达式实际上会表达成<code>&lt;H，L&gt;</code>的形式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/\u&#123;<span class="number">1</span>F4A9&#125;&#123;<span class="number">2</span>&#125;/   =&gt; <span class="regexp">/\uD83D\uDCA9&#123;2&#125;/</span>  <span class="comment">// 其实匹配的是 H+L*2</span></span><br></pre></td></tr></table></figure>
+<p>一个可行的解决方案是直接采用对应的<code>&lt;H，L&gt;</code>形式来写正则：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/(\uD83D\uDCA9)&#123;<span class="number">2</span>&#125;/.test(<span class="string">'💩💩'</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>或者使用<strong><code>u</code></strong>正则修饰符。</p>
+<h2 id="u-修饰符"><a href="#u-修饰符" class="headerlink" title="u 修饰符"></a>u 修饰符</h2><p>阮一峰的<a href="http://es6.ruanyifeng.com/#docs/regex#u-%E4%BF%AE%E9%A5%B0%E7%AC%A6" target="_blank" rel="noopener">ES6 入门</a>中是这样描述的：</p>
+<blockquote>
+<p>ES6 对正则表达式添加了 u 修饰符，含义为“Unicode 模式”，用来正确处理大于\uFFFF 的 Unicode 字符。也就是说，会正确处理四个字节的 UTF-16 编码。</p>
+</blockquote>
+<p>这就表示我们可以直接用<code>u</code>修饰符加上原始的代码点就能匹配所有的 Unicode 字符了。</p>
+<p><strong>单个字符匹配</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/\u0061/u.test(<span class="string">'a'</span>) <span class="comment">// true</span></span><br><span class="line">/\u&#123;<span class="number">1</span>F4A9&#125;/u.test(<span class="string">'💩'</span>) <span class="comment">// true</span></span><br><span class="line">/^.$/u.test(<span class="string">'💩'</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p><strong>范围匹配</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/[\uD83D\uDCA9-\uD83D\uDCAB]/u.test(<span class="string">'\uD83D\uDCA9'</span>)  <span class="comment">// true .   match U+1F4A9</span></span><br><span class="line">/[\u&#123;<span class="number">1</span>F4A9&#125;-\u&#123;<span class="number">1</span>F4AB&#125;]/u.test(<span class="string">'\u&#123;1F4A9&#125;'</span>)  <span class="comment">// true  match U+1F4A9</span></span><br><span class="line">/[💩-💫]/u.test(<span class="string">'💩'</span>)      <span class="comment">// true   match U+1F4A9</span></span><br><span class="line"></span><br><span class="line">/[\uD83D\uDCA9-\uD83D\uDCAB]/u.test(<span class="string">'\uD83D\uDCAA'</span>)  <span class="comment">// true .   match U+1F4AA</span></span><br><span class="line">/[\u&#123;<span class="number">1</span>F4A9&#125;-\u&#123;<span class="number">1</span>F4AB&#125;]/u.test(<span class="string">'\u&#123;1F4AA&#125;'</span>)  <span class="comment">// true  match U+1F4AA</span></span><br><span class="line">/[💩-💫]/u.test(<span class="string">"💪"</span>)      <span class="comment">// true   match U+1F4AA</span></span><br><span class="line"></span><br><span class="line">/[\uD83D\uDCA9-\uD83D\uDCAB]/u.test(<span class="string">'\uD83D\uDCAB'</span>)  <span class="comment">// true .   match U+1F4AB</span></span><br><span class="line">/[\u&#123;<span class="number">1</span>F4A9&#125;-\u&#123;<span class="number">1</span>F4AB&#125;]/u.test(<span class="string">'\u&#123;1F4AB&#125;'</span>)  <span class="comment">// true  match U+1F4AB</span></span><br><span class="line">/[💩-💫]/u.test(<span class="string">'💫'</span>)      <span class="comment">// true   match U+1F4AB</span></span><br></pre></td></tr></table></figure>
+<p><strong>数量匹配</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/💩&#123;<span class="number">2</span>&#125;/u.test(<span class="string">'💩💩'</span>); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p><strong>其他</strong></p>
+<p>反向匹配标识（如<code>/[^a]/</code>以及<code>/\S/</code>、<code>/\D/</code>）在遇到<code>astral symbols</code>都会出现问题，<code>u</code>修饰符也会解决：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/^[^a]$/.test(<span class="string">'💩'</span>)  <span class="comment">// false</span></span><br><span class="line">/^\S$/.test(<span class="string">'💩'</span>)  <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/^[^a]$/u.test(<span class="string">'💩'</span>)  <span class="comment">// true</span></span><br><span class="line">/^\S$/u.test(<span class="string">'💩'</span>) <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h2 id="对-input、textarea-的-patten-属性影响"><a href="#对-input、textarea-的-patten-属性影响" class="headerlink" title="对 input、textarea 的 patten 属性影响"></a>对 input、textarea 的 patten 属性影响</h2><p>幸运的是<code>u</code>修饰符默认是附加在了<code>pattern</code>属性上的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&lt;style&gt;</span><br><span class="line">	:invalid &#123;</span><br><span class="line">	 	color: red;</span><br><span class="line">	&#125;</span><br><span class="line">	:valid &#123;</span><br><span class="line">	 	color: green;</span><br><span class="line">	&#125;</span><br><span class="line">&lt;/style&gt;</span><br><span class="line"></span><br><span class="line">&lt;form action=&quot;&quot; class=&quot;form&quot;&gt;</span><br><span class="line">    &lt;input type=&quot;text&quot; pattern=&apos;a.b&apos; value=&quot;aXXb&quot;&gt;  &lt;!-- red --&gt;</span><br><span class="line">    &lt;input type=&quot;text&quot; pattern=&apos;a.b&apos; value=&quot;a1b&quot;&gt;  &lt;!-- green --&gt;</span><br><span class="line">    &lt;input type=&quot;text&quot; pattern=&apos;a.b&apos; value=&quot;a💩b&quot;&gt;  &lt;!-- green --&gt;</span><br><span class="line">  &lt;/form&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h2><p>参考<a href="http://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags" target="_blank" rel="noopener">test-RegExp_y_and_u_flags</a></p>
+<p><img src="/images/Unicode/u-flag-compatiable.png" alt=""></p>
+<h2 id="u-flag-的注意事项"><a href="#u-flag-的注意事项" class="headerlink" title="u flag 的注意事项"></a>u flag 的注意事项</h2><p>看了以上的描述，很容易让人觉得<code>u flag</code>是万能的。 不过在处理遗留代码时还是要注意一下的，因为<code>u flag</code>会假定正则表达式里的<code>\u</code>后面接的是一个合法的<code>Code Point</code>，如果不是的话就会报错：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/\a/.test(<span class="string">'a'</span>) <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">/\a/u.test(<span class="string">'a'</span>) <span class="comment">// Uncaught SyntaxError: Invalid regular expression: /\a/: Invalid escape</span></span><br></pre></td></tr></table></figure>
+<p>上面的<code>\a</code>意图把<code>a</code>转义，实际上当然是不起作用的，等效于<code>/a/</code>，不过却不会报错的。 但是加上<code>u flag</code>后，会直接判定非法。</p>
+<h1 id="UTF8-编码"><a href="#UTF8-编码" class="headerlink" title="UTF8 编码"></a>UTF8 编码</h1><p>Unicode 只是一个字符集，每个代码点真正在存储前是需要进行编码的。 在 utf-8 编码中，最核心的就是一个对应表：</p>
+<p><img src="/images/Unicode/utf-8编码.png" alt=""></p>
+<p>可以看到<strong>不同范围的代码点在编码后可能使用 1~4 个字节表示</strong>。</p>
+<blockquote>
+<p>UTF-8 的编码规则很简单，只有二条：</p>
+</blockquote>
+<blockquote>
+<p>1）对于单字节的符号，字节的第一位设为 0，后面 7 位为这个符号的 Unicode 码。因此对于英语字母，UTF-8 编码和 ASCII 码是相同的。</p>
+</blockquote>
+<blockquote>
+<p>2）对于 n 字节的符号（n &gt; 1），第一个字节的前 n 位都设为 1，第 n + 1 位设为 0，后面字节的前两位一律设为 10。剩下的没有提及的二进制位，全部为这个符号的 Unicode 码。</p>
+</blockquote>
+<p>举个例子：<br>“严”的代码点是<code>U+4E25</code>，根据上图发现在 utf-8 编码后有 3 个字节。具体编码步骤见下图（纯手绘 😄）：<br><img src="/images/Unicode/utf-8编码示例.jpeg" alt=""></p>
+<p>即”严”在 utf-8 编码后是用<code>0xEBB8A5</code>来表示的。</p>
+<p><strong>一个细节</strong>：映射表里后面字节的<code>10</code>是为了处于任何一个字节时，都知道当前是一个单字节符号还是多字节符号，如果是多字节符号，那么什么接下来的多少个字节表示一个完整的符号结束：</p>
+<ul>
+<li>如果当前字节的第一为是<code>0</code>，那么这个字节必然就是一个单字节符号；</li>
+<li>如果当前字节的前两位是<code>11</code>，那么当前字节必然是一个多字节符号的第一个字节；</li>
+<li>如果前两位是<code>10</code>，那么当前字节必然是一个多字节符号的某个中间字节，并且直到接下来的某个字节前两位不是<code>10</code>了，这个多字节符号才结束。</li>
+</ul>
+<h2 id="Unicode-字符转为-utf8-编码后的字节长度计算"><a href="#Unicode-字符转为-utf8-编码后的字节长度计算" class="headerlink" title="Unicode 字符转为 utf8 编码后的字节长度计算"></a>Unicode 字符转为 utf8 编码后的字节长度计算</h2><ol>
+<li>利用<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent" target="_blank" rel="noopener">encodeURIComponent</a>转为 utf8 编码：</li>
+</ol>
+<pre><code><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">encodeURIComponent</span>(<span class="string">'💩'</span>)  <span class="comment">// "%F0%9F%92%A9"</span></span><br></pre></td></tr></table></figure>
+
+    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">utf8Length</span>(<span class="params">charactor</span>)</span>&#123;</span><br><span class="line">  <span class="comment">// Matches only the 10.. bytes that are non-initial characters in a multi-byte sequence.</span></span><br><span class="line">   <span class="keyword">const</span> m = <span class="built_in">encodeURIComponent</span>(charactor).match(<span class="regexp">/%[89ABab]/g</span>);</span><br><span class="line">   <span class="keyword">return</span> (m ? m.length : <span class="number">0</span>) + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">utf8Length(<span class="string">"💩"</span>) <span class="comment">// 4</span></span><br><span class="line">utf8Length(<span class="string">"严"</span>) <span class="comment">// 3</span></span><br><span class="line">utf8Length(<span class="string">"a"</span>)  <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+</code></pre><ol start="2">
+<li>直接通过代码点 Code Point 的范围计算</li>
+</ol>
+<pre><code><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">utf8Length</span>(<span class="params">charactor</span>) </span>&#123;</span><br><span class="line">    codePoint = charactor.codePointAt(<span class="number">0</span>);</span><br><span class="line">    <span class="comment">// NOT charCodeAt，因为其只能返回0~FFFF的整数，见MDN</span></span><br><span class="line">    <span class="comment">// charCodeAt: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/charCodeAt</span></span><br><span class="line">    <span class="comment">// codePointAt: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/codePointAt</span></span><br><span class="line">    <span class="keyword">if</span> (codePoint &lt;= <span class="number">0x007f</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (codePoint &lt;= <span class="number">0x07ff</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (codePoint &lt;= <span class="number">0xffff</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">utf8Length(<span class="string">"💩"</span>) <span class="comment">// 4</span></span><br><span class="line">utf8Length(<span class="string">"严"</span>) <span class="comment">// 3</span></span><br><span class="line">utf8Length(<span class="string">"a"</span>)  <span class="comment">// 1</span></span><br></pre></td></tr></table></figure>
+</code></pre><h2 id="Unicode-字符串转-utf8-编码后的字节长度计算"><a href="#Unicode-字符串转-utf8-编码后的字节长度计算" class="headerlink" title="Unicode 字符串转 utf8 编码后的字节长度计算"></a>Unicode 字符串转 utf8 编码后的字节长度计算</h2><p>要注意的是 String 的 length 属性表示的是 utf-16 编码后的字节长度,同理<code>string[i]</code>表示 i 这个位置上的一个 2 字节的 UTF-16 编码字符。 如果 i 位置上是一个 2 字节 UTF-16 编码字符无法表示的<code>astral symbols</code>，那么就会显示乱码,因为此时<code>string[i]</code>指向的是 H 或 L，必须<code>i</code>和<code>i+1</code>两个位置联合起来才能完整表示。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.length; <span class="comment">// 2， 注意上面我们计算的它在utf8编码下使用了4个字节</span></span><br><span class="line"><span class="string">'💩'</span>[<span class="number">0</span>]; <span class="comment">// ""</span></span><br><span class="line"><span class="string">'💩'</span>[<span class="number">1</span>]; <span class="comment">// ""</span></span><br><span class="line"><span class="string">'💩'</span>.slice(<span class="number">0</span>, <span class="number">2</span>); <span class="comment">// "💩"</span></span><br><span class="line"></span><br><span class="line"><span class="string">'严'</span>.length; <span class="comment">//1</span></span><br><span class="line"><span class="string">'严'</span>[<span class="number">0</span>]; <span class="comment">// "严"</span></span><br></pre></td></tr></table></figure>
+<p>知道这一点后，我们有 2 种方法来计算任一字符串转为 utf8 编码后的字节长度：</p>
+<ol>
+<li><p>小心翼翼的处理<code>astral symbols</code>的<code>H、L</code>部分 ,一步一个脚印:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">strUtf8Length</span>(<span class="params">str</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> total = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (index &lt; str.length) &#123;</span><br><span class="line">    <span class="keyword">const</span> charCode = str.charCodeAt(index);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`charCode:`</span>, charCode.toString(<span class="number">16</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="number">0xd800</span> &lt;= charCode &amp;&amp; charCode &lt;= <span class="number">0xdbff</span>) &#123;</span><br><span class="line">      <span class="comment">// 处于astral symbols的H区域,说明当前str[index]与str[index+1]才能构成一个完整的Unicode字符</span></span><br><span class="line">      total += utf8Length(str.slice(index, index + <span class="number">2</span>));</span><br><span class="line">      index += <span class="number">2</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 处于BMP区(U+0000~U+FFFF)，说明UTF-16编码的单独str[index]就能表示一个完整的Unicode字符</span></span><br><span class="line">      total += utf8Length(str[index]);</span><br><span class="line">      index += <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> total;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length(<span class="string">'💩'</span>)); <span class="comment">// 4</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length(<span class="string">'严'</span>)); <span class="comment">// 3</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length(<span class="string">'a'</span>)); <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length(<span class="string">'💩严a'</span>)); <span class="comment">//8</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>ES6 中的<code>for...of</code>会替我们处理上面的那些重复细节</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">strUtf8Length2</span>(<span class="params">str</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> total = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> symbol <span class="keyword">of</span> str) &#123;</span><br><span class="line">    total += utf8Length(symbol); <span class="comment">// symbol表示每一个单独的Unicode字符</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> total;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length2(<span class="string">'💩'</span>)); <span class="comment">// 4</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length2(<span class="string">'严'</span>)); <span class="comment">// 3</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length2(<span class="string">'a'</span>)); <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">console</span>.log(strUtf8Length2(<span class="string">'💩严a'</span>)); <span class="comment">//8</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="https://mathiasbynens.be/notes/javascript-unicode" target="_blank" rel="noopener">javascript-unicode</a></li>
+<li><a href="http://pcedu.pconline.com.cn/empolder/gj/other/0505/616631_all.html#content_page_1" target="_blank" rel="noopener">谈谈 Unicode 编码</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2014/12/unicode.html" target="_blank" rel="noopener">Unicode 与 JavaScript 详解</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Unicode" target="_blank" rel="noopener">wiki unicode</a></li>
+<li><a href="https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/" target="_blank" rel="noopener">The Absolute Minimum Every Software Developer Absolutely, Positively Must Know About Unicode and Character Sets</a></li>
+<li><a href="https://mathiasbynens.be/notes/es6-unicode-regex" target="_blank" rel="noopener">Unicode-aware regular expressions in ES2015</a></li>
+<li><a href="http://es6.ruanyifeng.com/#docs/string" target="_blank" rel="noopener">es6 字符串的扩展</a></li>
+<li><a href="http://es6.ruanyifeng.com/#docs/regex" target="_blank" rel="noopener">es6 正则的扩展</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html" target="_blank" rel="noopener">ASCII，Unicode 和 UTF-8</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/unicode/" rel="tag"># unicode</a>
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/07/22/sentry-source-code/" rel="next" title="Sentry源码解析">
+                <i class="fa fa-chevron-left"></i> Sentry源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/23/unicode-and-javascript/" rel="prev" title="Unicode与Javascript">
+                Unicode与Javascript <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Unicode"><span class="nav-number">1.</span> <span class="nav-text">Unicode</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JavaScript-中的字符表示"><span class="nav-number">2.</span> <span class="nav-text">JavaScript 中的字符表示</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#转义"><span class="nav-number">2.1.</span> <span class="nav-text">转义</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内部表示"><span class="nav-number">2.2.</span> <span class="nav-text">内部表示</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#JavaScript-中的字符串操作"><span class="nav-number">3.</span> <span class="nav-text">JavaScript 中的字符串操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#计算-Unicode-字符长度"><span class="nav-number">3.1.</span> <span class="nav-text">计算 Unicode 字符长度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#翻转字符串"><span class="nav-number">3.2.</span> <span class="nav-text">翻转字符串</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#其他字符串处理方法在面对-Unicode-时的问题"><span class="nav-number">3.3.</span> <span class="nav-text">其他字符串处理方法在面对 Unicode 时的问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#正则表达式与-Unicode"><span class="nav-number">4.</span> <span class="nav-text">正则表达式与 Unicode</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#匹配-BMP-区间字符"><span class="nav-number">4.1.</span> <span class="nav-text">匹配 BMP 区间字符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#匹配-astral-symbol"><span class="nav-number">4.2.</span> <span class="nav-text">匹配 astral symbol</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#范围匹配与-Unicode"><span class="nav-number">4.3.</span> <span class="nav-text">范围匹配与 Unicode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数量匹配与-astral-symbol"><span class="nav-number">4.4.</span> <span class="nav-text">数量匹配与 astral symbol</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u-修饰符"><span class="nav-number">4.5.</span> <span class="nav-text">u 修饰符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对-input、textarea-的-patten-属性影响"><span class="nav-number">4.6.</span> <span class="nav-text">对 input、textarea 的 patten 属性影响</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#兼容性"><span class="nav-number">4.7.</span> <span class="nav-text">兼容性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#u-flag-的注意事项"><span class="nav-number">4.8.</span> <span class="nav-text">u flag 的注意事项</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UTF8-编码"><span class="nav-number">5.</span> <span class="nav-text">UTF8 编码</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Unicode-字符转为-utf8-编码后的字节长度计算"><span class="nav-number">5.1.</span> <span class="nav-text">Unicode 字符转为 utf8 编码后的字节长度计算</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Unicode-字符串转-utf8-编码后的字节长度计算"><span class="nav-number">5.2.</span> <span class="nav-text">Unicode 字符串转 utf8 编码后的字节长度计算</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

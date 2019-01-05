@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CACHE,AJAX,NODEJS,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="我们的移动端有多个项目，有一些功能是公共的，每个项目都会用到，现在的方案是将它们拆分成独立应用。随着逐渐有公共功能拆分成独立应用，随之而来就有一个问题：主应用中进入独立应用，如何更快的显示独立应用的首屏？其中一个可以做的事情是预缓存独立应用中的关键资源。 假设有A、B两个应用，在展示 A 时，需要预先缓存一些 B 下面的静态资源，例如 js、css 文件。需要注意的是对于 js 文件只能加载它，而">
+<meta name="keywords" content="CACHE,AJAX,NODEJS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一种web app资源预缓存方案">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/12/14/pre-cache-static-files-of-web-app/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="我们的移动端有多个项目，有一些功能是公共的，每个项目都会用到，现在的方案是将它们拆分成独立应用。随着逐渐有公共功能拆分成独立应用，随之而来就有一个问题：主应用中进入独立应用，如何更快的显示独立应用的首屏？其中一个可以做的事情是预缓存独立应用中的关键资源。 假设有A、B两个应用，在展示 A 时，需要预先缓存一些 B 下面的静态资源，例如 js、css 文件。需要注意的是对于 js 文件只能加载它，而">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/预缓存思路.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/预缓存.PNG">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/预缓存效果.PNG">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/CacheStorage缓存.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/CacheStorage缓存效果.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/CacheStorage-support-in-mobile.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/pre-cache/CacheStorage-support-in-pc.png">
+<meta property="og:updated_time" content="2019-01-05T06:06:13.485Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一种web app资源预缓存方案">
+<meta name="twitter:description" content="我们的移动端有多个项目，有一些功能是公共的，每个项目都会用到，现在的方案是将它们拆分成独立应用。随着逐渐有公共功能拆分成独立应用，随之而来就有一个问题：主应用中进入独立应用，如何更快的显示独立应用的首屏？其中一个可以做的事情是预缓存独立应用中的关键资源。 假设有A、B两个应用，在展示 A 时，需要预先缓存一些 B 下面的静态资源，例如 js、css 文件。需要注意的是对于 js 文件只能加载它，而">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/pre-cache/预缓存思路.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/12/14/pre-cache-static-files-of-web-app/">
+
+
+
+
+
+  <title>一种web app资源预缓存方案 | 十年一刻</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/12/14/pre-cache-static-files-of-web-app/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一种web app资源预缓存方案</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-12-14T17:00:00+08:00">
+                2017-12-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们的移动端有多个项目，有一些功能是公共的，每个项目都会用到，现在的方案是将它们拆分成独立应用。随着逐渐有公共功能拆分成独立应用，随之而来就有一个问题：<strong>主应用中进入独立应用，如何更快的显示独立应用的首屏？</strong>其中一个可以做的事情是预缓存独立应用中的关键资源。</p>
+<p>假设有<strong>A、B</strong>两个应用，在展示 A 时，需要预先缓存一些 B 下面的静态资源，例如 js、css 文件。需要注意的是对于 js 文件只能加载它，而不能执行它，否则会有很多副作用，例如统计接口请求数会有很大偏差。</p>
+<p>以下描述中的 A、B 均指代上面的两个应用。</p>
+<h1 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h1><p>这两天看了一个浏览器的新特性<strong><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Preloading_content" target="_blank" rel="noopener">preload</a></strong>,它可以自定义预加载当前页面的资源。</p>
+<p>然后看到另一个相关的<strong><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Link_prefetching_FAQ" target="_blank" rel="noopener">prefetch</a></strong>,它用于预加载在下一个页面可能会访问的资源，浏览器会在当前页面加载完的空闲时间来加载<code>prefecth</code>的资源。示范：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"prefetch"</span> <span class="attr">href</span>=<span class="string">"./icons.png"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="方案-1"><a href="#方案-1" class="headerlink" title="方案 1"></a>方案 1</h1><h2 id="总体思路"><a href="#总体思路" class="headerlink" title="总体思路"></a>总体思路</h2><p>首先把 B 下面的静态资源全部设置成永久缓存，然后在 A 空闲时，通过 GET 请求去获取这些资源即可。这样，浏览器本地就会有这些文件的缓存，真正加载 B 时，会直接从缓存中获取资源。</p>
+<h2 id="A-中要做的事情"><a href="#A-中要做的事情" class="headerlink" title="A 中要做的事情"></a>A 中要做的事情</h2><p>获取 B 中所有需预缓存的资源清单，然后逐个发送 GET 请求。</p>
+<p>为了更易于使用，考虑到我们项目中加载 A、B 都是通过 nginx 反向代理来做的。 真正在做预加载时，<br>可以只传入对应应用的 nginx 代理路径，同时每个应用下面都有一个约定好的资源清单文件<code>pre-cache-manifest.json</code>，这样拿到这个 json 文件后就能知道 GET 哪些文件了。如下图：</p>
+<p><img src="/images/pre-cache/预缓存思路.png" alt=""></p>
+<p>注意点: 这个 json 文件必须设置成不缓存，即每次都从服务器获取，否则每次都是从本地缓存中拿 json。</p>
+<h3 id="代理路径配置文件-pre-cache-config-js"><a href="#代理路径配置文件-pre-cache-config-js" class="headerlink" title="代理路径配置文件 - pre-cache-config.js"></a>代理路径配置文件 - <code>pre-cache-config.js</code></h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 所有想预缓存资源的应用的nginx代理路径</span></span><br><span class="line"><span class="keyword">var</span> CRM_PRE_CACHE_PATH_LIST = [<span class="string">'ccrmSocialChatApp'</span>];</span><br></pre></td></tr></table></figure>
+<p>把这个文件放到<code>www/pre-cache</code>文件夹下（没有文件夹请创建一个）。</p>
+<p><strong>注意：</strong> 这个文件中的内容请仔细考虑，只预缓存那些真正需要缓存的应用。</p>
+<h3 id="真正做预缓存的文件-pre-cache-js"><a href="#真正做预缓存的文件-pre-cache-js" class="headerlink" title="真正做预缓存的文件 - pre-cache.js"></a>真正做预缓存的文件 - <code>pre-cache.js</code></h3><p>内容较长，参见附件<a href="https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/pre-cache/pre-cache.js" target="_blank" rel="noopener">pre-cache.js</a>， 使用时直接拷贝到<code>www/pre-cache</code>即可，无需修改</p>
+<h3 id="在-A-的空闲时间加载上述js"><a href="#在-A-的空闲时间加载上述js" class="headerlink" title="在 A 的空闲时间加载上述js"></a>在 A 的空闲时间加载上述<code>js</code></h3><p><strong><code>app.component.ts</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ngAfterViewInit() &#123;</span><br><span class="line">	this.utilService.loadScriptAsync( &quot;pre-cache/pre-cache.config.js&quot;, () =&gt; &#123;</span><br><span class="line">		this.utilService.loadScriptAsync( &quot;pre-cache/pre-cache.js&quot; );</span><br><span class="line">	&#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong><code>utils.service.ts</code></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line"> * 异步加载脚本</span><br><span class="line"> *</span><br><span class="line"> * @author  刘斌</span><br><span class="line"> * @param &#123;string&#125; path 脚本的路径，以www为根目录</span><br><span class="line"> * @memberof UtilsService</span><br><span class="line"> */</span><br><span class="line">public loadScriptAsync( path: string, callback?: () =&gt; void ) &#123;</span><br><span class="line">	const body = document.body;</span><br><span class="line">	const script = document.createElement( &quot;script&quot; );</span><br><span class="line">	script.type = &quot;text/javascript&quot;;</span><br><span class="line">	script.src = path;</span><br><span class="line">	if ( callback ) &#123;</span><br><span class="line">		script.onload = callback;</span><br><span class="line">	&#125;</span><br><span class="line">	body.appendChild( script );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是 A 所需做的全部改变。</p>
+<h2 id="B-中要做的事情"><a href="#B-中要做的事情" class="headerlink" title="B 中要做的事情"></a>B 中要做的事情</h2><h3 id="禁用pre-cache-manifest-json的缓存"><a href="#禁用pre-cache-manifest-json的缓存" class="headerlink" title="禁用pre-cache-manifest.json的缓存"></a>禁用<code>pre-cache-manifest.json</code>的缓存</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 禁用pre-cache-manifest.json缓存</span><br><span class="line">location ~* /(pre-cache-manifest\.json)$ &#123;</span><br><span class="line">		root  &lt;%= ENV[&quot;APP_ROOT&quot;] %&gt;/public;</span><br><span class="line">		#expires -1;</span><br><span class="line">		add_header Cache-Control public,no-store,max-age=-1;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>拷贝到项目的<code>nginx.conf</code>中，无需修改</p>
+<h3 id="分析-B-中哪些资源要预加载"><a href="#分析-B-中哪些资源要预加载" class="headerlink" title="分析 B 中哪些资源要预加载"></a>分析 B 中哪些资源要预加载</h3><p>原则上是那些最常访问的页面涉及的关键 js 或 css 文件，通常这些文件都会放在<code>index.html</code>中。</p>
+<p>一个<code>pre-cache-manifest.json</code>的示范如下：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"pathList"</span>: [</span><br><span class="line">    <span class="string">"build/polyfills.js"</span>,</span><br><span class="line">    <span class="string">"build/1.1f0d863d8b2aa9a6f6c0.js"</span>,</span><br><span class="line">    <span class="string">"build/main.737b1601e3e977490c1d.js"</span>,</span><br><span class="line">    <span class="string">"build/vendor.868014e1c5a143a0ec7e.js"</span>,</span><br><span class="line">    <span class="string">"build/main.css?v=1513166736705"</span>,</span><br><span class="line">    <span class="string">"3rdPartyLib.min.js?v=ce15bd2e1bd3a7de076c8d713b57ea48"</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这个文件会自动生成，无需手动创建</p>
+<h3 id="动态生成-json-清单"><a href="#动态生成-json-清单" class="headerlink" title="动态生成 json 清单"></a>动态生成 json 清单</h3><p>上述清单中很有可能会有一些文件名是动态生成的，我们需要在每次构建中获取这些文件名，然后动态生成最终的 json 文件。</p>
+<p>为了便于使用，最好同样是基于配置的</p>
+<ol>
+<li><p>清单中的文件路径配置 - <code>generate-pre-cache.config.js</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">  * 用于生成pre-cache-manifest.json的配置</span><br><span class="line">  */</span><br><span class="line">module.exports = [&#123;</span><br><span class="line">        folder: &quot;build&quot;, // www下的文件夹名</span><br><span class="line">        contentIdentifiers: [ // 需要根据内容唯一标志符来查找的文件,此处填写正则表达式</span><br><span class="line">            /\bWanttosayModuleNgFactory\b/, // 懒加载模块生成的js内容标志：Module名+ NgFactory</span><br><span class="line">        ],</span><br><span class="line">        fixedNames: [ // 固定名字的文件</span><br><span class="line">            &quot;polyfills.js&quot;</span><br><span class="line">        ],</span><br><span class="line">        fixedNameRules: [ // 名称为固定格式的文件,此处填写正则表达式</span><br><span class="line">            /^main\.[^.]+\.js$/,</span><br><span class="line">            /^vendor\.[^.]+\.js$/,</span><br><span class="line">        ],</span><br><span class="line">        withVersions: [ // 文件名在index.html中加了版本号</span><br><span class="line">            &#123; fileName: &quot;main.css&quot;, algorithm: &quot;random&quot; &#125;, // algorithm:版本号生成算法，&quot;random&quot;、&quot;md5&quot;</span><br><span class="line">        ]</span><br><span class="line">    &#125;, &#123;</span><br><span class="line">        folder: &quot;&quot;, // 表示www本身</span><br><span class="line">        withVersions: [</span><br><span class="line">            &#123; fileName: &quot;3rdPartyLib.min.js&quot;, algorithm: &quot;md5&quot; &#125;,</span><br><span class="line">        ]</span><br><span class="line">    &#125;</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>将此文件放在项目根目录。</p>
+<p><strong>注意：</strong> 上述配置因每个项目而异，请仔细考虑自己项目的情况，兼顾用户流量消耗。</p>
+</li>
+<li><p>根据配置动态生成清单文件 - <code>generate-pre-cache.js</code></p>
+<p>内容较长，参见附件<a href="https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/pre-cache/generate-pre-cache.js" target="_blank" rel="noopener">generate-pre-cache.js</a>， 使用时直接拷贝到项目根目录即可，无需修改</p>
+</li>
+<li><p>在 package.json 中生成<code>script</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;generatePreCache&quot;: &quot;node generate-pre-cache.js&quot;</span><br></pre></td></tr></table></figure>
+<p>直接拷贝，无需修改</p>
+</li>
+<li><p>放到项目根目录用于生产的构建脚本<code>build.bat</code>中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmd /c npm run generatePreCache</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>直接拷贝，无需修改</p>
+<h2 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h2><p><strong>加载 A 时预缓存 B 中的资源</strong>：</p>
+<p><img src="/images/pre-cache/预缓存.PNG" alt=""></p>
+<p>可以看到在预缓存时没有任何多余的后台接口请求。</p>
+<p><strong>显示 B 时直接从缓存中获取资源</strong>：</p>
+<p><img src="/images/pre-cache/预缓存效果.PNG" alt=""></p>
+<h1 id="另一种方案"><a href="#另一种方案" class="headerlink" title="另一种方案"></a>另一种方案</h1><h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>PWA 应用中经常会利用<code>service worker</code>来缓存资源，这样离线时就可以直接从缓存中拿资源，从而达到更好的用户体验，而不是出现“小恐龙”。</p>
+<p><code>service worker</code>是利用<code>CacheStorage</code>这个 API 来做资源缓存的。</p>
+<h2 id="一个简单的示范"><a href="#一个简单的示范" class="headerlink" title="一个简单的示范"></a>一个简单的示范</h2><p><strong>在 localhost:6564/index.html 中：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> cacheName = <span class="string">'PWADemo-v1'</span>;</span><br><span class="line"><span class="keyword">var</span> filesToCache = [</span><br><span class="line">  <span class="comment">// 所有想缓存的文件清单</span></span><br><span class="line">  <span class="string">'/index.html'</span>,</span><br><span class="line">  <span class="string">'./style.css'</span>,</span><br><span class="line">  <span class="comment">// "http://localhost:6565/bundle.js" // 加载外域js时会被跨域</span></span><br><span class="line">  <span class="string">'./test.js'</span>,</span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">self.addEventListener(<span class="string">'install'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'[ServiceWorker] Install'</span>);</span><br><span class="line">  e.waitUntil(</span><br><span class="line">    <span class="comment">// 利用CacheStorage缓存所有文件清单中的文件</span></span><br><span class="line">    caches.open(cacheName).then(<span class="function"><span class="keyword">function</span>(<span class="params">cache</span>) </span>&#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'[ServiceWorker] Caching app shell'</span>);</span><br><span class="line">      <span class="keyword">return</span> cache.addAll(filesToCache);</span><br><span class="line">    &#125;),</span><br><span class="line">  );</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><strong>在 localhost:6564/index2.html 中：</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"./test.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h2 id="效果-1"><a href="#效果-1" class="headerlink" title="效果"></a>效果</h2><p><strong>加载 index.html 时预加载：</strong></p>
+<p><img src="/images/pre-cache/CacheStorage缓存.png" alt=""></p>
+<p><strong>加载 index2.html 时直接从缓存中拿资源：</strong></p>
+<p><img src="/images/pre-cache/CacheStorage缓存效果.png" alt=""></p>
+<h2 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h2><p>由于此 API 中的很多细节还处于草稿阶段，在<a href="https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage" target="_blank" rel="noopener">MDN</a>上可以查到它的兼容性还是很差的：</p>
+<p><strong>移动端</strong></p>
+<p><img src="/images/pre-cache/CacheStorage-support-in-mobile.png" alt=""></p>
+<p>注意在安卓 webview 上是完全不受支持的 😶😶😶</p>
+<p><strong>PC 端</strong></p>
+<p><img src="/images/pre-cache/CacheStorage-support-in-pc.png" alt=""></p>
+<h2 id="CrossWalker-解决兼容性问题"><a href="#CrossWalker-解决兼容性问题" class="headerlink" title="CrossWalker 解决兼容性问题"></a>CrossWalker 解决兼容性问题</h2><p>外部 App 使用<code>CrossWalker</code>打包，<code>CrossWalker</code>会自带高版本浏览器内核。最后让 web app 运行在<code>CrossWalker</code>中，就可以省去很多兼容性的 BUG。不过<code>CrossWalker</code>比较大，大约 15~20M.</p>
+<h1 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h1><p>采用方案 1🙄😆😊</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CACHE/" rel="tag"># CACHE</a>
+          
+            <a href="/tags/AJAX/" rel="tag"># AJAX</a>
+          
+            <a href="/tags/NODEJS/" rel="tag"># NODEJS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/12/11/throttle-click/" rel="next" title="移动端点击元素重复跳转同一页面BUG解决方案">
+                <i class="fa fa-chevron-left"></i> 移动端点击元素重复跳转同一页面BUG解决方案
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/12/17/angular-change-detection-learing-note/" rel="prev" title="Angular变更检测学习笔记">
+                Angular变更检测学习笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+<span class="jiathis_txt">分享到：</span>
+<a class="jiathis_button_fav">收藏夹</a>
+<a class="jiathis_button_copy">复制网址</a>
+<a class="jiathis_button_email">邮件</a>
+<a class="jiathis_button_weixin">微信</a>
+<a class="jiathis_button_qzone">QQ空间</a>
+<a class="jiathis_button_tqq">腾讯微博</a>
+<a class="jiathis_button_douban">豆瓣</a>
+<a class="jiathis_button_share">一键分享</a>
+
+<a href="http://www.jiathis.com/share?uid=2140465" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank">更多</a>
+<a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript">
+var jiathis_config={
+  data_track_clickback:true,
+  summary:"",
+  shortUrl:false,
+  hideMore:false
+}
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#更新"><span class="nav-number">1.</span> <span class="nav-text">更新</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#方案-1"><span class="nav-number">2.</span> <span class="nav-text">方案 1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#总体思路"><span class="nav-number">2.1.</span> <span class="nav-text">总体思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#A-中要做的事情"><span class="nav-number">2.2.</span> <span class="nav-text">A 中要做的事情</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#代理路径配置文件-pre-cache-config-js"><span class="nav-number">2.2.1.</span> <span class="nav-text">代理路径配置文件 - pre-cache-config.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#真正做预缓存的文件-pre-cache-js"><span class="nav-number">2.2.2.</span> <span class="nav-text">真正做预缓存的文件 - pre-cache.js</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#在-A-的空闲时间加载上述js"><span class="nav-number">2.2.3.</span> <span class="nav-text">在 A 的空闲时间加载上述js</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#B-中要做的事情"><span class="nav-number">2.3.</span> <span class="nav-text">B 中要做的事情</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#禁用pre-cache-manifest-json的缓存"><span class="nav-number">2.3.1.</span> <span class="nav-text">禁用pre-cache-manifest.json的缓存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分析-B-中哪些资源要预加载"><span class="nav-number">2.3.2.</span> <span class="nav-text">分析 B 中哪些资源要预加载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#动态生成-json-清单"><span class="nav-number">2.3.3.</span> <span class="nav-text">动态生成 json 清单</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效果"><span class="nav-number">2.4.</span> <span class="nav-text">效果</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#另一种方案"><span class="nav-number">3.</span> <span class="nav-text">另一种方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#思路"><span class="nav-number">3.1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一个简单的示范"><span class="nav-number">3.2.</span> <span class="nav-text">一个简单的示范</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#效果-1"><span class="nav-number">3.3.</span> <span class="nav-text">效果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#缺点"><span class="nav-number">3.4.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CrossWalker-解决兼容性问题"><span class="nav-number">3.5.</span> <span class="nav-text">CrossWalker 解决兼容性问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#小结"><span class="nav-number">4.</span> <span class="nav-text">小结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
