@@ -13,7 +13,7 @@ timezone:
 avatar: https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg
 
 # Share
-jiathis: true
+jiathis: false
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
@@ -85,3 +85,12 @@ deploy:
   type: git
   repo: https://github.com/hellogithub2014/hellogithub2014.github.io.git
   branch: master
+
+algolia:
+  applicationID: WEVE9OXRX9
+  apiKey: df96fe02e563318c4ee22a2ae430820b
+  indexName: orangeeee
+  chunkSize: 5000
+
+sitemap:
+  path: sitemap.xml

@@ -166,6 +166,42 @@ summary_img: /images/test.png # 注意这里开头的 / ，没有它会导致一
 
 ![summary_img_config](/images/hexo-blog-note/summary_img_config.png)
 
+### 搜索
+
+使用的`Algolia`来建立搜索索引，具体配置文档参考[官方文档](https://theme-next.iissnan.com/third-party-services.html#algolia-search)，注意文档中有一处有写错，在站点配置文件里有 3 个配置是必选项，文档里只写了 2 个。正确的示范如下：
+
+```yml
+algolia:
+  applicationID: xxxx
+  apiKey: xxxx
+  indexName: xxx
+  chunkSize: 5000
+```
+
+效果：
+
+![search](/images/hexo-blog-note/search.png)
+
+### 站点 UV、PV 统计
+
+使用的[`不蒜子`统计](https://theme-next.iissnan.com/third-party-services.html#analytics-busuanzi)，不过发现`next`主题加载的关键`js`文件 404 了。搜索了下发现域名过期了，作者在[这里](http://ibruce.info/2015/04/04/busuanzi/)提供了新的域名。
+
+修改方法：将`next`主题文件夹中的`layout/_third-party/analytics/busuanzi-counter.swig`最上方的`script`改为：
+
+```html
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+```
+
+效果：
+
+![uv_pv](/images/hexo-blog-note/uv_pv.png)
+
+### 分享功能
+
+使用[AddThis](https://www.addthis.com)，[配置文档](https://theme-next.iissnan.com/third-party-services.html#share-addthis)，效果：
+
+![add_this_share](/images/hexo-blog-note/add_this_share.png)
+
 ## 站点基本信息
 
 这里指的是网站标题、作者、头像等。在项目根目录的`_config.yml`中修改即可：
