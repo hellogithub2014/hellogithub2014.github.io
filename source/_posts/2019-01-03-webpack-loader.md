@@ -52,7 +52,7 @@ exports.runLoaders = function runLoaders(options, callback) {
   var loaders = options.loaders || [];
   loaders = loaders.map(createLoaderObject);
 
-  // 各种初始化赋值...
+  // loaderContext的各种初始化赋值...
 
   var processOptions = {
     resourceBuffer: null,
@@ -228,6 +228,8 @@ function runSyncOrAsync(fn, context, args, callback) {
 ```
 
 往`context`上添加了`async`和`callback`函数，它俩是给异步`loader`使用的，前者告诉`context`自己是异步的，后者告诉`context`自己处理完成了。所以在`loader`内部可以调用`this.async`以及`this.callback`. 同步的`loader`不需要用到这俩，执行完直接`return`即可。后面我们会分别举一个例子。
+
+细心点会发现，`loader`内部的`this`是`context`，也就是最外层的`loaderContext`，如果想知道`context`上有哪些成员，可以直接看`runLoaders`内部的初始化逻辑，或者直接去[webpack 官网 api](https://webpack.js.org/api/loaders/)查阅即可。
 
 注意：执行完一个`pitch`后，会判断`pitch`是否有返回值，如果没有则继续递归执行下一个`pitch`；如果有返回值，那么`pitch`的递归就此结束，开始从当前位置从后往前执行`normal`：
 
