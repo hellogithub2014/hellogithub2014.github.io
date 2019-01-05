@@ -202,6 +202,8 @@ algolia:
 
 ![add_this_share](/images/hexo-blog-note/add_this_share.png)
 
+### SEO
+
 ## 站点基本信息
 
 这里指的是网站标题、作者、头像等。在项目根目录的`_config.yml`中修改即可：
