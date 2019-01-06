@@ -1,5 +1,6 @@
 ---
 title: webpack loader机制源码解析
+summary_img: /images/himalayan.jpg
 date: 2019-01-03 11:15:58
 tags: [webpack, loader]
 ---

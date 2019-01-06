@@ -1,5 +1,6 @@
 ---
 title: hexo搭建笔记
+summary_img: /images/bora-bora.jpg
 date: 2018-12-13 15:48:46
 tags: [hexo]
 ---

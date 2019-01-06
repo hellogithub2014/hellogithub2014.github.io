@@ -1,5 +1,6 @@
 ---
 title: webpack打包产物代码分析
+summary_img: /images/contact.jpg
 date: 2019-01-02 11:16:09
 tags:
 ---

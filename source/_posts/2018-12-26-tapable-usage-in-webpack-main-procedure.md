@@ -1,5 +1,6 @@
 ---
 title: tapable在webpack主流程中的应用
+summary_img: /images/canyon.jpg
 date: 2018-12-26 11:16:01
 tags: [webpack, tapable]
 ---
