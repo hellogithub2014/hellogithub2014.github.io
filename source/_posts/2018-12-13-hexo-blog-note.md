@@ -212,7 +212,7 @@ algolia:
 - [Google Webmaster tools](https://theme-next.iissnan.com/third-party-services.html#others)
 - [SEO 优化](https://www.jianshu.com/p/4ef35521fee9)
 
-只配置了[`google`的搜索引擎优化](https://search.google.com)，过几天再看效果。
+只配置了[`google`的搜索引擎优化](https://search.google.com)，过几天再看[效果](https://search.google.com/search-console?resource_id=https%3A%2F%2Fhellogithub2014.github.io%2F)。
 
 ## 评论系统
 
