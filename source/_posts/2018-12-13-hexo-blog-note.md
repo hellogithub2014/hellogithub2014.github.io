@@ -211,6 +211,16 @@ algolia:
 
 只配置了[`google`的搜索引擎优化](https://search.google.com)，过几天再看效果。
 
+## 评论系统
+
+参考[官网文档](https://theme-next.iissnan.com/third-party-services.html)，我配置的是`DISQUS`这个。在设置`shortname`时需要注意，要到`DISQUS`注册账号，并在[管理员页面](https://disqus.com/admin/create/)设置`shortname`.
+
+![shortname-config](/images/hexo-blog-note/shortname-config.png)
+
+## 百度统计
+
+[参考这里](https://theme-next.iissnan.com/third-party-services.html#analytics-system)，比较简单就不多说了, [统计后台](https://tongji.baidu.com)
+
 ## 站点基本信息
 
 这里指的是网站标题、作者、头像等。在项目根目录的`_config.yml`中修改即可：
