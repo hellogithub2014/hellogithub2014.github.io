@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="上篇文章说到了patch中的新增dom过程，这篇会说diif算法。Vue的diff算法是基于snabbdom的，另外网上也有很多分析的文章，我自己是看的掘金上的篇博客。 在这里我主要会从代码实现上来描述。 入口在patch函数中，如果新旧 vnode 属于sameVnode，那么就会执行patchVnode过程： 12345678910111213141516function patch(oldV">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.510Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.422Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Vue源码解析12-patch中的diff算法">
 <meta name="twitter:description" content="上篇文章说到了patch中的新增dom过程，这篇会说diif算法。Vue的diff算法是基于snabbdom的，另外网上也有很多分析的文章，我自己是看的掘金上的篇博客。 在这里我主要会从代码实现上来描述。 入口在patch函数中，如果新旧 vnode 属于sameVnode，那么就会执行patchVnode过程： 12345678910111213141516function patch(oldV">
@@ -135,9 +135,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -316,6 +328,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/10/vue-sourcecode-12-patch-diff/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/10/vue-sourcecode-12-patch-diff/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -439,6 +461,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -488,7 +520,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -501,7 +533,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -579,7 +611,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -717,6 +749,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-12-patch-diff/';
+          this.page.identifier = '2018/11/10/vue-sourcecode-12-patch-diff/';
+          this.page.title = 'Vue源码解析12-patch中的diff算法';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -729,10 +781,6 @@
   
 
 
-
-
-
-  
 
 
 

@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -91,7 +91,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_png/meG6Vo0Mevia3qqAdZXbGMvOQWvD3AxX5RExFksDUS067icPUUmVweUqmuaR2vHlkOqia7x0XydvVfstK6Lf5l7GQ/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
 <meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_png/zPh0erYjkib3g6TGY1YsxUKkCPmA1grtXgKiafNpQ879kPph9tAle98Or8KyMd2kO6HvXUSiaxOkPybbVt8Zy8Djg/640?wx_fmt=png&tp=webp&wxfrom=5&wx_lazy=1">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.481Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.404Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="JavaScript事件循环小结">
 <meta name="twitter:description" content="在学 JavaScript 时，对事件循环总是一知半解，只知道像 setTimeout、Ajax 和事件处理器的回调函数会放到任务队列中，等待事件循环来一个个调用，对于更进一步的细节就不知道了。 最近看了两篇讲这方面的文章，觉得非常棒，帮助我对它的理解更深刻了，于是立马用博客记录下来。 本文只记录这方面的理论知识，强烈推荐将参考中文章的例子自己试着解答一遍，然后对照着理论来消化。 事件循环一张图展">
@@ -138,9 +138,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -319,6 +331,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/11/05/javascript-event-loop-summary/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/11/05/javascript-event-loop-summary/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -482,6 +504,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -531,7 +563,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -544,7 +576,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -622,7 +654,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -760,6 +792,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2017/11/05/javascript-event-loop-summary/';
+          this.page.identifier = '2017/11/05/javascript-event-loop-summary/';
+          this.page.title = 'JavaScript事件循环小结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -772,10 +824,6 @@
   
 
 
-
-
-
-  
 
 
 

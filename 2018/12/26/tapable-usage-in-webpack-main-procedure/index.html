@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -90,7 +90,7 @@
 <meta property="og:description" content="前一阵子研究了tapable的实现后，就一直在学习webpack的源码。虽然事先有预料tapable在webpack中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个webpack就是用tapable串联起来的。这篇文章主要是记录webpack 主流程中的tapable运用，并不会涉及到非常细节的代码实现，因为我也没看完囧。 webpack中的绝大部分功能都是通过注册事件">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/webpack/webpack-main-procedure.jpg">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.516Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.425Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="tapable在webpack主流程中的应用">
 <meta name="twitter:description" content="前一阵子研究了tapable的实现后，就一直在学习webpack的源码。虽然事先有预料tapable在webpack中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个webpack就是用tapable串联起来的。这篇文章主要是记录webpack 主流程中的tapable运用，并不会涉及到非常细节的代码实现，因为我也没看完囧。 webpack中的绝大部分功能都是通过注册事件">
@@ -137,9 +137,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -317,6 +329,16 @@
           
 
           
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/26/tapable-usage-in-webpack-main-procedure/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/12/26/tapable-usage-in-webpack-main-procedure/" itemprop="commentCount"></span>
+                </a>
+              </span>
             
           
 
@@ -543,6 +565,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -592,7 +624,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -605,7 +637,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -683,7 +715,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -821,6 +853,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/12/26/tapable-usage-in-webpack-main-procedure/';
+          this.page.identifier = '2018/12/26/tapable-usage-in-webpack-main-procedure/';
+          this.page.title = 'tapable在webpack主流程中的应用';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -833,10 +885,6 @@
   
 
 
-
-
-
-  
 
 
 

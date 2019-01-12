@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="上篇文章说到了模板解析的第一步parse，现在来说第最后一步generate，用于生成render函数。这一步的代码基本都放在了src/compiler/codegen/index.js中，初看一下会觉得非常长，但并没有想象中复杂，只是需要处理的情况比较多。 在这篇文章里只会介绍最简单的处理，目的是了解整个generate的大致思路。其他的分支会在后续的其他文章里逐步介绍。同时最后会把整个源码注释">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.508Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.420Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Vue源码解析7-生成render函数">
 <meta name="twitter:description" content="上篇文章说到了模板解析的第一步parse，现在来说第最后一步generate，用于生成render函数。这一步的代码基本都放在了src/compiler/codegen/index.js中，初看一下会觉得非常长，但并没有想象中复杂，只是需要处理的情况比较多。 在这篇文章里只会介绍最简单的处理，目的是了解整个generate的大致思路。其他的分支会在后续的其他文章里逐步介绍。同时最后会把整个源码注释">
@@ -135,9 +135,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -316,6 +328,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/03/vue-sourcecode-7-ast-to-render/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/03/vue-sourcecode-7-ast-to-render/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -477,6 +499,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -526,7 +558,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -539,7 +571,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -617,7 +649,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -755,6 +787,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/03/vue-sourcecode-7-ast-to-render/';
+          this.page.identifier = '2018/11/03/vue-sourcecode-7-ast-to-render/';
+          this.page.title = 'Vue源码解析7-生成render函数';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -767,10 +819,6 @@
   
 
 
-
-
-
-  
 
 
 

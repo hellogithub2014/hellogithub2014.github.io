@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="前面简单介绍了compile的最后一步：生成render函数，还剩下很多分支细节没说，主要是各种内置指令以及自定义组件和slot，这些结合之后的patch过程说效果会好一些。 这篇文章主要是介绍patch函数的入口，把patch过程当做黑盒子，从整体的角度讲patch的作用。 patch 入口在生成render函数后，下一步就是调用位于src/core/instance/lifecycle.js的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.509Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.420Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Vue源码解析10-patch函数入口">
 <meta name="twitter:description" content="前面简单介绍了compile的最后一步：生成render函数，还剩下很多分支细节没说，主要是各种内置指令以及自定义组件和slot，这些结合之后的patch过程说效果会好一些。 这篇文章主要是介绍patch函数的入口，把patch过程当做黑盒子，从整体的角度讲patch的作用。 patch 入口在生成render函数后，下一步就是调用位于src/core/instance/lifecycle.js的">
@@ -135,9 +135,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -316,6 +328,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/04/vue-sourcecode-10-entry-of-patch/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/04/vue-sourcecode-10-entry-of-patch/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -453,6 +475,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -502,7 +534,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -515,7 +547,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -593,7 +625,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -731,6 +763,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-10-entry-of-patch/';
+          this.page.identifier = '2018/11/04/vue-sourcecode-10-entry-of-patch/';
+          this.page.title = 'Vue源码解析10-patch函数入口';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -743,10 +795,6 @@
   
 
 
-
-
-
-  
 
 
 

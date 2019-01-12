@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -95,9 +95,10 @@
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/search.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/uv_pv.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/add_this_share.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/shortname-config.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/site_base_config.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/generated_remote_repo.png">
-<meta property="og:updated_time" content="2019-01-05T14:03:48.559Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.425Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hexo搭建笔记">
 <meta name="twitter:description" content="记录在搭建hexo博客时一些注意的点，大部分基础的步骤参考了其他博客。 前置工具 拥有 github 账户、安装了 git、node、npm 全局安装hexo  1npm install -g hexo-cli 建立 github 仓库 在github上建立一个远程仓库，注意仓库名格式有要求： 用户名.github.io, 即如果github用户名为username，那么你需要建一个名为usern">
@@ -144,9 +145,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -325,6 +338,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/13/hexo-blog-note/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/12/13/hexo-blog-note/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -408,7 +431,10 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span> ---------------------------------------------------------------</span><br><span class="line"><span class="meta">#</span> Scheme Settings</span><br><span class="line"><span class="meta">#</span> ---------------------------------------------------------------</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span> Schemes</span><br><span class="line"><span class="meta">#</span> scheme: Muse</span><br><span class="line"><span class="meta">#</span> scheme: Mist</span><br><span class="line">scheme: Pisces</span><br><span class="line"><span class="meta">#</span> scheme: Gemini</span><br></pre></td></tr></table></figure>
 <p>可以看到<code>next</code>提供了 4 种样式，我选的是<code>Pisces</code>。</p>
 <ol start="3">
-<li>验证主题配置，重新<code>hexo s</code>就可以在本地看到新的主题了，美美的~~赶紧部署到服务器去秀一把吧 😄！</li>
+<li><p>验证主题配置，重新<code>hexo s</code>就可以在本地看到新的主题了，美美的~~赶紧部署到服务器去秀一把吧 😄！</p>
+</li>
+<li><p>需要注意的是，使用<code>git clone</code>的方式下载主题时，主体文件夹默认不会被推送到我们自己的代码仓库中，这就导致你在另一台电脑上如果也想修改博客站点就需要重新再配置一遍主题，很麻烦。解决办法是将主题文件夹变成普通的文件夹，进入<strong>主题文件夹根目录</strong>并执行<code>rm -rf .git</code>，你会发现本地变更中多出很多主题相关的文件，这就对了，这样就能将主题文件也放入博客仓库。</p>
+</li>
 </ol>
 <h2 id="文章引入本地图片"><a href="#文章引入本地图片" class="headerlink" title="文章引入本地图片"></a>文章引入本地图片</h2><p>由于我们的博客通常是用<code>markdown</code>写的，对于外链图片就直接按照<code>markdown</code>语法来写就行，对于本地图片需要一些额外的配置。图片分为两种：文章封面图和文章内容里的插图。由于个人习惯，封面图会和文章插图分开，以下都是以这个前提来讲述如何配置的：</p>
 <h3 id="文章插图"><a href="#文章插图" class="headerlink" title="文章插图"></a>文章插图</h3><p>在<a href="https://hexo.io/zh-cn/docs/asset-folders" target="_blank" rel="noopener">官网文档</a>已经讲了如何在文章内容中引入本地图片了，我也是用的最简单的方法。</p>
@@ -438,7 +464,10 @@
 <li><a href="https://theme-next.iissnan.com/third-party-services.html#others" target="_blank" rel="noopener">Google Webmaster tools</a></li>
 <li><a href="https://www.jianshu.com/p/4ef35521fee9" target="_blank" rel="noopener">SEO 优化</a></li>
 </ul>
-<p>只配置了<a href="https://search.google.com" target="_blank" rel="noopener"><code>google</code>的搜索引擎优化</a>，过几天再看效果。</p>
+<p>只配置了<a href="https://search.google.com" target="_blank" rel="noopener"><code>google</code>的搜索引擎优化</a>，过几天再看<a href="https://search.google.com/search-console?resource_id=https%3A%2F%2Fhellogithub2014.github.io%2F" target="_blank" rel="noopener">效果</a>。</p>
+<h2 id="评论系统"><a href="#评论系统" class="headerlink" title="评论系统"></a>评论系统</h2><p>参考<a href="https://theme-next.iissnan.com/third-party-services.html" target="_blank" rel="noopener">官网文档</a>，我配置的是<code>DISQUS</code>这个。在设置<code>shortname</code>时需要注意，要到<code>DISQUS</code>注册账号，并在<a href="https://disqus.com/admin/create/" target="_blank" rel="noopener">管理员页面</a>设置<code>shortname</code>.</p>
+<p><img src="/images/hexo-blog-note/shortname-config.png" alt="shortname-config"></p>
+<h2 id="百度统计"><a href="#百度统计" class="headerlink" title="百度统计"></a>百度统计</h2><p><a href="https://theme-next.iissnan.com/third-party-services.html#analytics-system" target="_blank" rel="noopener">参考这里</a>，比较简单就不多说了, <a href="https://tongji.baidu.com" target="_blank" rel="noopener">统计后台</a></p>
 <h2 id="站点基本信息"><a href="#站点基本信息" class="headerlink" title="站点基本信息"></a>站点基本信息</h2><p>这里指的是网站标题、作者、头像等。在项目根目录的<code>_config.yml</code>中修改即可：</p>
 <figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Site</span></span><br><span class="line"><span class="attr">title:</span> <span class="string">十年一刻</span></span><br><span class="line"><span class="attr">subtitle:</span></span><br><span class="line"><span class="attr">description:</span> <span class="string">码畜</span></span><br><span class="line"><span class="attr">keywords:</span></span><br><span class="line"><span class="attr">author:</span> <span class="string">Liu</span> <span class="string">Bin</span></span><br><span class="line"><span class="attr">language:</span> <span class="string">zh-Hans</span></span><br><span class="line"><span class="attr">timezone:</span></span><br><span class="line"><span class="attr">avatar:</span> <span class="attr">https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1544633647623&amp;di=9344c3068a2e155434bd39899d7cd25d&amp;imgtype=0&amp;src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg</span></span><br></pre></td></tr></table></figure>
 <p>在站点中就可以看到这些信息了：</p>
@@ -538,6 +567,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -587,7 +626,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -600,7 +639,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -633,7 +672,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前置工具"><span class="nav-number">1.</span> <span class="nav-text">前置工具</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#建立-github-仓库"><span class="nav-number">2.</span> <span class="nav-text">建立 github 仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#测试一下"><span class="nav-number">3.</span> <span class="nav-text">测试一下</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#常用-Hexo-命令"><span class="nav-number">4.</span> <span class="nav-text">常用 Hexo 命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#部署博客站点到服务器"><span class="nav-number">5.</span> <span class="nav-text">部署博客站点到服务器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#个性化配置"><span class="nav-number">6.</span> <span class="nav-text">个性化配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#更换主题"><span class="nav-number">6.1.</span> <span class="nav-text">更换主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文章引入本地图片"><span class="nav-number">6.2.</span> <span class="nav-text">文章引入本地图片</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文章插图"><span class="nav-number">6.2.1.</span> <span class="nav-text">文章插图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#封面图"><span class="nav-number">6.2.2.</span> <span class="nav-text">封面图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搜索"><span class="nav-number">6.3.</span> <span class="nav-text">搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#站点-UV、PV-统计"><span class="nav-number">6.4.</span> <span class="nav-text">站点 UV、PV 统计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分享功能"><span class="nav-number">6.5.</span> <span class="nav-text">分享功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SEO"><span class="nav-number">6.6.</span> <span class="nav-text">SEO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#站点基本信息"><span class="nav-number">6.7.</span> <span class="nav-text">站点基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网站背景图"><span class="nav-number">6.8.</span> <span class="nav-text">网站背景图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分离博客文章源码与发布文件"><span class="nav-number">6.9.</span> <span class="nav-text">分离博客文章源码与发布文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前置工具"><span class="nav-number">1.</span> <span class="nav-text">前置工具</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#建立-github-仓库"><span class="nav-number">2.</span> <span class="nav-text">建立 github 仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#测试一下"><span class="nav-number">3.</span> <span class="nav-text">测试一下</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#常用-Hexo-命令"><span class="nav-number">4.</span> <span class="nav-text">常用 Hexo 命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#部署博客站点到服务器"><span class="nav-number">5.</span> <span class="nav-text">部署博客站点到服务器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#个性化配置"><span class="nav-number">6.</span> <span class="nav-text">个性化配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#更换主题"><span class="nav-number">6.1.</span> <span class="nav-text">更换主题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#文章引入本地图片"><span class="nav-number">6.2.</span> <span class="nav-text">文章引入本地图片</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#文章插图"><span class="nav-number">6.2.1.</span> <span class="nav-text">文章插图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#封面图"><span class="nav-number">6.2.2.</span> <span class="nav-text">封面图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#搜索"><span class="nav-number">6.3.</span> <span class="nav-text">搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#站点-UV、PV-统计"><span class="nav-number">6.4.</span> <span class="nav-text">站点 UV、PV 统计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分享功能"><span class="nav-number">6.5.</span> <span class="nav-text">分享功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SEO"><span class="nav-number">6.6.</span> <span class="nav-text">SEO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#评论系统"><span class="nav-number">6.7.</span> <span class="nav-text">评论系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#百度统计"><span class="nav-number">6.8.</span> <span class="nav-text">百度统计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#站点基本信息"><span class="nav-number">6.9.</span> <span class="nav-text">站点基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#网站背景图"><span class="nav-number">6.10.</span> <span class="nav-text">网站背景图</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分离博客文章源码与发布文件"><span class="nav-number">6.11.</span> <span class="nav-text">分离博客文章源码与发布文件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">7.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
             
 
           </div>
@@ -678,7 +717,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -816,6 +855,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/12/13/hexo-blog-note/';
+          this.page.identifier = '2018/12/13/hexo-blog-note/';
+          this.page.title = 'hexo搭建笔记';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -828,10 +887,6 @@
   
 
 
-
-
-
-  
 
 
 

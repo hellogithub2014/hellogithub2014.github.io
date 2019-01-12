@@ -25,7 +25,7 @@
 
 
 
-  <meta name="google-site-verification" content="cqri_tW89g1yYdfLqxPF_84A357l1Q5HyvOYOA0lQpY">
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
 
 
 
@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-05T06:06:13.508Z">
+<meta property="og:updated_time" content="2019-01-12T12:49:02.419Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Vue源码解析6-静态AST优化">
 <meta name="twitter:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
@@ -135,9 +135,21 @@
 
 
 
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
 
 
 
+
+
+  
 </head>
 
 <body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -316,6 +328,16 @@
 
           
             
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/01/vue-sourcecode-6-optimizer/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/01/vue-sourcecode-6-optimizer/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
           
 
           
@@ -454,6 +476,16 @@
           
 
   
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
 
 
 
@@ -503,7 +535,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">70</span>
+                  <span class="site-state-item-count">71</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -516,7 +548,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">53</span>
+                  <span class="site-state-item-count">54</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -594,7 +626,7 @@
 
         
 <div class="busuanzi-count">
-  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 
   
     <span class="site-uv">
@@ -732,6 +764,26 @@
 
   
 
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/01/vue-sourcecode-6-optimizer/';
+          this.page.identifier = '2018/11/01/vue-sourcecode-6-optimizer/';
+          this.page.title = 'Vue源码解析6-静态AST优化';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
 
 
 
@@ -744,10 +796,6 @@
   
 
 
-
-
-
-  
 
 
 
