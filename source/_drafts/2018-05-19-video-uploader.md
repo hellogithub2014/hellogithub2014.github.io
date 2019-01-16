@@ -1,5 +1,5 @@
 ---
-title: "BytedVideoUploader源码阅读笔记"
+title: 'VideoUploader源码阅读笔记'
 img: canyon.jpg # Add image post (optional)
 # date: 2017-11-15 20:30:00 +0800
 description: You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. # Add post description (optional)
