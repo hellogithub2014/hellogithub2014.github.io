@@ -350,7 +350,11 @@ module.exports.pitch = function(request) {
   // ...
 
   return [
-    //  一些数组元素...
+    // ...
+    'var content = require(' + loaderUtils.stringifyRequest(this, '!!' + request) + ');',
+    // ...
+    'var update = require(' + loaderUtils.stringifyRequest(this, '!' + path.join(__dirname, 'lib', 'addStyles.js')) + ')(content, options);',
+    //  ...
   ].join('\n');
 };
 ```
@@ -358,6 +362,13 @@ module.exports.pitch = function(request) {
 为啥`style-loader`要有`pitch`呢？ 参考[`这篇博客`](https://github.com/lihongxun945/diving-into-webpack/blob/master/3-style-loader-and-css-loader.md)的说法，是为了避免受到`css-loader`的影响：
 
 > 因为我们要把 CSS 文件的内容插入 DOM，所以我们要获取 CSS 文件的样式。如果按照默认的从右往左的顺序，我们使用 css-loader ，它返回的结果是一段 JS 字符串，这样我们就取不到 CSS 样式了。为了获取 CSS 样式，我们会在 style-loader 中直接通过 require 来获取，这样返回的 JS 就不是字符串而是一段代码了。也就是我们是先执行 style-loader，在它里面再执行 css-loader。
+
+从代码层面来看，
+
+- `Style-loader` 需要的是一个 `css` 文件路径, 而 `css-loader` 返回的是一个数组，这样就无法处理。 先用 `style-loader` 的 `pitch` 处理，其中会再次 `require` `css` 文件，这时才会用到 `css-loader`,此时 `css-loader` 的返回值会传递给 `addStyle.js`，就可以处理了
+- 路径前面的感叹号作用， [参考 1](https://github.com/webpack-contrib/sass-loader/issues/343)、[参考 2](https://stephenzhao.github.io/webpack-cn/docs/loaders.html#loader-order)：
+  1. 1 个`！`用于禁用 `preloader`， `preloader` 是一个过时的东西，[参考这里](http://deshui.wang/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/2016/07/20/fullstack-webpack-preloaders)
+  2. 2 个`！`用于禁用所有 `loader`
 
 # 异步的 less-loader
 

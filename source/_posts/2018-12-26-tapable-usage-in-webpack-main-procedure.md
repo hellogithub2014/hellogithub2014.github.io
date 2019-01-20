@@ -69,6 +69,9 @@ const webpack = (options, callback) => {
 };
 ```
 
+`WebpackOptionsDefaulter`继承了`OptionsDefaulter`类，它的`set`方法用于设置每一项的默认值，比如
+`this.set("entry", "./src")`就是另`entry`的默认值为`./src`.
+
 前半部分代码比较好懂，另外我们暂时不关注`watch`选项，所以接下来会调用`compiler.run`。在继续之前先看看`WebpackOptionsApply.process`：
 
 ```js
@@ -371,7 +374,45 @@ create(data, callback) {
 	}
 ```
 
-`factory`钩子的监听函数中会生成`NormalModule`实例：
+如果在`beforeResolve`钩子中返回`false`，则后续流程会被跳过，即此模块不会被打包。例如`IgnorePlugin`处理`moment`的打包问题就很典型：
+
+测试发现`import moment`时会将所有`locale`都打包进了，追查发现在`moment`源码中有个函数可以执行导入,虽然默认不会执行:
+
+```js
+function loadLocale(name) {
+  // ...
+  require('./locale/' + name);
+  //....
+}
+```
+
+在`webpack`打包过程中，在解析完`moment`后发现有`locale`的依赖，就会去解析`locale`。 在`IgnorePlugin`中打断点发现会尝试解析 `./locale`（即`result.request`的值）:
+
+```js
+if ('resourceRegExp' in this.options && this.options.resourceRegExp && this.options.resourceRegExp.test(result.request)) {
+  // ...
+}
+```
+
+利用 `BundleAnalyzerPlugin` 可以很明显发现打包产物包含了所有 `locale` 文件。
+
+解决办法，添加如下配置：
+
+```js
+new webpack.IgnorePlugin({
+  resourceRegExp: /^\.\/locale$/,
+  contextRegExp: /moment$/,
+});
+```
+
+此时 `IgnorePlugin`会返回 `null`,这样我们就跳过了整个`locale`的打包。 (此插件注册了 `NormalModuleFactory` 和 `ContextModuleFactory` 的 `beforeResolve` 钩子，`locale` 的解析是在 `ContextModuleFactory` 的).
+
+参考资料
+
+- [ignore-plugin](https://webpack.js.org/plugins/ignore-plugin/)
+- [moment issues](https://github.com/moment/moment/issues/2373)
+
+以上就是`beforeResolve`的一个作用，接下来的`factory`钩子的监听函数中会生成`NormalModule`实例：
 
 ```js
 this.hooks.factory.tap('NormalModuleFactory', () => (result, callback) => {
@@ -695,7 +736,7 @@ parse(source, initialState) {
 
 一个`Module`可能依赖其他`Module`，这需要逐个解析`AST`节点来确定，由于依赖的方式有很多种比如`require`、`require.ensure`、`import`等，对于每一种依赖都有对应的类例如`AMDRequireDependency`，依赖的形式如此之多以至于`webpack`专门建了一个`lib/dependencies`文件夹。
 
-> 当 `parser` 解析完成之后，`module` 的解析过程就完成了。每个 `module` 解析完成之后，都会触发 `Compilation` 实例对象的任务点 `succeedModule`，我们可以在这个任务点获取到刚解析完的 `module` 对象。正如前面所说，`module` 接下来还要继续递归解析它的依赖模块，最终我们会得到项目所依赖的所有 `modules`。此时任务点 `make` 结束。
+> 当 `parser` 解析完成之后，`module` 的解析过程就完成了。每个 `module` 解析完成之后，都会触发 `Compilation` 实例对象的任务点 `succeedModule`，我们可以在这个任务点获取到刚解析完的 `module` 对象。正如前面所说，`module` 接下来还要继续递归解析它的依赖模块，最终我们会得到项目所依赖的所有 `modules`。此时任务点 `make` 结束。注意`require.ensure`在`build`后被放入了`module.blocks`而不是`module.dependencies`。
 
 接下来按照流程图我们会调用`Compilation`对象的`finish`和`seal`方法。`finish`很简单就触发了一个钩子，我们的重点放在`seal`上：
 
@@ -828,6 +869,31 @@ seal(callback) {
 ```
 
 到了`seal`方法，我们已经处理了所有`Module`并统一打平放到了`compilation.modules`中，现在需要根据`modules`生成`chunks`，代码中放了一些大致流程的注释，内部的实现还是很复杂的。
+
+`moduleId`和`chunkId`作用： 在`filename`的变换时会用到`[id]/[moduleid]`； `chunhHash`会用到`chunk id`; 生成的打包代码会将名称替换为`id`;
+
+`createHash`的会生成`hash、moduleHash、chunkHash`,`hash`生成算法核心是`crypto.createHash + ‘md4’`。在随后的`createChunkAssets -> TemplatedPathPlugin`中替换`filename`、`chunkfileName`的`[hash]`、`[chunkhash]`.
+
+## `modules`生成`chunks`
+
+没有看完，这里记录掌握的东西。涉及到 3 个核心对象：
+
+- `ChunkGroup`: 内部维护了 `chunks`、`children`、`parents`3 个数组，并添加了一系列方法来维护这 3 个数组。`chunks`表示这个`group`下面拥有多少`chunk`；
+- `Chunk`：内部维护了 `groups`、`modules` 数组。`groups`表示此 `chunk` 存在于哪些 `chunkgroup` 中；`modules`表示此 `chunk` 内部含有多少 `module`
+- `Module`：内部维护了 `chunks` 数组。`chunks`表示此 `module` 存在于哪些 `chunks` 当中。
+
+`assignDepth`方法：从 entry 出发，为每个 module 添加一个 depth 属性
+
+- `entry`的`depth`为 0
+- 依赖的静态模块`depth` +1
+- 动态模块的`depth`也是 +1
+- 层级遍历
+
+一些参考文档：
+
+- [参考 1](https://medium.com/webpack/the-chunk-graph-algorithm-week-26-29-7c88aa5e4b4e)
+- [参考 2](https://webpack.js.org/api/stats/)
+- [参考 3](https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366)
 
 生成了`chunks`之后，第二阶段就完成了，接下来就是生成打包产物阶段了。
 
