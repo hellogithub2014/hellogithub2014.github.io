@@ -148,7 +148,7 @@ handleMouseLeave() {
 
 `Popper.js`在 element 多个组件中都有用到，最常见的就是`popover`和`tooltip`这俩了：
 
-[usage-in-vui](/images/popperjs/usage-in-vui.png)
+![usage-in-vui](/images/popperjs/usage-in-vui.png)
 
 我们研究`Popper.js`的主要目的是：**尝试找到一个方法，在宿主 reference 元素或者 popper 内容滚动出其父级滚动区时，隐藏 popper。**
 
