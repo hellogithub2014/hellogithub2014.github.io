@@ -567,6 +567,13 @@ Popper.prototype.modifiers.preventOverflow = function(data) {
 
 所有其他`modifier`的作用发挥都基于`reference`、`popper`和`boundariesElement`的位置和大小。
 
+综上，`update`函数做了以下几件事：
+
+- 获取`data`属性，并最终传递给每个`modifier`函数
+- 获取`popper`和`reference`的位置信息，放入`data.offsets`属性
+- 获取`boundariesElement`位置和尺寸，放入`data.boundaries`
+- 依次运行每个`options.modifier`函数
+
 ## 为什么设置`boundariesElement`不行？
 
 现在可以回答为什么指定`boundariesElement`不行了，从上面的分析可以看到：**`boundariesElement`和`reference`、`popper`的参考坐标是不一样的，前者是一个非`document`元素，后两个都是基于`document`，除非`boundariesElement`的`offsetParent`恰好就是`document`元素**，我们只能另辟蹊径了。
