@@ -91,10 +91,11 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popover-problem-in-list.gif">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popover-problem-in-list-slow.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/usage-in-vui.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popper-boundaries-behavior.gif">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popper-error-of-boundariesElement.gif">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/fix-using-intersectionobserver.gif">
-<meta property="og:updated_time" content="2019-02-26T05:29:10.890Z">
+<meta property="og:updated_time" content="2019-02-26T05:41:03.142Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="popover在快速滚动列表项中的问题及Popper.js源码解析">
 <meta name="twitter:description" content="我们前端项目里用的组件库是 vue 的element-ui，有个地方用到了popover组件，一个列表中每个列表项在 hover 时都会在popover中展示提示语。这里就出现了一个优化问题：当快速滚动列表项时，即使某个列表项已经隐藏了，可是对应的popover需要过一会才能消失，体验不大好，示范如下：  可以看到很多popover都是到了视口顶部才消失，使用的示范代码如下： 1234567891">
@@ -401,7 +402,7 @@
 <p><strong>这就表明从<code>popover</code>组件自身是没有办法解决这个问题的，需要更深入的研究其底层所用的库,也就是<a href="https://popper.js.org/" target="_blank" rel="noopener">Popper.js</a></strong></p>
 <p><code>Popper.js</code>是一个很有名的管理弹出内容的小巧库，在<code>github</code>上有 11000+的 star，并且其体积很小，压缩混淆且 gzip 后只有大约 6kb。</p>
 <h1 id="思路-3：设置-boundariesElement"><a href="#思路-3：设置-boundariesElement" class="headerlink" title="思路 3：设置 boundariesElement"></a>思路 3：设置 <code>boundariesElement</code></h1><p><code>Popper.js</code>在 element 多个组件中都有用到，最常见的就是<code>popover</code>和<code>tooltip</code>这俩了：</p>
-<p><a href="/images/popperjs/usage-in-vui.png">usage-in-vui</a></p>
+<p><img src="/images/popperjs/usage-in-vui.png" alt="usage-in-vui"></p>
 <p>我们研究<code>Popper.js</code>的主要目的是：<strong>尝试找到一个方法，在宿主 reference 元素或者 popper 内容滚动出其父级滚动区时，隐藏 popper。</strong></p>
 <p>在初步翻越其官网文档后，发现有一个<code>boundariesElement</code>配置项，看名字是指向<code>popper</code>的边界，默认的配置是<code>viewport</code>。因为<code>Popper.js</code>会小心控制其弹出内容不超出边界，必要时会调整<code>popper</code>的位置，示范如下：</p>
 <p><img src="/images/popperjs/popper-boundaries-behavior.gif" alt="popper-boundaries-behavior"></p>
