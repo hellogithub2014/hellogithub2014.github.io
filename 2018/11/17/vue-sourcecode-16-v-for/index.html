@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Vue,javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="parseprocessFor用于处理v-for指令： 12345678910export function processFor(el: ASTElement) &amp;#123;  let exp;  // 从attrsMap中获取key为‘v-for’的属性值，例如 &quot;(value,key,index) in items&quot;  if ((exp = getAndRemoveAttr(el, &apos;v-f">
+<meta name="keywords" content="Vue,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析16-v-for的处理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-16-v-for/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="parseprocessFor用于处理v-for指令： 12345678910export function processFor(el: ASTElement) &amp;#123;  let exp;  // 从attrsMap中获取key为‘v-for’的属性值，例如 &quot;(value,key,index) in items&quot;  if ((exp = getAndRemoveAttr(el, &apos;v-f">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.739Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析16-v-for的处理">
+<meta name="twitter:description" content="parseprocessFor用于处理v-for指令： 12345678910export function processFor(el: ASTElement) &amp;#123;  let exp;  // 从attrsMap中获取key为‘v-for’的属性值，例如 &quot;(value,key,index) in items&quot;  if ((exp = getAndRemoveAttr(el, &apos;v-f">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-16-v-for/">
+
+
+
+
+
+  <title>Vue源码解析16-v-for的处理 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-16-v-for/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析16-v-for的处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-17T17:20:00+08:00">
+                2018-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/17/vue-sourcecode-16-v-for/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/17/vue-sourcecode-16-v-for/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="parse"><a href="#parse" class="headerlink" title="parse"></a>parse</h1><p><code>processFor</code>用于处理<code>v-for</code>指令：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">processFor</span>(<span class="params">el: ASTElement</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> exp;</span><br><span class="line">  <span class="comment">// 从attrsMap中获取key为‘v-for’的属性值，例如 "(value,key,index) in items"</span></span><br><span class="line">  <span class="keyword">if</span> ((exp = getAndRemoveAttr(el, <span class="string">'v-for'</span>))) &#123;</span><br><span class="line">    <span class="keyword">const</span> res = parseFor(exp);</span><br><span class="line">    <span class="keyword">if</span> (res) &#123;</span><br><span class="line">      extend(el, res);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>依然还是用例子来帮助理解，假设<code>html</code>为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">"app"</span>&gt;</span><br><span class="line">  &lt;div v-<span class="keyword">for</span>=<span class="string">"(value,key,index) in items"</span>&gt;<span class="number">111</span>&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>div&gt;</span><br></pre></td></tr></table></figure>
+<p>首先<code>getAndRemoveAttr</code>看名字应该能查到它是获取并删除特定的节点属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// note: this only removes the attr from the Array (attrsList) so that it</span></span><br><span class="line"><span class="comment">// doesn't get processed by processAttrs.</span></span><br><span class="line"><span class="comment">// By default it does NOT remove it from the map (attrsMap) because the map is</span></span><br><span class="line"><span class="comment">// needed during codegen.</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">getAndRemoveAttr</span>(<span class="params">el: ASTElement, name: string, removeFromMap?: boolean</span>): ?<span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> val;</span><br><span class="line">  <span class="comment">// attrsMap用于快速查找有没有某个属性，attrsList用于存放所有的属性</span></span><br><span class="line">  <span class="keyword">if</span> ((val = el.attrsMap[name]) != <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> list = el.attrsList;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>, l = list.length; i &lt; l; i++) &#123;</span><br><span class="line">      <span class="keyword">if</span> (list[i].name === name) &#123;</span><br><span class="line">        list.splice(i, <span class="number">1</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (removeFromMap) &#123;</span><br><span class="line">    <span class="keyword">delete</span> el.attrsMap[name];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>由于我们没有传入<code>removeFromMap</code>参数，所以节点上还是保留了<code>v-for</code>属性。这样我们拿到的<code>exp</code>就是<code>(value,key,index) in items</code>，<code>parseFor</code>用于解析这个表达式，获取其中的各个部分：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">parseFor</span>(<span class="params">exp: string</span>): ?<span class="title">ForParseResult</span> </span>&#123;</span><br><span class="line">  <span class="comment">// 若exp为(value,key,index)， inMatch为</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * [</span></span><br><span class="line"><span class="comment">   *    "(value,key,index) in items",</span></span><br><span class="line"><span class="comment">        "(value,key,index)",</span></span><br><span class="line"><span class="comment">        "items"</span></span><br><span class="line"><span class="comment">   * ]</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  <span class="keyword">const</span> inMatch = exp.match(forAliasRE);</span><br><span class="line">  <span class="keyword">if</span> (!inMatch) <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">const</span> res = &#123;&#125;;</span><br><span class="line">  res.for = inMatch[<span class="number">2</span>].trim();</span><br><span class="line">  <span class="comment">// 去掉两边括号，结果为‘value,key,index’</span></span><br><span class="line">  <span class="keyword">const</span> alias = inMatch[<span class="number">1</span>].trim().replace(stripParensRE, <span class="string">''</span>);</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * iteratorMatch示范</span></span><br><span class="line"><span class="comment">   * [</span></span><br><span class="line"><span class="comment">   *    ",key,index",</span></span><br><span class="line"><span class="comment">        "key",</span></span><br><span class="line"><span class="comment">        "index"</span></span><br><span class="line"><span class="comment">   * ]</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">  <span class="keyword">const</span> iteratorMatch = alias.match(forIteratorRE);</span><br><span class="line">  <span class="keyword">if</span> (iteratorMatch) &#123;</span><br><span class="line">    res.alias = alias.replace(forIteratorRE, <span class="string">''</span>); <span class="comment">// 'value'</span></span><br><span class="line">    res.iterator1 = iteratorMatch[<span class="number">1</span>].trim(); <span class="comment">// 'key'</span></span><br><span class="line">    <span class="keyword">if</span> (iteratorMatch[<span class="number">2</span>]) &#123;</span><br><span class="line">      res.iterator2 = iteratorMatch[<span class="number">2</span>].trim(); <span class="comment">// 'index'</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    res.alias = alias; <span class="comment">// ‘value,key,index’</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释应该很详细，之所以有很多<code>if</code>判断是因为<code>v-for</code>的格式可以有很多种，需要针对性处理。我们的示范经过<code>parseFor</code>处理后拿到结果为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span>: <span class="string">'items'</span>,</span><br><span class="line">    alias: <span class="string">'value'</span>,</span><br><span class="line">    iterator1: <span class="string">'key'</span></span><br><span class="line">    iterator2: <span class="string">'index'</span></span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>最终经过<code>parse</code>，上面的这几个属性会全部放到<code>el</code>这个<code>AST</code>节点上。</p>
+<h1 id="generate"><a href="#generate" class="headerlink" title="generate"></a>generate</h1><p><code>src/compiler/codegen/index.js</code>中的<code>genFor</code>用于处理<code>AST</code>节点上与<code>v-for</code>相关的属性，生成对应字符串：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">genFor</span>(<span class="params">el: any, state: CodegenState, altGen?: Function, altHelper?: string</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> exp = el.for;</span><br><span class="line">  <span class="keyword">const</span> alias = el.alias;</span><br><span class="line">  <span class="keyword">const</span> iterator1 = el.iterator1 ? <span class="string">`,<span class="subst">$&#123;el.iterator1&#125;</span>`</span> : <span class="string">''</span>;</span><br><span class="line">  <span class="keyword">const</span> iterator2 = el.iterator2 ? <span class="string">`,<span class="subst">$&#123;el.iterator2&#125;</span>`</span> : <span class="string">''</span>;</span><br><span class="line"></span><br><span class="line">  el.forProcessed = <span class="literal">true</span>; <span class="comment">// avoid recursion</span></span><br><span class="line">  <span class="comment">// 示范："_l((items),function(value,key,index)&#123;return _c('p',[_v(_s(index)+". "+_s(key)+" : "+_s(value))])&#125;)"</span></span><br><span class="line">  <span class="keyword">return</span> <span class="string">`<span class="subst">$&#123;altHelper || <span class="string">'_l'</span>&#125;</span>((<span class="subst">$&#123;exp&#125;</span>),`</span> + <span class="string">`function(<span class="subst">$&#123;alias&#125;</span><span class="subst">$&#123;iterator1&#125;</span><span class="subst">$&#123;iterator2&#125;</span>)&#123;`</span> + <span class="string">`return <span class="subst">$&#123;(altGen || genElement)(el, state)&#125;</span>`</span> + <span class="string">'&#125;)'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>炒鸡简单有木有，我们生成的字符串如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">`_l(items, function(value, key, index) &#123;</span></span><br><span class="line"><span class="string">  return _c('div', [_v('111')]);</span></span><br><span class="line"><span class="string">&#125;)`</span>;</span><br></pre></td></tr></table></figure>
+<p><code>_v</code>（<code>createTextVNode</code>）用于创建一个<code>vnode</code>文本结点：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createTextVNode</span>(<span class="params">val: string | number</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> VNode(<span class="literal">undefined</span>, <span class="literal">undefined</span>, <span class="literal">undefined</span>, <span class="built_in">String</span>(val));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>_c</code>在之前讲述<code>vnode</code>时提过,这里再贴出来下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vm._c = <span class="function">(<span class="params">a, b, c, d</span>) =&gt;</span> createElement(vm, a, b, c, d, <span class="literal">false</span>);</span><br></pre></td></tr></table></figure>
+<p><code>_l</code>(<code>renderList</code>)用于渲染列表：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Runtime helper for rendering v-for lists.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">renderList</span>(<span class="params">val: any, render: (val: any, keyOrIndex: string | number, index?: number</span>) =&gt; <span class="title">VNode</span>): ?<span class="title">Array</span>&lt;<span class="title">VNode</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> ret: ?<span class="built_in">Array</span>&lt;VNode&gt;, i, l, keys, key;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(val) || <span class="keyword">typeof</span> val === <span class="string">'string'</span>) &#123;</span><br><span class="line">    ret = <span class="keyword">new</span> <span class="built_in">Array</span>(val.length);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>, l = val.length; i &lt; l; i++) &#123;</span><br><span class="line">      ret[i] = render(val[i], i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> val === <span class="string">'number'</span>) &#123;</span><br><span class="line">    ret = <span class="keyword">new</span> <span class="built_in">Array</span>(val);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; val; i++) &#123;</span><br><span class="line">      ret[i] = render(i + <span class="number">1</span>, i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isObject(val)) &#123;</span><br><span class="line">    keys = <span class="built_in">Object</span>.keys(val);</span><br><span class="line">    ret = <span class="keyword">new</span> <span class="built_in">Array</span>(keys.length);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>, l = keys.length; i &lt; l; i++) &#123;</span><br><span class="line">      key = keys[i];</span><br><span class="line">      ret[i] = render(val[key], key, i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (isDef(ret)) &#123;</span><br><span class="line">    (ret: any)._isVList = <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参数<code>val</code>的形式可以有多种：字符串、数字、对象、数组，代码比较简单很快能看懂。</p>
+<p>最终我们拿到的<code>render</code>字符串为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">`</span></span><br><span class="line"><span class="string">with (this) &#123;</span></span><br><span class="line"><span class="string">  return _c(</span></span><br><span class="line"><span class="string">    'div',</span></span><br><span class="line"><span class="string">    &#123; attrs: &#123; id: 'app' &#125; &#125;,</span></span><br><span class="line"><span class="string">    _l(items, function(value, key, index) &#123;</span></span><br><span class="line"><span class="string">      return _c('div', [_v('111')]);</span></span><br><span class="line"><span class="string">    &#125;),</span></span><br><span class="line"><span class="string">  );</span></span><br><span class="line"><span class="string">&#125;</span></span><br><span class="line"><span class="string">`</span>;</span><br></pre></td></tr></table></figure>
+<p>之后就是生成<code>vnode</code>了，<code>v-for</code>的痕迹就看不到了。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/17/vue-sourcecode-15-custom-directive/" rel="next" title="Vue源码解析15-自定义指令">
+                <i class="fa fa-chevron-left"></i> Vue源码解析15-自定义指令
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/17/vue-sourcecode-17-v-if/" rel="prev" title="Vue源码解析17-v-if的处理">
+                Vue源码解析17-v-if的处理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#parse"><span class="nav-number">1.</span> <span class="nav-text">parse</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#generate"><span class="nav-number">2.</span> <span class="nav-text">generate</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-16-v-for/';
+          this.page.identifier = '2018/11/17/vue-sourcecode-16-v-for/';
+          this.page.title = 'Vue源码解析16-v-for的处理';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

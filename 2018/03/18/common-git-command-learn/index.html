@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="GIT,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="文章目的在学习了廖雪峰的git教程中一些常见的git命令后，觉得有必要把他们记录下来，就有了这文章，仅作为记录使用。很多命令都可以使用 –help 后缀来获取帮助。 版本回退此回退操作的前提是没有推送到远程仓库。 git log 显示从最近到最远的commit提交日志 --pretty=oneline  每个提交以单行显示  HEAD版本HEAD当前版本，上一个版本HEAD^，上上一个版本HEAD">
+<meta name="keywords" content="GIT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="常见git命令学习">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/03/18/common-git-command-learn/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="文章目的在学习了廖雪峰的git教程中一些常见的git命令后，觉得有必要把他们记录下来，就有了这文章，仅作为记录使用。很多命令都可以使用 –help 后缀来获取帮助。 版本回退此回退操作的前提是没有推送到远程仓库。 git log 显示从最近到最远的commit提交日志 --pretty=oneline  每个提交以单行显示  HEAD版本HEAD当前版本，上一个版本HEAD^，上上一个版本HEAD">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/0013849088235627813efe7649b4f008900e5365bb72323000/0">
+<meta property="og:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/00138490883510324231a837e5d4aee844d3e4692ba50f5000/0">
+<meta property="og:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/001384909115478645b93e2b5ae4dc78da049a0d1704a41000/0">
+<meta property="og:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/00138490913052149c4b2cd9702422aa387ac024943921b000/0">
+<meta property="og:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/001384909222841acf964ec9e6a4629a35a7a30588281bb000/0">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.723Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="常见git命令学习">
+<meta name="twitter:description" content="文章目的在学习了廖雪峰的git教程中一些常见的git命令后，觉得有必要把他们记录下来，就有了这文章，仅作为记录使用。很多命令都可以使用 –help 后缀来获取帮助。 版本回退此回退操作的前提是没有推送到远程仓库。 git log 显示从最近到最远的commit提交日志 --pretty=oneline  每个提交以单行显示  HEAD版本HEAD当前版本，上一个版本HEAD^，上上一个版本HEAD">
+<meta name="twitter:image" content="https://cdn.liaoxuefeng.com/cdn/files/attachments/0013849088235627813efe7649b4f008900e5365bb72323000/0">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/03/18/common-git-command-learn/">
+
+
+
+
+
+  <title>常见git命令学习 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/03/18/common-git-command-learn/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">常见git命令学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-03-18T19:00:00+08:00">
+                2018-03-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/03/18/common-git-command-learn/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/03/18/common-git-command-learn/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="文章目的"><a href="#文章目的" class="headerlink" title="文章目的"></a>文章目的</h1><p>在学习了<a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000" target="_blank" rel="noopener">廖雪峰的git教程</a>中一些常见的git命令后，觉得有必要把他们记录下来，就有了这文章，仅作为记录使用。<strong>很多命令都可以使用 –help 后缀来获取帮助</strong>。</p>
+<h1 id="版本回退"><a href="#版本回退" class="headerlink" title="版本回退"></a>版本回退</h1><p>此回退操作的前提是没有推送到远程仓库。</p>
+<h3 id="git-log"><a href="#git-log" class="headerlink" title="git log"></a>git log</h3><ol>
+<li>显示从最近到最远的<code>commit</code>提交日志</li>
+<li><code>--pretty=oneline</code>  每个提交以单行显示</li>
+</ol>
+<h3 id="HEAD版本"><a href="#HEAD版本" class="headerlink" title="HEAD版本"></a>HEAD版本</h3><p><code>HEAD</code>当前版本，上一个版本<code>HEAD^</code>，上上一个版本<code>HEAD^^</code>，往上100个版本可以写成HEAD~100。</p>
+<h3 id="回退"><a href="#回退" class="headerlink" title="回退"></a>回退</h3><ol>
+<li>回到上个版本 <code>git reset --hard head^</code></li>
+<li>回到具体某个<code>commit id</code>对应的版本 <code>git reset --hard commit-id</code>,只需指定前几位即可</li>
+<li>如果无法直接找到commit id，可以尝试使用<code>git reflog</code>，它会记录每一次的操作命令，其中就包含了id信息。</li>
+</ol>
+<h1 id="撤销修改"><a href="#撤销修改" class="headerlink" title="撤销修改"></a>撤销修改</h1><ol>
+<li>撤销工作区的修改 <code>git checkout -- file</code> or <code>git checkout .</code></li>
+<li>撤销暂存区的修改 <code>git reset HEAD file</code></li>
+</ol>
+<h1 id="分支管理"><a href="#分支管理" class="headerlink" title="分支管理"></a>分支管理</h1><h2 id="创建与合并分支"><a href="#创建与合并分支" class="headerlink" title="创建与合并分支"></a>创建与合并分支</h2><ol>
+<li>切换到分支<code>git checkout branch-name</code></li>
+<li>创建并切换到分支 <code>git checkout -b branch-name</code>，这里的<code>-b</code>表示创建分支， <code>checkout</code>表示切换到对应分支. 它相当于<ol>
+<li><code>git branch branch-name</code> 创建分支</li>
+<li><code>git checkout branch-name</code> 切换分支</li>
+</ol>
+</li>
+<li>查看当前分支 <code>git branch</code></li>
+<li><p><code>Fast Forward</code>模式合并分支 <code>git merge target-branch-name</code>. <strong>此模式适用于目标分支有新提交，当前分支没有新提交即落后于目标分支，直接推进master指针即可</strong></p>
+<p> <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/0013849088235627813efe7649b4f008900e5365bb72323000/0" alt=""></p>
+<p> <img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/00138490883510324231a837e5d4aee844d3e4692ba50f5000/0" alt=""></p>
+</li>
+<li><p>删除分支 <code>git branch -d branch-name</code>. <strong>如果目标分支上已经有了提交，但没有合并到当前分支上，此命令会失败，需要改为<code>git branch -D branch-name</code></strong></p>
+</li>
+</ol>
+<h2 id="解决冲突"><a href="#解决冲突" class="headerlink" title="解决冲突"></a>解决冲突</h2><p>在执行<code>git merge branch-name</code>操作时，如果提示有冲突，就必须先解决完冲突才能再提交。<strong>这种情况下<code>Fast Forward</code>模式无法起作用，因为当前分支不是单纯的落后目标分支</strong>。</p>
+<p>冲突前：</p>
+<p><img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001384909115478645b93e2b5ae4dc78da049a0d1704a41000/0" alt=""></p>
+<p>解决完冲突后</p>
+<p><img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/00138490913052149c4b2cd9702422aa387ac024943921b000/0" alt=""></p>
+<h2 id="分支管理策略"><a href="#分支管理策略" class="headerlink" title="分支管理策略"></a>分支管理策略</h2><h3 id="不使用Fast-Forward进行合并"><a href="#不使用Fast-Forward进行合并" class="headerlink" title="不使用Fast Forward进行合并"></a>不使用<code>Fast Forward</code>进行合并</h3><p><code>Fast forward</code>模式下合并时，看不到目标分支的各种提交信息，合并操作也没有当做一次<code>commit</code>操作，  删除分支后，会丢掉分支信息。</p>
+<p>使用<code>--no-ff</code>来强制不使用FF模式合并，上述的缺点都会避免：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git merge --no-ff -m &quot;commit message&quot; target-branch-name</span><br></pre></td></tr></table></figure>
+<p>加上<code>-m</code>是为了将此次合并当做一次提交。</p>
+<p><img src="https://cdn.liaoxuefeng.com/cdn/files/attachments/001384909222841acf964ec9e6a4629a35a7a30588281bb000/0" alt=""></p>
+<h2 id="git-stash与BUG分支"><a href="#git-stash与BUG分支" class="headerlink" title="git stash与BUG分支"></a><code>git stash</code>与BUG分支</h2><p>有时候当前分支的活没干完，临时需要去修BUG，但又不能直接把半成品提交，此时可以借助<code>git stash</code>将当前工作内容藏匿起来，但又不是放到暂存区。</p>
+<p><code>stash</code>之后，当前工作区就是干净的了，可以使用<code>git status</code>验证。然后就可以创建BUG分支，修改之后合并到当前分支。</p>
+<ol>
+<li><code>git stash</code> 将当前分支的修改藏匿起来</li>
+<li><code>git stash list</code> 可以进行多次藏匿，使用此命令查看所有的藏匿列表</li>
+<li><p>从藏匿列表中恢复</p>
+<ol>
+<li>先恢复再删除对应藏匿记录：<ol>
+<li><code>git stash apply</code> 从藏匿列表的最新一条记录恢复，但不删除此记录</li>
+<li><code>git stash drop</code> 删除藏匿列表的最新一条</li>
+</ol>
+</li>
+<li>恢复的同时并删除 <code>git stash pop</code></li>
+<li><p>恢复指定的一条藏匿记录，每条藏匿记录都有一个标识，使用<code>git stash list</code>查看，然后使用例如</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git stash apply stash@&#123;0&#125; # stash@&#123;0&#125; 就是记录的标识</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+</li>
+</ol>
+<h2 id="多人写作"><a href="#多人写作" class="headerlink" title="多人写作"></a>多人写作</h2><p>使用<code>git remote</code> 或 <code>git remote -v</code>获取远程仓库的信息</p>
+<h3 id="推送分支"><a href="#推送分支" class="headerlink" title="推送分支"></a>推送分支</h3><ol>
+<li>将本地某个分支推送到远程的对应分支 <code>git push origin branch-name</code>，<code>branch-name</code>为本地的分支，一般是<code>master</code>或<code>dev</code></li>
+</ol>
+<h3 id="抓取分支"><a href="#抓取分支" class="headerlink" title="抓取分支"></a>抓取分支</h3><ol>
+<li>使用<code>git clone remote-address</code> 克隆远程仓库到本地，<strong>此时会默认建立本地<code>master</code>到远程<code>master</code>的联系，可以使用<code>git branch</code>验证</strong></li>
+<li>创建一个本地分支并与远程仓库的对应分支联系： <code>git checkout -b branch-name origin/branch-name</code>，之后在此分支上提交代码就可以使用<code>git push origin branch-name</code>了。</li>
+<li>使用<code>git pull</code>拉取远程仓库的最新提交，如果提示<code>no tracking information</code>,则表示当前本地分支还没有任何远程分支建立联系，使用<code>git branch --set-upstream-to=origin/branch-name branch-name</code>来建立联系</li>
+</ol>
+<h1 id="标签管理"><a href="#标签管理" class="headerlink" title="标签管理"></a>标签管理</h1><ol>
+<li><code>git tag tag-name</code> 以当前分支的最新一次提交打标签，暂时还只在本地存储的</li>
+<li><code>git tag tag-name commit-id</code> 以指定的<code>commit id</code>对应的版本来打标签</li>
+<li><code>git tag</code> 显示所有标签</li>
+<li><code>git show tag-name</code> 显示标签的详细信息</li>
+<li>创建带有说明的标签： <code>git tag -a tag-name -m tag-desc [commit-id]</code></li>
+<li><code>git tag -d tag-name</code>删除标签（本地的标签）</li>
+<li>推送标签到远程仓库<ol>
+<li><code>git push origin tag-name</code> 推送单个标签</li>
+<li><code>git push origin --tags</code> 推送所有标签</li>
+</ol>
+</li>
+<li>删除远程仓库标签<ol>
+<li>先从本地删除这个标签 <code>git tag -d tag-name</code></li>
+<li>再将删除操作推送到远程 <code>git push origin :refs/tags/tag-name</code></li>
+</ol>
+</li>
+</ol>
+<h1 id="设置命令别名"><a href="#设置命令别名" class="headerlink" title="设置命令别名"></a>设置命令别名</h1><p>别名有3种级别： 用户级<code>--global</code>、系统级<code>--system</code>、项目级无需修饰符</p>
+<ol>
+<li>设置级别名 <code>git config [level] alias.alias-name &quot;command-name&quot;</code>,如：<code>git config --global alias.ci &quot;commit&quot;</code></li>
+<li>获取所有别名 <code>git config [level] --get-regexp alias</code></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/GIT/" rel="tag"># GIT</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/18/common-linux-command-learn/" rel="next" title="常见linux命令学习">
+                <i class="fa fa-chevron-left"></i> 常见linux命令学习
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/19/bootstrap-learning-at-mooc/" rel="prev" title="css学习笔记之bootstrap at mooc">
+                css学习笔记之bootstrap at mooc <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#文章目的"><span class="nav-number">1.</span> <span class="nav-text">文章目的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#版本回退"><span class="nav-number">2.</span> <span class="nav-text">版本回退</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#git-log"><span class="nav-number">2.0.1.</span> <span class="nav-text">git log</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HEAD版本"><span class="nav-number">2.0.2.</span> <span class="nav-text">HEAD版本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回退"><span class="nav-number">2.0.3.</span> <span class="nav-text">回退</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#撤销修改"><span class="nav-number">3.</span> <span class="nav-text">撤销修改</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#分支管理"><span class="nav-number">4.</span> <span class="nav-text">分支管理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#创建与合并分支"><span class="nav-number">4.1.</span> <span class="nav-text">创建与合并分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决冲突"><span class="nav-number">4.2.</span> <span class="nav-text">解决冲突</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分支管理策略"><span class="nav-number">4.3.</span> <span class="nav-text">分支管理策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#不使用Fast-Forward进行合并"><span class="nav-number">4.3.1.</span> <span class="nav-text">不使用Fast Forward进行合并</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#git-stash与BUG分支"><span class="nav-number">4.4.</span> <span class="nav-text">git stash与BUG分支</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多人写作"><span class="nav-number">4.5.</span> <span class="nav-text">多人写作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#推送分支"><span class="nav-number">4.5.1.</span> <span class="nav-text">推送分支</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#抓取分支"><span class="nav-number">4.5.2.</span> <span class="nav-text">抓取分支</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#标签管理"><span class="nav-number">5.</span> <span class="nav-text">标签管理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#设置命令别名"><span class="nav-number">6.</span> <span class="nav-text">设置命令别名</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/03/18/common-git-command-learn/';
+          this.page.identifier = '2018/03/18/common-git-command-learn/';
+          this.page.title = '常见git命令学习';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="我们前端项目里用的组件库是 vue 的element-ui，有个地方用到了popover组件，一个列表中每个列表项在 hover 时都会在popover中展示提示语。这里就出现了一个优化问题：当快速滚动列表项时，即使某个列表项已经隐藏了，可是对应的popover需要过一会才能消失，体验不大好，示范如下：  可以看到很多popover都是到了视口顶部才消失，使用的示范代码如下： 1234567891">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="popover在快速滚动列表项中的问题及Popper.js源码解析">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/02/26/popperjs-source-code/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="我们前端项目里用的组件库是 vue 的element-ui，有个地方用到了popover组件，一个列表中每个列表项在 hover 时都会在popover中展示提示语。这里就出现了一个优化问题：当快速滚动列表项时，即使某个列表项已经隐藏了，可是对应的popover需要过一会才能消失，体验不大好，示范如下：  可以看到很多popover都是到了视口顶部才消失，使用的示范代码如下： 1234567891">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popover-problem-in-list.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popover-problem-in-list-slow.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popper-boundaries-behavior.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/popper-error-of-boundariesElement.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/popperjs/fix-using-intersectionobserver.gif">
+<meta property="og:updated_time" content="2019-02-26T05:23:31.445Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="popover在快速滚动列表项中的问题及Popper.js源码解析">
+<meta name="twitter:description" content="我们前端项目里用的组件库是 vue 的element-ui，有个地方用到了popover组件，一个列表中每个列表项在 hover 时都会在popover中展示提示语。这里就出现了一个优化问题：当快速滚动列表项时，即使某个列表项已经隐藏了，可是对应的popover需要过一会才能消失，体验不大好，示范如下：  可以看到很多popover都是到了视口顶部才消失，使用的示范代码如下： 1234567891">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/popperjs/popover-problem-in-list.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/02/26/popperjs-source-code/">
+
+
+
+
+
+  <title>popover在快速滚动列表项中的问题及Popper.js源码解析 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/02/26/popperjs-source-code/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">popover在快速滚动列表项中的问题及Popper.js源码解析</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-26T09:59:36+08:00">
+                2019-02-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/02/26/popperjs-source-code/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/02/26/popperjs-source-code/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>我们前端项目里用的组件库是 vue 的<code>element-ui</code>，有个地方用到了<a href="http://element.eleme.io/#/zh-CN/component/popover" target="_blank" rel="noopener">popover</a>组件，一个列表中每个列表项在 hover 时都会在<code>popover</code>中展示提示语。这里就出现了一个优化问题：当快速滚动列表项时，即使某个列表项已经隐藏了，可是对应的<code>popover</code>需要过一会才能消失，体验不大好，示范如下：</p>
+<p><img src="/images/popperjs/popover-problem-in-list.gif" alt=""></p>
+<p>可以看到很多<code>popover</code>都是到了视口顶部才消失，使用的示范代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"hover-wrapper"</span> <span class="attr">ref</span>=<span class="string">"hoverWrapper"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">vi-popover</span></span></span><br><span class="line"><span class="tag">    <span class="attr">ref</span>=<span class="string">"popover"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">v-for</span>=<span class="string">"(item, index) in 100"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:key</span>=<span class="string">"item"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">placement</span>=<span class="string">"right-start"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">trigger</span>=<span class="string">"hover"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:content</span>=<span class="string">"`这是一段内容, index = $&#123;index&#125;`"</span></span></span><br><span class="line"><span class="tag">  &gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">vi-button</span> <span class="attr">slot</span>=<span class="string">"reference"</span> <span class="attr">class</span>=<span class="string">"hover-ref"</span>&gt;</span>hover 激活<span class="tag">&lt;/<span class="name">vi-button</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">vi-popover</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.hover-wrapper</span> &#123;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">500px</span>;</span><br><span class="line">  <span class="attribute">overflow</span>: auto;</span><br><span class="line">  <span class="attribute">border</span>: <span class="number">1px</span> solid red;</span><br><span class="line">  <span class="attribute">margin-top</span>: <span class="number">300px</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.hover-ref</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: block;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">120px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">50px</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这篇文章主要是找到为什么会出现这种现象，以及如何解决它。</p>
+<h1 id="思路-1：-transition"><a href="#思路-1：-transition" class="headerlink" title="思路 1： transition"></a>思路 1： transition</h1><p>查看<code>popover</code>组件的源码发现其出现及消失都是有一段<code>transition</code>动画的：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">transition</span> <span class="attr">:name</span>=<span class="string">"transition"</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- popover主体html略 --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">transition</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>默认的<code>transition</code>是<code>fade-in-linear</code>，它具体的定义位于<code>packages/theme-chalk/src/common/transition.scss</code>:</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.fade-in-linear-enter-active</span>,</span><br><span class="line"><span class="selector-class">.fade-in-linear-leave-active</span> &#123;</span><br><span class="line">  <span class="attribute">transition</span>: <span class="variable">$--fade-linear-transition</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.fade-in-linear-enter</span>,</span><br><span class="line"><span class="selector-class">.fade-in-linear-leave</span>,</span><br><span class="line"><span class="selector-class">.fade-in-linear-leave-active</span> &#123;</span><br><span class="line">  <span class="attribute">opacity</span>: <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$--fade-linear-transition</span>: opacity <span class="number">200ms</span> linear !default;</span><br></pre></td></tr></table></figure>
+<p><code>popover</code>的出现消失都会有<code>200ms</code>的渐变，那会不会是它的原因呢？ <code>popover</code>支持定制<code>transition</code>动画，我们可以写一个自己的动画，将消失的时长变为 0，看看问题是否还存在？</p>
+<p>我们的自定义动画名姑且就叫<code>my-fade-in-linear</code>：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.my-fade-in-linear-enter-active</span> &#123;</span><br><span class="line">  <span class="attribute">transition</span>: opacity <span class="number">200ms</span> linear;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.my-fade-in-linear-leave-active</span> &#123;</span><br><span class="line">  <span class="attribute">transition</span>: opacity <span class="number">0ms</span> linear;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="selector-class">.my-fade-in-linear-enter</span>,</span><br><span class="line"><span class="selector-class">.my-fade-in-linear-leave</span>,</span><br><span class="line"><span class="selector-class">.my-fade-in-linear-leave-active</span> &#123;</span><br><span class="line">  <span class="attribute">opacity</span>: <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将其传给<code>popover</code>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">vi-popover</span> <span class="attr">transition</span>=<span class="string">"my-fade-in-linear"</span>&gt;</span> <span class="tag">&lt;/<span class="name">vi-popover</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>很难受，问题依然存在，只能看看源码怎么写的。</p>
+<h1 id="思路-2：-popover组件层级控制"><a href="#思路-2：-popover组件层级控制" class="headerlink" title="思路 2： popover组件层级控制"></a>思路 2： <code>popover</code>组件层级控制</h1><p>研究了一会发现<code>popover</code>的显隐是由宿主的<code>mouseenter</code>、<code>mouseleave</code>控制的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">this</span>.trigger === <span class="string">'hover'</span>) &#123;</span><br><span class="line">  on(reference, <span class="string">'mouseenter'</span>, <span class="keyword">this</span>.handleMouseEnter); <span class="comment">// 展示popover</span></span><br><span class="line">  on(popper, <span class="string">'mouseenter'</span>, <span class="keyword">this</span>.handleMouseEnter);</span><br><span class="line">  on(reference, <span class="string">'mouseleave'</span>, <span class="keyword">this</span>.handleMouseLeave); <span class="comment">// 隐藏popover</span></span><br><span class="line">  on(popper, <span class="string">'mouseleave'</span>, <span class="keyword">this</span>.handleMouseLeave);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>奇怪的是<code>handleMouseLeave</code>中隐藏<code>popover</code>设置了一个<code>200ms</code>定时器：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">handleMouseLeave() &#123;</span><br><span class="line">  clearTimeout(<span class="keyword">this</span>._timer);</span><br><span class="line">  <span class="keyword">this</span>._timer = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">this</span>.showPopper = <span class="literal">false</span>; <span class="comment">// 隐藏popover</span></span><br><span class="line">  &#125;, <span class="number">200</span>);</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>暂且不管<code>_timer</code>是因为什么而设置的，我们尝试在定时器之外设置<code>this.showPopper</code>看看问题是否还在。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">handleMouseLeave() &#123;</span><br><span class="line">  clearTimeout(<span class="keyword">this</span>._timer);</span><br><span class="line">  <span class="keyword">this</span>._timer = setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// do nothing</span></span><br><span class="line">  &#125;, <span class="number">200</span>);</span><br><span class="line">  <span class="keyword">this</span>.showPopper = <span class="literal">false</span>;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>很不幸，还是不行。。。。。</p>
+<p>再次仔细观察发现：<strong>在 <code>hover</code> 到某个列表项然后快速滚动时，其实并没有立即切换到另一个表单项，而是等到 <code>hover</code> 到另一个列表项后，前一个被 <code>hover</code> 的列表项才能取消 <code>hover</code> 状态,这就导致<code>handleMouseLeave</code>其实很久后才真正触发</strong>。慢动作如下：</p>
+<p><img src="/images/popperjs/popover-problem-in-list-slow.gif" alt=""></p>
+<p><strong>这就表明从<code>popover</code>组件自身是没有办法解决这个问题的，需要更深入的研究其底层所用的库,也就是<a href="https://popper.js.org/" target="_blank" rel="noopener">Popper.js</a></strong></p>
+<p><code>Popper.js</code>是一个很有名的管理弹出内容的小巧库，在<code>github</code>上有 11000+的 star，并且其体积很小，压缩混淆且 gzip 后只有大约 6kb。</p>
+<h1 id="思路-3：设置-boundariesElement"><a href="#思路-3：设置-boundariesElement" class="headerlink" title="思路 3：设置 boundariesElement"></a>思路 3：设置 <code>boundariesElement</code></h1><p><code>Popper.js</code>在 element 多个组件中都有用到，最常见的就是<code>popover</code>和<code>tooltip</code>这俩了：</p>
+<p><a href="/images/popperjs/usage-in-vui.png">usage-in-vui</a></p>
+<p>我们研究<code>Popper.js</code>的主要目的是：<strong>尝试找到一个方法，在宿主 reference 元素或者 popper 内容滚动出其父级滚动区时，隐藏 popper。</strong></p>
+<p>在初步翻越其官网文档后，发现有一个<code>boundariesElement</code>配置项，看名字是指向<code>popper</code>的边界，默认的配置是<code>viewport</code>。因为<code>Popper.js</code>会小心控制其弹出内容不超出边界，必要时会调整<code>popper</code>的位置，示范如下：</p>
+<p><img src="/images/popperjs/popper-boundaries-behavior.gif" alt="popper-boundaries-behavior"></p>
+<p>如果我们显式设置<code>boundariesElement</code>为我们的滚动父级元素，那么至少<code>popper</code>不会飞到视口顶部才消失，也算是用一种蹩脚的方法解决了问题。</p>
+<p>我们的测试代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.popperOptions = &#123;</span><br><span class="line">  boundariesElement: <span class="keyword">this</span>.$refs.hoverWrapper,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">vi-popover</span> <span class="attr">:popperOptions</span>=<span class="string">"popperOptions"</span>&gt;</span><span class="tag">&lt;/<span class="name">vi-popover</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>很遗憾，这次连<code>popper</code>内容都出现了问题：</p>
+<p><img src="/images/popperjs/popper-error-of-boundariesElement.gif" alt="popper-error-of-boundariesElement"></p>
+<p>看起来是定位出现了很大问题，只能硬着头皮将<code>Popper.js</code>源码撸一遍，看看 popper 的具体展示逻辑，所幸没有想象中那么复杂。</p>
+<h2 id="Popper-js-源码解析"><a href="#Popper-js-源码解析" class="headerlink" title="Popper.js 源码解析"></a>Popper.js 源码解析</h2><p>还是喜欢从入口着手，先看看构造函数：</p>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Popper</span>(<span class="params">reference, popper, options</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>._reference = reference.jquery ? reference[<span class="number">0</span>] : reference;</span><br><span class="line">  <span class="keyword">this</span>.state = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// if the popper variable is a configuration object, parse it to generate an HTMLElement</span></span><br><span class="line">  <span class="comment">// generate a default popper if is not defined</span></span><br><span class="line">  <span class="keyword">var</span> isNotDefined = <span class="keyword">typeof</span> popper === <span class="string">'undefined'</span> || popper === <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">var</span> isConfig = popper &amp;&amp; <span class="built_in">Object</span>.prototype.toString.call(popper) === <span class="string">'[object Object]'</span>;</span><br><span class="line">  <span class="keyword">if</span> (isNotDefined || isConfig) &#123;</span><br><span class="line">    <span class="keyword">this</span>._popper = <span class="keyword">this</span>.parse(isConfig ? popper : &#123;&#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// otherwise, use the given HTMLElement as popper</span></span><br><span class="line">  <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">this</span>._popper = popper.jquery ? popper[<span class="number">0</span>] : popper;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// with &#123;&#125; we create a new object with the options inside it</span></span><br><span class="line">  <span class="keyword">this</span>._options = <span class="built_in">Object</span>.assign(&#123;&#125;, DEFAULTS, options);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// refactoring modifiers' list</span></span><br><span class="line">  <span class="keyword">this</span>._options.modifiers = <span class="keyword">this</span>._options.modifiers.map(</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">modifier</span>) </span>&#123;</span><br><span class="line">      <span class="comment">// remove ignored modifiers</span></span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">this</span>._options.modifiersIgnored.indexOf(modifier) !== <span class="number">-1</span>) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// set the x-placement attribute before everything else because it could be used to add margins to the popper</span></span><br><span class="line">      <span class="comment">// margins needs to be calculated to get the correct popper offsets</span></span><br><span class="line">      <span class="keyword">if</span> (modifier === <span class="string">'applyStyle'</span>) &#123;</span><br><span class="line">        <span class="keyword">this</span>._popper.setAttribute(<span class="string">'x-placement'</span>, <span class="keyword">this</span>._options.placement);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// return predefined modifier identified by string or keep the custom one</span></span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.modifiers[modifier] || modifier;</span><br><span class="line">    &#125;.bind(<span class="keyword">this</span>),</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="comment">// make sure to apply the popper position before any computation</span></span><br><span class="line">  <span class="keyword">this</span>.state.position = <span class="keyword">this</span>._getPosition(<span class="keyword">this</span>._popper, <span class="keyword">this</span>._reference);</span><br><span class="line">  setStyle(<span class="keyword">this</span>._popper, &#123; <span class="attr">position</span>: <span class="keyword">this</span>.state.position, <span class="attr">top</span>: <span class="number">0</span> &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// fire the first update to position the popper in the right place</span></span><br><span class="line">  <span class="keyword">this</span>.update();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// setup event listeners, they will take care of update the position in specific situations</span></span><br><span class="line">  <span class="keyword">this</span>._setupEventListeners();</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>_getPosition</code>用于获取<code>popper</code>的<code>position</code>属性,先看<code>offsetParent</code>的定位属性，如果它为<code>fixed</code>定位则返回<code>fixed</code>,否则返回<code>absolute</code>.</p>
+<p><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLElement/offsetParent" target="_blank" rel="noopener"><code>offsetParent</code></a>是一个只读属性，返回一个指向最近的包含该元素的定位元素. 如果没有定位的元素，则 <code>offsetParent</code> 为最近的 <code>table</code>、<code>table cell</code> 或根元素（标准模式下为 <code>html</code>；<code>quirks</code> 模式下为 <code>body</code>）。注意当元素的 <code>style.display</code> 设置为 <code>&quot;none&quot;</code> 时，<code>offsetParent</code> 返回 <code>null</code>。</p>
+<p><code>setStyle</code>用于设置元素的内联样式，也就是<code>style</code>对象属性。</p>
+<p><code>_setupEventListeners</code>用于注册滚动父级元素的<code>scroll</code>事件,监听函数为<code>this.update</code>。</p>
+<p>所以综上<strong>构造函数主要做了以下几件事</strong>：</p>
+<ol>
+<li>归一化 <code>popper</code> 和 <code>reference</code> 元素</li>
+<li>获取归一化 <code>options</code></li>
+<li>获取 <code>modifiers</code> 函数，可以传入自定义的 <code>modifier</code> 函数，参数为 <code>data</code> 对象(参考 <code>update</code> 函数中的 <code>data</code> 定义)</li>
+<li>获取 <code>popper</code> 的 <code>position</code> 属性： <code>fixed</code> 或 <code>absolute</code></li>
+<li>设置初始内联 <code>style</code></li>
+<li>注册父级滚动元素的 <code>scroll</code> 事件，监听函数为 <code>update</code></li>
+</ol>
+<h3 id="update-函数"><a href="#update-函数" class="headerlink" title="update 函数"></a>update 函数</h3><p><strong><code>update</code>函数最核心的作用是更新 popper 的位置。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Popper.prototype.update = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> data = &#123; <span class="attr">instance</span>: <span class="keyword">this</span>, <span class="attr">styles</span>: &#123;&#125; &#125;;</span><br><span class="line">  <span class="comment">// store placement inside the data object, modifiers will be able to edit `placement` if needed</span></span><br><span class="line">  <span class="comment">// and refer to _originalPlacement to know the original value</span></span><br><span class="line">  data.placement = <span class="keyword">this</span>._options.placement;</span><br><span class="line">  data._originalPlacement = <span class="keyword">this</span>._options.placement;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// compute the popper and reference offsets and put them inside data.offsets</span></span><br><span class="line">  data.offsets = <span class="keyword">this</span>._getOffsets(<span class="keyword">this</span>._popper, <span class="keyword">this</span>._reference, data.placement);</span><br><span class="line">  <span class="comment">// get boundaries</span></span><br><span class="line">  data.boundaries = <span class="keyword">this</span>._getBoundaries(data, <span class="keyword">this</span>._options.boundariesPadding, <span class="keyword">this</span>._options.boundariesElement);</span><br><span class="line"></span><br><span class="line">  data = <span class="keyword">this</span>.runModifiers(data, <span class="keyword">this</span>._options.modifiers);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里出现的 3 个函数都非常重要，关系到最终<code>popper</code>在哪里展示，我们依次来看。</p>
+<h4 id="getOffsets"><a href="#getOffsets" class="headerlink" title="_getOffsets"></a><code>_getOffsets</code></h4><p>用于获取<code>popper</code>和<code>reference</code>的位置信息，最后放入<code>data.offsets</code>属性。这个位置信息可能在之后被<code>modifiers</code>进行一些调整，后面会说到。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">Popper.prototype._getOffsets = <span class="function"><span class="keyword">function</span>(<span class="params">popper, reference, placement</span>) </span>&#123;</span><br><span class="line">  placement = placement.split(<span class="string">'-'</span>)[<span class="number">0</span>];</span><br><span class="line">  <span class="keyword">var</span> popperOffsets = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  popperOffsets.position = <span class="keyword">this</span>.state.position;</span><br><span class="line">  <span class="keyword">var</span> isParentFixed = popperOffsets.position === <span class="string">'fixed'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="comment">// Get reference element position</span></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="keyword">var</span> referenceOffsets = getOffsetRectRelativeToCustomParent(reference, getOffsetParent(popper), isParentFixed);</span><br><span class="line"></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="comment">// Get popper sizes</span></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="keyword">var</span> popperRect = getOuterSizes(popper);</span><br><span class="line"></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line">  <span class="comment">// Compute offsets of popper</span></span><br><span class="line">  <span class="comment">//</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// depending by the popper placement we have to compute its offsets slightly differently</span></span><br><span class="line">  <span class="keyword">if</span> ([<span class="string">'right'</span>, <span class="string">'left'</span>].indexOf(placement) !== <span class="number">-1</span>) &#123;</span><br><span class="line">    popperOffsets.top = referenceOffsets.top + referenceOffsets.height / <span class="number">2</span> - popperRect.height / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> (placement === <span class="string">'left'</span>) &#123;</span><br><span class="line">      popperOffsets.left = referenceOffsets.left - popperRect.width;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      popperOffsets.left = referenceOffsets.right;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    popperOffsets.left = referenceOffsets.left + referenceOffsets.width / <span class="number">2</span> - popperRect.width / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">if</span> (placement === <span class="string">'top'</span>) &#123;</span><br><span class="line">      popperOffsets.top = referenceOffsets.top - popperRect.height;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      popperOffsets.top = referenceOffsets.bottom;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Add width and height to our offsets object</span></span><br><span class="line">  popperOffsets.width = popperRect.width;</span><br><span class="line">  popperOffsets.height = popperRect.height;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    popper: popperOffsets,</span><br><span class="line">    reference: referenceOffsets,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>函数的大致逻辑是先计算出<code>reference</code>元素的位置及大小、<code>popper</code>的大小，然后根据<code>placement</code>来计算<code>popper</code>的位置。<code>placement</code><a href="https://popper.js.org/popper-documentation.html#Popper.placements" target="_blank" rel="noopener">可以有多种枚举值</a>.</p>
+<p><code>getOuterSizes</code>它用于计算一个元素带上<code>margin</code>的尺寸。<strong>在目标元素<code>display:none</code>时运用了一点小技巧，具体是先将目标元素展示出来，然后通过获取某个位置属性强制浏览器重绘，在重绘后再计算尺寸信息</strong>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getOuterSizes</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> 1 DOM access here</span></span><br><span class="line">  <span class="keyword">var</span> _display = element.style.display,</span><br><span class="line">    _visibility = element.style.visibility;</span><br><span class="line">  element.style.display = <span class="string">'block'</span>;</span><br><span class="line">  element.style.visibility = <span class="string">'hidden'</span>;</span><br><span class="line">  <span class="keyword">var</span> calcWidthToForceRepaint = element.offsetWidth;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// original method</span></span><br><span class="line">  <span class="keyword">var</span> styles = root.getComputedStyle(element);</span><br><span class="line">  <span class="keyword">var</span> x = <span class="built_in">parseFloat</span>(styles.marginTop) + <span class="built_in">parseFloat</span>(styles.marginBottom);</span><br><span class="line">  <span class="keyword">var</span> y = <span class="built_in">parseFloat</span>(styles.marginLeft) + <span class="built_in">parseFloat</span>(styles.marginRight);</span><br><span class="line">  <span class="keyword">var</span> result = &#123; <span class="attr">width</span>: element.offsetWidth + y, <span class="attr">height</span>: element.offsetHeight + x &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// reset element styles</span></span><br><span class="line">  element.style.display = _display;</span><br><span class="line">  element.style.visibility = _visibility;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面可以看出<code>referenceOffsets</code>的计算是最核心的步骤，我们仔细看看。</p>
+<p><code>getOffsetRectRelativeToCustomParent</code>用于根据一个元素以及它的某个父元素，计算相对于父元素的<code>offset</code>位置以及元素自身大小。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getOffsetRectRelativeToCustomParent</span>(<span class="params">element, parent, fixed</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> elementRect = getBoundingClientRect(element);</span><br><span class="line">  <span class="keyword">var</span> parentRect = getBoundingClientRect(parent);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (fixed) &#123;</span><br><span class="line">    <span class="keyword">var</span> scrollParent = getScrollParent(parent);</span><br><span class="line">    parentRect.top += scrollParent.scrollTop;</span><br><span class="line">    parentRect.bottom += scrollParent.scrollTop;</span><br><span class="line">    parentRect.left += scrollParent.scrollLeft;</span><br><span class="line">    parentRect.right += scrollParent.scrollLeft;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> rect = &#123;</span><br><span class="line">    top: elementRect.top - parentRect.top,</span><br><span class="line">    left: elementRect.left - parentRect.left,</span><br><span class="line">    bottom: elementRect.top - parentRect.top + elementRect.height,</span><br><span class="line">    right: elementRect.left - parentRect.left + elementRect.width,</span><br><span class="line">    width: elementRect.width,</span><br><span class="line">    height: elementRect.height,</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> rect;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getBoundingClientRect</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> rect = element.getBoundingClientRect();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// whether the IE version is lower than 11</span></span><br><span class="line">  <span class="keyword">var</span> isIE = navigator.userAgent.indexOf(<span class="string">'MSIE'</span>) != <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// fix ie document bounding top always 0 bug</span></span><br><span class="line">  <span class="keyword">var</span> rectTop = isIE &amp;&amp; element.tagName === <span class="string">'HTML'</span> ? -element.scrollTop : rect.top;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    left: rect.left,</span><br><span class="line">    top: rectTop,</span><br><span class="line">    right: rect.right,</span><br><span class="line">    bottom: rect.bottom,</span><br><span class="line">    width: rect.right - rect.left,</span><br><span class="line">    height: rect.bottom - rectTop,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>利用<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect" target="_blank" rel="noopener"><code>getBoundingClientRect</code></a>计算出两个元素相对于视口的位置和大小，然后进行简单的加减即可。<code>getScrollParent</code>用于找到滚动父级元素，也就是获取最近的<code>overflow</code>属性为<code>auto</code>或<code>scroll</code>的父节点，直到<code>body</code>或<code>document</code>，具体就不细说了。</p>
+<p>可以看出来<code>getOffsetRectRelativeToCustomParent</code>计算的是相对位置，不会有什么问题。问题在于传递的<code>parent</code>参数，它的值是<code>getOffsetParent(popper)</code>，问题在哪里呢？</p>
+<p>上面也说到<code>offsetParent</code>当元素的 <code>style.display</code> 设置为 <code>&quot;none&quot;</code> 时会返回 <code>null</code>，此时<code>getOffsetParent</code>函数的返回值是<code>document</code>，而我们的<code>popper</code>在未展示前始终是隐藏的。这就意味着：<strong>我们计算的 referenceOffsets 和 popperOffsets 始终是相对于<code>document</code>的，而非设置的<code>boundariesElement</code>，这给后面 <code>popper</code> 的展示埋下了祸根。</strong></p>
+<h4 id="getBoundaries"><a href="#getBoundaries" class="headerlink" title="_getBoundaries"></a><code>_getBoundaries</code></h4><p>说完了<code>data.offset</code>的计算，接下来就是<code>_getBoundaries</code>，用于计算<code>boundariesElement</code>的位置及大小：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">Popper.prototype._getBoundaries = <span class="function"><span class="keyword">function</span>(<span class="params">data, padding, boundariesElement</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// <span class="doctag">NOTE:</span> 1 DOM access here</span></span><br><span class="line">  <span class="keyword">var</span> boundaries = &#123;&#125;;</span><br><span class="line">  <span class="keyword">var</span> width, height;</span><br><span class="line">  <span class="keyword">if</span> (boundariesElement === <span class="string">'window'</span>) &#123;</span><br><span class="line">    <span class="comment">// 较为简单，略。。。</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (boundariesElement === <span class="string">'viewport'</span>) &#123;</span><br><span class="line">    <span class="comment">// 略。。。</span></span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (getOffsetParent(<span class="keyword">this</span>._popper) === boundariesElement) &#123;</span><br><span class="line">      boundaries = &#123;</span><br><span class="line">        top: <span class="number">0</span>,</span><br><span class="line">        left: <span class="number">0</span>,</span><br><span class="line">        right: boundariesElement.clientWidth,</span><br><span class="line">        bottom: boundariesElement.clientHeight,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      boundaries = getOffsetRect(boundariesElement);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  boundaries.left += padding;</span><br><span class="line">  boundaries.right -= padding;</span><br><span class="line">  boundaries.top = boundaries.top + padding;</span><br><span class="line">  boundaries.bottom = boundaries.bottom - padding;</span><br><span class="line">  <span class="keyword">return</span> boundaries;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>看得出来，<code>boundariesElement</code>可以有 3 种值： <code>window</code>、<code>viewport</code>和指定的<code>HTMLElement</code>，前两种情况我们省略留给大家自己去看。通过前面的描述，在指定<code>boundariesElement</code>时<code>getOffsetParent(this._popper) === boundariesElement</code>也不会成立，所以最终<code>boundaries</code>的值就是由<code>getOffsetRect</code>计算得来：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getOffsetRect</span>(<span class="params">element</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> elementRect = &#123;</span><br><span class="line">    width: element.offsetWidth,</span><br><span class="line">    height: element.offsetHeight,</span><br><span class="line">    left: element.offsetLeft,</span><br><span class="line">    top: element.offsetTop,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  elementRect.right = elementRect.left + elementRect.width;</span><br><span class="line">  elementRect.bottom = elementRect.top + elementRect.height;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// position</span></span><br><span class="line">  <span class="keyword">return</span> elementRect;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>HTMLElement.offsetTop</code> 为只读属性，它返回当前元素相对于其 <code>offsetParent</code> 元素的顶部的距离，我们的<code>boundariesElement</code>通常并不是<code>display:none</code>的，也通常会有一个非<code>document</code>的<code>offsetParent</code>，<strong>所以最终<code>data.boundaries</code>和<code>data.offset</code>的参考坐标是不一样的。</strong></p>
+<p>最后<code>update</code>函数会调用<code>runModifiers</code>来运行各种<code>modifiers</code>函数.</p>
+<h4 id="modifiers"><a href="#modifiers" class="headerlink" title="modifiers"></a><code>modifiers</code></h4><p><strong>内置的<code>modifier</code>主要作用是对<code>popper</code>位置进行微调，具体可以参考<a href="https://popper.js.org/popper-documentation.html#modifiers" target="_blank" rel="noopener">官方文档</a></strong>。</p>
+<p><code>options.modifiers</code>是有先后顺序的，数组前面的<code>modifier</code>会先执行，所以如果某个<code>modifier</code>有依赖项，依赖项就必须放到前面先执行。<code>applyStyle</code>这个特殊的<code>modifier</code>通常总是放在最后，因为它是用来绘制<code>popper</code>的。 <strong>总体来说<code>modifiers</code>机制类似于<code>pipeline</code>。</strong></p>
+<p><code>runModifiers</code>很简单就是从前往后依次执行给定的<code>modifiers</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">Popper.prototype.runModifiers = <span class="function"><span class="keyword">function</span>(<span class="params">data, modifiers, ends</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> modifiersToRun = modifiers.slice();</span><br><span class="line">  <span class="keyword">if</span> (ends !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">    modifiersToRun = <span class="keyword">this</span>._options.modifiers.slice(<span class="number">0</span>, getArrayKeyIndex(<span class="keyword">this</span>._options.modifiers, ends));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  modifiersToRun.forEach(</span><br><span class="line">    <span class="function"><span class="keyword">function</span>(<span class="params">modifier</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (isFunction(modifier)) &#123;</span><br><span class="line">        data = modifier.call(<span class="keyword">this</span>, data);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;.bind(<span class="keyword">this</span>),</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>有一点需要注意的，我们可以在<code>options</code>传入自定的<code>modifier</code>函数，内置的<code>modifier</code>可以只传枚举字符串，例如</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.popperOptions = &#123;</span><br><span class="line">  modifiers: [</span><br><span class="line">    <span class="string">'keepTogether'</span>, <span class="comment">// 内置modifier</span></span><br><span class="line">    <span class="string">'arrow'</span>,</span><br><span class="line">    <span class="string">'flip'</span>,</span><br><span class="line">    <span class="keyword">this</span>.myModifier, <span class="comment">// 自定义modifier</span></span><br><span class="line">    <span class="string">'applyStyle'</span>,</span><br><span class="line">  ],</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">myModifier</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"this is myModifier"</span>);</span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>在构造函数中会将其转换为具体的函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>._options.modifiers = <span class="keyword">this</span>._options.modifiers.map(</span><br><span class="line">  <span class="function"><span class="keyword">function</span>(<span class="params">modifier</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// return predefined modifier identified by string or keep the custom one</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.modifiers[modifier] || modifier;</span><br><span class="line">  &#125;.bind(<span class="keyword">this</span>),</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p><code>modifier</code>函数接收一个<code>data</code>对象参数，并在最后将<code>data</code>返回，中间可以对这个参数做任意处理,<code>data</code>是在<code>update</code>函数中进行初始化的。这里对几个内置<code>modifier</code>的原理做一个介绍，并解析其中一个的具体实现：</p>
+<ul>
+<li><code>shift</code>： 根据形如<code>top-start</code>的<code>placement</code>调整<code>popper</code>位置与<code>reference</code>进行对齐，依赖<code>referenceOffset</code></li>
+<li><code>offset</code>: 根据传入的<code>options.offset</code>对<code>popper</code>位置<code>popperOffset</code>进行微调</li>
+<li><code>preventOverflow</code>: 调整<code>popper</code>的位置使得其不超出<code>data.boundaries</code></li>
+<li><code>keepTogether</code>: 调整<code>popper</code>的位置使得其始终在<code>reference</code>旁边</li>
+<li><code>arrow</code>: 用于显示<code>popper</code>的箭头，可能会对<code>popper</code>的位置进行调整，箭头元素的选择器是<code>options.arrowElement</code>。 最后放到<code>data</code>的属性有<code>data.offsets.arrow</code>和<code>data.arrowElement</code></li>
+<li><code>flip</code>: 当<code>popper</code>和<code>reference</code>的展示有重合时，将<code>popper</code>在相反反向重新展示，会重新设置<code>popperOffsets</code>和<code>data.placement</code></li>
+<li><code>applyStyle</code>: 绘制<code>popper</code>和<code>arrow</code>到页面上，会尝试使用<code>transform3d</code>进行<code>GPU</code>加速。 注意这里没有设置<code>popper</code>的<code>display</code>属性</li>
+</ul>
+<p>我们看看<code>preventOverflow</code>的原理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Popper.prototype.modifiers.preventOverflow = <span class="function"><span class="keyword">function</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> order = <span class="keyword">this</span>._options.preventOverflowOrder; <span class="comment">// 默认['left', 'right', 'top', 'bottom']</span></span><br><span class="line">  <span class="keyword">var</span> popper = getPopperClientRect(data.offsets.popper); <span class="comment">// 获取popper的尺寸和位置</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> check = &#123;</span><br><span class="line">    left: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 计算popper的左边是否与reference重叠，如果有重叠，向右调整popper使得刚好不重叠</span></span><br><span class="line">      <span class="keyword">var</span> left = popper.left;</span><br><span class="line">      <span class="keyword">if</span> (popper.left &lt; data.boundaries.left) &#123;</span><br><span class="line">        left = <span class="built_in">Math</span>.max(popper.left, data.boundaries.left);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> &#123; <span class="attr">left</span>: left &#125;;</span><br><span class="line">    &#125;,</span><br><span class="line">    right: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 类似原理，略</span></span><br><span class="line">    &#125;,</span><br><span class="line">    top: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 类似原理，略</span></span><br><span class="line">    &#125;,</span><br><span class="line">    bottom: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">      <span class="comment">// 类似原理，略</span></span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 挨个方向进行调整</span></span><br><span class="line">  order.forEach(<span class="function"><span class="keyword">function</span>(<span class="params">direction</span>) </span>&#123;</span><br><span class="line">    data.offsets.popper = <span class="built_in">Object</span>.assign(popper, check[direction]());</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>所有其他<code>modifier</code>的作用发挥都基于<code>reference</code>、<code>popper</code>和<code>boundariesElement</code>的位置和大小。</p>
+<h2 id="为什么设置boundariesElement不行？"><a href="#为什么设置boundariesElement不行？" class="headerlink" title="为什么设置boundariesElement不行？"></a>为什么设置<code>boundariesElement</code>不行？</h2><p>现在可以回答为什么指定<code>boundariesElement</code>不行了，从上面的分析可以看到：<strong><code>boundariesElement</code>和<code>reference</code>、<code>popper</code>的参考坐标是不一样的，前者是一个非<code>document</code>元素，后两个都是基于<code>document</code>，除非<code>boundariesElement</code>的<code>offsetParent</code>恰好就是<code>document</code>元素</strong>，我们只能另辟蹊径了。</p>
+<h1 id="思路-4：-IntersectionObserver"><a href="#思路-4：-IntersectionObserver" class="headerlink" title="思路 4： IntersectionObserver"></a>思路 4： <code>IntersectionObserver</code></h1><p>其实我们是想知道列表项何时隐藏在滚动区，当隐藏时再隐藏对应的<code>popover</code>。 当然可以监听滚动区的<code>scroll</code>事件然后判断每个列表项是否处于滚动区，<code>scroll</code>事件很容易出现性能问题，现在我们有一个更好的选择：<a href="https://developer.mozilla.org/zh-CN/docs/Web/API/IntersectionObserver/IntersectionObserver" target="_blank" rel="noopener"><code>IntersectionObserver</code></a>,它提供了一种可以异步监听目标元素与其祖先或视窗(viewport)交叉状态的手段。</p>
+<blockquote>
+<p><code>IntersectionObserver</code>的实现，应该采用<code>requestIdleCallback()</code>，即只有线程空闲下来，才会执行观察器。这意味着，这个观察器的优先级非常低，只在其他任务执行完，浏览器有了空闲才会执行。</p>
+</blockquote>
+<p>基于这个<code>api</code>，我们可以很容易的就能达到目标，只需用一种方式记录每个列表项对应的<code>popover</code>是哪个，这里我采用的是<code>data-set</code>，使用一个叫<code>data-index</code>的属性来记录。具体代码如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"hover-wrapper"</span> <span class="attr">ref</span>=<span class="string">"hoverWrapper"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">vi-popover</span></span></span><br><span class="line"><span class="tag">    <span class="attr">ref</span>=<span class="string">"popover"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">v-for</span>=<span class="string">"(item, index) in 100"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:key</span>=<span class="string">"item"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">placement</span>=<span class="string">"right-start"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">trigger</span>=<span class="string">"hover"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:content</span>=<span class="string">"`这是一段内容, index = $&#123;index&#125;`"</span></span></span><br><span class="line"><span class="tag">  &gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">vi-button</span> <span class="attr">:data-index</span>=<span class="string">"index"</span> <span class="attr">slot</span>=<span class="string">"reference"</span> <span class="attr">class</span>=<span class="string">"hover-ref"</span>&gt;</span>hover 激活<span class="tag">&lt;/<span class="name">vi-button</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">vi-popover</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">watchPopover() &#123;</span><br><span class="line">  <span class="keyword">const</span> popoverList = <span class="keyword">this</span>.$refs.popover;</span><br><span class="line">  <span class="keyword">const</span> observer = <span class="keyword">new</span> IntersectionObserver(</span><br><span class="line">    entries =&gt; &#123;</span><br><span class="line">      entries.forEach(<span class="function">(<span class="params">entry, index</span>) =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> &#123; isIntersecting, target &#125; = entry;</span><br><span class="line">        <span class="comment">// isIntersecting表示是否出现在了root区域内</span></span><br><span class="line">        <span class="keyword">if</span> (!isIntersecting) &#123;</span><br><span class="line">          (popoverList[target.dataset.index] || &#123;&#125;).showPopper = <span class="literal">false</span>; <span class="comment">// 隐藏popover</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      root: <span class="keyword">this</span>.$refs.hoverWrapper</span><br><span class="line">    &#125;</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.$el</span><br><span class="line">    .querySelectorAll(<span class="string">".hover-ref"</span>)</span><br><span class="line">    .forEach(<span class="function"><span class="params">ele</span> =&gt;</span> observer.observe(ele)); <span class="comment">// 观察每一个列表项</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>最终效果如下：</p>
+<p><img src="/images/popperjs/fix-using-intersectionobserver.gif" alt="fix-using-intersectionobserver"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文针对<code>popover</code>组件在快速滚动列表项中的问题进行了优化，在解决问题的同时解析了<code>Popper.js</code>的源码，并在最后利用<code>IntersectionObserver</code>较好的解决了问题。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/12/quick-link-source-code/" rel="next" title="quicklink源码解析">
+                <i class="fa fa-chevron-left"></i> quicklink源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#思路-1：-transition"><span class="nav-number">1.</span> <span class="nav-text">思路 1： transition</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路-2：-popover组件层级控制"><span class="nav-number">2.</span> <span class="nav-text">思路 2： popover组件层级控制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路-3：设置-boundariesElement"><span class="nav-number">3.</span> <span class="nav-text">思路 3：设置 boundariesElement</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Popper-js-源码解析"><span class="nav-number">3.1.</span> <span class="nav-text">Popper.js 源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构造函数"><span class="nav-number">3.1.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#update-函数"><span class="nav-number">3.1.2.</span> <span class="nav-text">update 函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#getOffsets"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">_getOffsets</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#getBoundaries"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">_getBoundaries</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#modifiers"><span class="nav-number">3.1.2.3.</span> <span class="nav-text">modifiers</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#为什么设置boundariesElement不行？"><span class="nav-number">3.2.</span> <span class="nav-text">为什么设置boundariesElement不行？</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路-4：-IntersectionObserver"><span class="nav-number">4.</span> <span class="nav-text">思路 4： IntersectionObserver</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/02/26/popperjs-source-code/';
+          this.page.identifier = '2019/02/26/popperjs-source-code/';
+          this.page.title = 'popover在快速滚动列表项中的问题及Popper.js源码解析';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

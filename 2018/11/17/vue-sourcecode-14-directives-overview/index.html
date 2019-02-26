@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Vue,javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="接下来的几篇文章焦点放到Vue的指令处理上，我们知道Vue内置了一些指令，比如常用的v-for、v-if等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。 parse阶段依然是从parse阶段开始，在src/compiler/parser/index.js中，会调用各个指令的processXXX： 12345678910111213// 处理v-pre指令, 如&amp;lt;span v">
+<meta name="keywords" content="Vue,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析14-指令处理概述">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="接下来的几篇文章焦点放到Vue的指令处理上，我们知道Vue内置了一些指令，比如常用的v-for、v-if等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。 parse阶段依然是从parse阶段开始，在src/compiler/parser/index.js中，会调用各个指令的processXXX： 12345678910111213// 处理v-pre指令, 如&amp;lt;span v">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.739Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析14-指令处理概述">
+<meta name="twitter:description" content="接下来的几篇文章焦点放到Vue的指令处理上，我们知道Vue内置了一些指令，比如常用的v-for、v-if等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。 parse阶段依然是从parse阶段开始，在src/compiler/parser/index.js中，会调用各个指令的processXXX： 12345678910111213// 处理v-pre指令, 如&amp;lt;span v">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/">
+
+
+
+
+
+  <title>Vue源码解析14-指令处理概述 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析14-指令处理概述</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-17T14:20:00+08:00">
+                2018-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/17/vue-sourcecode-14-directives-overview/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/17/vue-sourcecode-14-directives-overview/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接下来的几篇文章焦点放到<code>Vue</code>的指令处理上，我们知道<code>Vue</code>内置了一些指令，比如常用的<code>v-for</code>、<code>v-if</code>等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。</p>
+<h1 id="parse阶段"><a href="#parse阶段" class="headerlink" title="parse阶段"></a><code>parse</code>阶段</h1><p>依然是从<code>parse</code>阶段开始，在<code>src/compiler/parser/index.js</code>中，会调用各个指令的<code>processXXX</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 处理v-pre指令, 如&lt;span v-pre&gt;&#123;&#123; this will not be compiled &#125;&#125;&lt;/span&gt;</span></span><br><span class="line"><span class="comment">// 若有，则element.pre=true</span></span><br><span class="line">processPre(element);</span><br><span class="line"></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// structural directives</span></span><br><span class="line">processFor(element); <span class="comment">// 处理节点上的v-for属性</span></span><br><span class="line">processIf(element); <span class="comment">// 处理节点上的v-if属性</span></span><br><span class="line"><span class="comment">// v-once只渲染元素和组件一次。随后的重新渲染，元素/组件及其所有的子节点将被视为静态内容并跳过。这可以用于优化更新性能。</span></span><br><span class="line">processOnce(element); <span class="comment">// 处理节点上的v-once属性</span></span><br><span class="line"><span class="comment">// element-scope stuff</span></span><br><span class="line">processElement(element, options); <span class="comment">// 处理ref、slot、is、自定义指令以及其他所有普通属性</span></span><br></pre></td></tr></table></figure>
+<p><code>processElement</code>函数处理 <code>ref</code>、<code>slot</code>、<code>is</code>、自定义指令以及其他所有普通属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">processElement</span>(<span class="params">element: ASTElement, options: CompilerOptions</span>) </span>&#123;</span><br><span class="line">  processKey(element); <span class="comment">// 处理静态或动态key属性</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  processRef(element); <span class="comment">// 处理静态或动态ref属性</span></span><br><span class="line">  processSlot(element); <span class="comment">// 处理slot，获取slotTarget和slotScope属性</span></span><br><span class="line">  processComponent(element); <span class="comment">// 处理is属性，将对应值设置到component属性上</span></span><br><span class="line">  <span class="comment">// 处理class、style module的transformNode</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; transforms.length; i++) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * transforms目前只在class和style的module中有定义，逻辑类似</span></span><br><span class="line"><span class="comment">     * 见src/platforms/web/compiler/modules文件夹。</span></span><br><span class="line"><span class="comment">     * 其中</span></span><br><span class="line"><span class="comment">     * 1. class的transforms作用：</span></span><br><span class="line"><span class="comment">     *   a. 获取静态绑定的class属性，放到el.staticClass</span></span><br><span class="line"><span class="comment">     *   b. 获取动态绑定的class属性，放到el.classBinding</span></span><br><span class="line"><span class="comment">     * 2. style的transforms作用：</span></span><br><span class="line"><span class="comment">     *  a. 获取静态绑定的style属性，放到el.staticStyle</span></span><br><span class="line"><span class="comment">     *  b. 获取动态绑定的style属性，放到el.styleBinding</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    element = transforms[i](element, options) || element;</span><br><span class="line">  &#125;</span><br><span class="line">  processAttrs(element); <span class="comment">// 处理element上的所有属性，根据属性名分为自定义指令和普通属性</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>processAttrs</code>处理<code>element</code>上的所有其他属性，包括自定义指令和普通属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processAttrs</span>(<span class="params">el</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// attrsList结构示范：[&#123;name:'id',value:'app'&#125;]</span></span><br><span class="line">  <span class="keyword">const</span> list = el.attrsList;</span><br><span class="line">  <span class="keyword">let</span> i, l, name, rawName, value, modifiers, isProp;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>, l = list.length; i &lt; l; i++) &#123;</span><br><span class="line">    name = rawName = list[i].name;</span><br><span class="line">    value = list[i].value;</span><br><span class="line">    <span class="comment">// v- 或 @ 或 : 开头的属性名</span></span><br><span class="line">    <span class="keyword">if</span> (dirRE.test(name)) &#123;</span><br><span class="line">      <span class="comment">// mark element as dynamic</span></span><br><span class="line">      el.hasBindings = <span class="literal">true</span>;</span><br><span class="line">      <span class="comment">// modifiers修饰符， 即.xxx，若存在则返回一个对象， &#123;m1: true, m2:true&#125;</span></span><br><span class="line">      modifiers = parseModifiers(name);</span><br><span class="line">      <span class="keyword">if</span> (modifiers) &#123;</span><br><span class="line">        name = name.replace(modifierRE, <span class="string">''</span>); <span class="comment">// 去除修饰符</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (bindRE.test(name)) &#123;</span><br><span class="line">        <span class="comment">// v-bind，: 或 v-bind: 开头的属性绑定</span></span><br><span class="line">        name = name.replace(bindRE, <span class="string">''</span>); <span class="comment">// 去掉: 或 v-bind:</span></span><br><span class="line">        value = parseFilters(value); <span class="comment">// 解析可能的过滤器，若存在则返回的value是一个字符串</span></span><br><span class="line">        isProp = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">if</span> (modifiers) &#123;</span><br><span class="line">          <span class="comment">// 见v-bind api: https://cn.vuejs.org/v2/api/#v-bind</span></span><br><span class="line">          <span class="comment">// .prop修饰符：被用于绑定 DOM 属性 (property)</span></span><br><span class="line">          <span class="keyword">if</span> (modifiers.prop) &#123;</span><br><span class="line">            isProp = <span class="literal">true</span>;</span><br><span class="line">            name = camelize(name);</span><br><span class="line">            <span class="keyword">if</span> (name === <span class="string">'innerHtml'</span>) name = <span class="string">'innerHTML'</span>; <span class="comment">// innerHtml.prop</span></span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// .camel - (2.1.0+) 将 kebab-case 特性名转换为 camelCase</span></span><br><span class="line">          <span class="keyword">if</span> (modifiers.camel) &#123;</span><br><span class="line">            name = camelize(name);</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="comment">// .sync (2.3.0+) 语法糖，会扩展成一个更新父组件绑定值的 v-on 侦听器。</span></span><br><span class="line">          <span class="keyword">if</span> (modifiers.sync) &#123;</span><br><span class="line">            addHandler(el, <span class="string">`update:<span class="subst">$&#123;camelize(name)&#125;</span>`</span>, genAssignmentCode(value, <span class="string">`$event`</span>)); <span class="comment">// 添加事件监听</span></span><br><span class="line">          &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (isProp || (!el.component &amp;&amp; platformMustUseProp(el.tag, el.attrsMap.type, name))) &#123;</span><br><span class="line">          addProp(el, name, value);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="comment">// attrs只存在动态绑定的属性，如[&#123;name: "href"，value: 'xxx'&#125;]</span></span><br><span class="line">          <span class="comment">// attrsList存在的是大杂烩，存在所有动态/静态属性</span></span><br><span class="line">          <span class="comment">//      [&#123;name: ":href"，value: 'xxx'&#125;,</span></span><br><span class="line">          <span class="comment">//      &#123;name: "target", value: "_blank"&#125;,</span></span><br><span class="line">          <span class="comment">//      &#123;name: "@click.native", value: "log"&#125;]</span></span><br><span class="line">          addAttr(el, name, value); <span class="comment">// 将去除修饰符之后的属性添加到el.attrs数组</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (onRE.test(name)) &#123;</span><br><span class="line">        <span class="comment">// v-on事件处理见此前文章，此处略过...</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// normal directives，普通指令， v-xxx</span></span><br><span class="line">        name = name.replace(dirRE, <span class="string">''</span>);</span><br><span class="line">        <span class="comment">// parse arg，解析指令参数</span></span><br><span class="line">        <span class="keyword">const</span> argMatch = name.match(argRE);</span><br><span class="line">        <span class="keyword">const</span> arg = argMatch &amp;&amp; argMatch[<span class="number">1</span>];</span><br><span class="line">        <span class="keyword">if</span> (arg) &#123;</span><br><span class="line">          name = name.slice(<span class="number">0</span>, -(arg.length + <span class="number">1</span>));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 添加el.directives数组元素</span></span><br><span class="line">        <span class="comment">// el.directives.push(&#123; name, rawName, value, arg, modifiers &#125;)</span></span><br><span class="line">        addDirective(el, name, rawName, value, arg, modifiers);</span><br><span class="line">        <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; name === <span class="string">'model'</span>) &#123;</span><br><span class="line">          checkForAliasModel(el, value);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 往el.attrs上添加元素,attrs的结构与attrsList相同</span></span><br><span class="line">      addAttr(el, name, <span class="built_in">JSON</span>.stringify(value));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于自定义指令是通过<code>addDirective</code>处理并放到<code>el.directives</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">addDirective</span>(<span class="params">el: ASTElement, name: string, rawName: string, value: string, arg: ?string, modifiers: ?ASTModifiers</span>) </span>&#123;</span><br><span class="line">  (el.directives || (el.directives = [])).push(&#123; name, rawName, value, arg, modifiers &#125;);</span><br><span class="line">  el.plain = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是<code>parse</code>阶段对指令的处理了，处理完后并在<code>ast</code>上添加各种属性。</p>
+<h1 id="generate阶段生成render字符串"><a href="#generate阶段生成render字符串" class="headerlink" title="generate阶段生成render字符串"></a><code>generate</code>阶段生成<code>render</code>字符串</h1><p>在这个阶段的<code>genData</code>中会处理<code>parse</code>阶段放到<code>ast</code>上的各种指令属性：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">genData</span>(<span class="params">el: ASTElement, state: CodegenState</span>): <span class="title">string</span> </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> data = <span class="string">'&#123;'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// directives first. 自定义指令</span></span><br><span class="line">  <span class="comment">// directives may mutate the el's other properties before they are generated.</span></span><br><span class="line">  <span class="keyword">const</span> dirs = genDirectives(el, state);</span><br><span class="line">  <span class="keyword">if</span> (dirs) data += dirs + <span class="string">','</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// key</span></span><br><span class="line">  <span class="keyword">if</span> (el.key) &#123;</span><br><span class="line">    data += <span class="string">`key:<span class="subst">$&#123;el.key&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ref</span></span><br><span class="line">  <span class="keyword">if</span> (el.ref) &#123;</span><br><span class="line">    data += <span class="string">`ref:<span class="subst">$&#123;el.ref&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (el.refInFor) &#123;</span><br><span class="line">    data += <span class="string">`refInFor:true,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// pre</span></span><br><span class="line">  <span class="keyword">if</span> (el.pre) &#123;</span><br><span class="line">    data += <span class="string">`pre:true,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// record original tag name for components using "is" attribute</span></span><br><span class="line">  <span class="keyword">if</span> (el.component) &#123;</span><br><span class="line">    data += <span class="string">`tag:"<span class="subst">$&#123;el.tag&#125;</span>",`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// module data generation functions。</span></span><br><span class="line">  <span class="comment">// 目前只有class和style中有定义genData,位于src/platforms/web/compiler/modules文件夹</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * style的genData将el.staticStyle（静态style）和el.styleBinding（动态绑定的style）放入data中</span></span><br><span class="line"><span class="comment">   * class的genData将el.staticClass和el.classBinding放入data中</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; state.dataGenFns.length; i++) &#123;</span><br><span class="line">    data += state.dataGenFns[i](el);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// attributes，格式&#123;name: stirng,value:any&#125;[]</span></span><br><span class="line">  <span class="keyword">if</span> (el.attrs) &#123;</span><br><span class="line">    data += <span class="string">`attrs:&#123;<span class="subst">$&#123;genProps(el.attrs)&#125;</span>&#125;,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// DOM props</span></span><br><span class="line">  <span class="keyword">if</span> (el.props) &#123;</span><br><span class="line">    data += <span class="string">`domProps:&#123;<span class="subst">$&#123;genProps(el.props)&#125;</span>&#125;,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 事件处理略...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// slot target</span></span><br><span class="line">  <span class="comment">// only for non-scoped slots</span></span><br><span class="line">  <span class="keyword">if</span> (el.slotTarget &amp;&amp; !el.slotScope) &#123;</span><br><span class="line">    data += <span class="string">`slot:<span class="subst">$&#123;el.slotTarget&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// scoped slots，作用域插槽</span></span><br><span class="line">  <span class="keyword">if</span> (el.scopedSlots) &#123;</span><br><span class="line">    data += <span class="string">`<span class="subst">$&#123;genScopedSlots(el.scopedSlots, state)&#125;</span>,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// component v-model</span></span><br><span class="line">  <span class="keyword">if</span> (el.model) &#123;</span><br><span class="line">    data += <span class="string">`model:&#123;value:<span class="subst">$&#123;el.model.value&#125;</span>,callback:<span class="subst">$&#123;el.model.callback&#125;</span>,expression:<span class="subst">$&#123;el.model.expression&#125;</span>&#125;,`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  data = data.replace(<span class="regexp">/,$/</span>, <span class="string">''</span>) + <span class="string">'&#125;'</span>;</span><br><span class="line">  <span class="comment">// v-bind data wrap</span></span><br><span class="line">  <span class="keyword">if</span> (el.wrapData) &#123;</span><br><span class="line">    data = el.wrapData(data);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// v-on data wrap</span></span><br><span class="line">  <span class="keyword">if</span> (el.wrapListeners) &#123;</span><br><span class="line">    data = el.wrapListeners(data);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> data;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们的自定义指令在最开始就被<code>genDirectives</code>处理：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 自定义指令的render字符串生成，若节点的html为&lt;p v-loading.foo.bar="loading"&gt;123&lt;/p&gt;，</span></span><br><span class="line"><span class="comment"> * 则在parse阶段后，el.directives数组会有一个元素，它的关键属性有：</span></span><br><span class="line"><span class="comment"> * &#123;</span></span><br><span class="line"><span class="comment"> *    name: "loading"</span></span><br><span class="line"><span class="comment">      rawName: "v-loading.foo.bar"</span></span><br><span class="line"><span class="comment">      value: "loading"</span></span><br><span class="line"><span class="comment">      arg: null，</span></span><br><span class="line"><span class="comment">      modifiers: &#123;foo: true, bar: true&#125;</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @author liubin.frontend</span></span><br><span class="line"><span class="comment"> * @param &#123;ASTElement&#125; el</span></span><br><span class="line"><span class="comment"> * @param &#123;CodegenState&#125; state</span></span><br><span class="line"><span class="comment"> * @returns &#123;(string | void)&#125; 示范："directives:[&#123;name:"loading",rawName:"v-loading.foo.bar",value:(loading),expression:"loading",modifiers:&#123;"foo":true,"bar":true&#125;&#125;]"</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">genDirectives</span>(<span class="params">el: ASTElement, state: CodegenState</span>): <span class="title">string</span> | <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> dirs = el.directives; <span class="comment">// 节点上的普通指令</span></span><br><span class="line">  <span class="keyword">if</span> (!dirs) <span class="keyword">return</span>;</span><br><span class="line">  <span class="keyword">let</span> res = <span class="string">'directives:['</span>;</span><br><span class="line">  <span class="keyword">let</span> hasRuntime = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">let</span> i, l, dir, needRuntime;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>, l = dirs.length; i &lt; l; i++) &#123;</span><br><span class="line">    dir = dirs[i];</span><br><span class="line">    needRuntime = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// state.directives目前包含v-on、v-bind、v-cloak、v-html、v-model、v-text</span></span><br><span class="line">    <span class="keyword">const</span> gen: DirectiveFunction = state.directives[dir.name];</span><br><span class="line">    <span class="keyword">if</span> (gen) &#123;</span><br><span class="line">      <span class="comment">// compile-time directive that manipulates AST.</span></span><br><span class="line">      <span class="comment">// returns true if it also needs a runtime counterpart.</span></span><br><span class="line">      needRuntime = !!gen(el, dir, state.warn);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (needRuntime) &#123;</span><br><span class="line">      hasRuntime = <span class="literal">true</span>;</span><br><span class="line">      res += <span class="string">`&#123;name:"<span class="subst">$&#123;dir.name&#125;</span>",rawName:"<span class="subst">$&#123;dir.rawName&#125;</span>"<span class="subst">$&#123;dir.value ? <span class="string">`,value:(<span class="subst">$&#123;dir.value&#125;</span>),expression:<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(dir.value)&#125;</span>`</span> : <span class="string">''</span>&#125;</span><span class="subst">$&#123;</span></span></span><br><span class="line"><span class="string"><span class="subst">        dir.arg ? <span class="string">`,arg:"<span class="subst">$&#123;dir.arg&#125;</span>"`</span> : <span class="string">''</span></span></span></span><br><span class="line"><span class="string"><span class="subst">      &#125;</span><span class="subst">$&#123;dir.modifiers ? <span class="string">`,modifiers:<span class="subst">$&#123;<span class="built_in">JSON</span>.stringify(dir.modifiers)&#125;</span>`</span> : <span class="string">''</span>&#125;</span>&#125;,`</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (hasRuntime) &#123;</span><br><span class="line">    <span class="keyword">return</span> res.slice(<span class="number">0</span>, <span class="number">-1</span>) + <span class="string">']'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是在<code>generate</code>阶段对于指令的处理，处理完后会将各种属性放到<code>data</code>对象上，这个对象在<code>render</code>生成<code>vnode</code>时会被放到<code>vnode.data</code>上。</p>
+<h1 id="patch阶段处理vnode-data"><a href="#patch阶段处理vnode-data" class="headerlink" title="patch阶段处理vnode.data"></a><code>patch</code>阶段处理<code>vnode.data</code></h1><p>在<code>patch</code>的<code>invokeCreateHooks</code>中调用<code>cbs</code>上各种子<code>module</code>的钩子来处理<code>vnode.data</code>上的数据：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">invokeCreateHooks</span>(<span class="params">vnode, insertedVnodeQueue</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 调用每个module的create钩子，一共8个module，见cbs定义处的注释</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cbs.create.length; ++i) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 各个子module的create功能：</span></span><br><span class="line"><span class="comment">     * 1. attrs：将新增data.attrs放入vnode.elm，同时移除旧的data.attrs</span></span><br><span class="line"><span class="comment">     * 2. style: 将data.staticStyle/style放入vnode.elm.style，同时移除旧的style</span></span><br><span class="line"><span class="comment">     * 3. class: 将静态class和动态class结合，直接覆盖到vnode.elm.class</span></span><br><span class="line"><span class="comment">     * 4. events：利用新旧vnode的data.on更新vnode.elm的事件处理函数，使用addEventListener/removeEventListener</span></span><br><span class="line"><span class="comment">     * 5. domProps:处理原生dom属性，如textContent、innerHTML、value等，将新的dom属性加到vnode.elm，移除旧的dom属性</span></span><br><span class="line"><span class="comment">     * 6. transition: 略</span></span><br><span class="line"><span class="comment">     * 7. ref: 处理data.ref，令 vnode.context.refs[data.ref] = vnode.elm, 即指向的是原生dom</span></span><br><span class="line"><span class="comment">     * 8. directives: 处理指令，根据不同阶段调用指令的不同钩子，例如新建时调用bind钩子、更新时调用update钩子</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    cbs.create[i](emptyNode, vnode);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中对于自定义组件的处理是在<code>directives</code>这个钩子中,代码位于<code>src/core/vdom/modules/directives.js</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  create: updateDirectives,</span><br><span class="line">  update: updateDirectives,</span><br><span class="line">  destroy: <span class="function"><span class="keyword">function</span> <span class="title">unbindDirectives</span>(<span class="params">vnode: VNodeWithData</span>) </span>&#123;</span><br><span class="line">    updateDirectives(vnode, emptyNode);</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateDirectives</span>(<span class="params">oldVnode: VNodeWithData, vnode: VNodeWithData</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (oldVnode.data.directives || vnode.data.directives) &#123;</span><br><span class="line">    _update(oldVnode, vnode);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>_update</code>就是调用自定义组件上的各个选项函数，如<code>bind</code>、<code>update</code>、<code>inserted</code>等。</p>
+<p>以上就是指令处理的概述，接下来的几篇文章会针对各个指令详细描述。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/15/vue-sourcecode-13-events/" rel="next" title="Vue源码解析13-事件处理">
+                <i class="fa fa-chevron-left"></i> Vue源码解析13-事件处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/17/vue-sourcecode-15-custom-directive/" rel="prev" title="Vue源码解析15-自定义指令">
+                Vue源码解析15-自定义指令 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#parse阶段"><span class="nav-number">1.</span> <span class="nav-text">parse阶段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#generate阶段生成render字符串"><span class="nav-number">2.</span> <span class="nav-text">generate阶段生成render字符串</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#patch阶段处理vnode-data"><span class="nav-number">3.</span> <span class="nav-text">patch阶段处理vnode.data</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/';
+          this.page.identifier = '2018/11/17/vue-sourcecode-14-directives-overview/';
+          this.page.title = 'Vue源码解析14-指令处理概述';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="webpack,tapable,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前一阵子研究了tapable的实现后，就一直在学习webpack的源码。虽然事先有预料tapable在webpack中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个webpack就是用tapable串联起来的。这篇文章主要是记录webpack 主流程中的tapable运用，并不会涉及到非常细节的代码实现，因为我也没看完囧。 webpack中的绝大部分功能都是通过注册事件">
+<meta name="keywords" content="webpack,tapable">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tapable在webpack主流程中的应用">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/12/26/tapable-usage-in-webpack-main-procedure/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前一阵子研究了tapable的实现后，就一直在学习webpack的源码。虽然事先有预料tapable在webpack中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个webpack就是用tapable串联起来的。这篇文章主要是记录webpack 主流程中的tapable运用，并不会涉及到非常细节的代码实现，因为我也没看完囧。 webpack中的绝大部分功能都是通过注册事件">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/webpack/webpack-main-procedure.jpg">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.741Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tapable在webpack主流程中的应用">
+<meta name="twitter:description" content="前一阵子研究了tapable的实现后，就一直在学习webpack的源码。虽然事先有预料tapable在webpack中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个webpack就是用tapable串联起来的。这篇文章主要是记录webpack 主流程中的tapable运用，并不会涉及到非常细节的代码实现，因为我也没看完囧。 webpack中的绝大部分功能都是通过注册事件">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/webpack/webpack-main-procedure.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/12/26/tapable-usage-in-webpack-main-procedure/">
+
+
+
+
+
+  <title>tapable在webpack主流程中的应用 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/12/26/tapable-usage-in-webpack-main-procedure/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">tapable在webpack主流程中的应用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-26T11:16:01+08:00">
+                2018-12-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/12/26/tapable-usage-in-webpack-main-procedure/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/12/26/tapable-usage-in-webpack-main-procedure/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前一阵子研究了<code>tapable</code>的实现后，就一直在学习<code>webpack</code>的源码。虽然事先有预料<code>tapable</code>在<code>webpack</code>中是非常核心的存在，但过了一遍主流程后，发现比运用的想象中更普遍。可以说整个<code>webpack</code>就是用<code>tapable</code>串联起来的。这篇文章主要是记录<strong>webpack 主流程中的<code>tapable</code>运用，并不会涉及到非常细节的代码实现，因为我也没看完囧</strong>。</p>
+<p><code>webpack</code>中的绝大部分功能都是通过注册事件监听实现的，如果把整个打包流程看成是一辆从起点到终点运行的火车，那么每个事件就相当于一个个途中站点，事件监听函数类似于需要在对应站点下车的行人，行人就是我们的一个个<code>Plugin</code>，注册事件监听类似于在 A 站点上车并且想要在 B 站点下车，事件触发类似于火车到达了 B 站点，行人下车该干嘛干嘛，<code>Plugin</code>也就在这时开始干活。<code>webpack</code>中涉及的站点和行人都非常多，想要挨个弄清楚需要花费很多精力，我自己也没有怎么研究，不过了解了主流程后，就可以按兴趣针对性学习了，此时会省很多时间。</p>
+<h1 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h1><p>整理了一个主流程图：<img src="/images/webpack/webpack-main-procedure.jpg" alt="images/webpack/webpack-main-procedure.jpg"></p>
+<ul>
+<li>蓝色的节点表示触发了一个事件</li>
+<li>黑色的节点表示调用了一个方法</li>
+<li>竖直的泳道表示节点所属的对象或文件名</li>
+<li>水平的泳道表示打包流程所属的阶段，整个过程可以分为 3 个阶段<ol>
+<li>编译准备阶段，主要是准备好各种配置项，初始化<code>Compiler</code>和<code>Compilation</code>对象</li>
+<li>生成<code>modules</code>和<code>chunks</code>，可能一些人对二者的关系不是很清楚，<code>module</code>可以理解为一个打包产物的最小单元，比如一个<code>js</code>文件、一张图片；而一个<code>chunk</code>对应一个最终生成的文件，内部可能包含多个<code>module</code>；<code>chunk</code>与<code>module</code>是一对多的关系</li>
+<li>生成打包产物，也就是一个个文件</li>
+</ol>
+</li>
+</ul>
+<p>上述只画了一部分的节点，实际上涉及到的类和节点要多得多，不过在清楚了这些后，探索其他内容时就那么迷糊了~ 以下所有的代码为了保持注意力，均会省去类似错误处理这样的旁支代码。</p>
+<h1 id="编译准备阶段"><a href="#编译准备阶段" class="headerlink" title="编译准备阶段"></a>编译准备阶段</h1><p>此阶段准备好各种配置项，初始化<code>Compiler</code>和<code>Compilation</code>对象。</p>
+<p>首先整个打包的起点位于<code>webpack.js</code>中的<code>webpack</code>函数，以下是精简的部分：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> webpack = <span class="function">(<span class="params">options, callback</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// 校验options有效性</span></span><br><span class="line">  <span class="keyword">const</span> webpackOptionsValidationErrors = validateSchema(webpackOptionsSchema, options);</span><br><span class="line">  <span class="keyword">if</span> (webpackOptionsValidationErrors.length) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> WebpackOptionsValidationError(webpackOptionsValidationErrors);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> compiler;</span><br><span class="line">  <span class="comment">// 结合默认配置项完善options</span></span><br><span class="line">  options = <span class="keyword">new</span> WebpackOptionsDefaulter().process(options);</span><br><span class="line"></span><br><span class="line">  compiler = <span class="keyword">new</span> Compiler(options.context);</span><br><span class="line">  compiler.options = options;</span><br><span class="line">  <span class="keyword">new</span> NodeEnvironmentPlugin().apply(compiler);</span><br><span class="line">  <span class="comment">// 注册用户自定义插件</span></span><br><span class="line">  <span class="keyword">if</span> (options.plugins &amp;&amp; <span class="built_in">Array</span>.isArray(options.plugins)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> plugin <span class="keyword">of</span> options.plugins) &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> plugin === <span class="string">'function'</span>) &#123;</span><br><span class="line">        plugin.call(compiler, compiler);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        plugin.apply(compiler);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 结合options来注册一大坨内置插件</span></span><br><span class="line">  compiler.options = <span class="keyword">new</span> WebpackOptionsApply().process(options, compiler);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (callback) &#123;</span><br><span class="line">    <span class="comment">// watch选项</span></span><br><span class="line">    <span class="keyword">if</span> (options.watch === <span class="literal">true</span> || (<span class="built_in">Array</span>.isArray(options) &amp;&amp; options.some(<span class="function"><span class="params">o</span> =&gt;</span> o.watch))) &#123;</span><br><span class="line">      <span class="keyword">const</span> watchOptions = <span class="built_in">Array</span>.isArray(options) ? options.map(<span class="function"><span class="params">o</span> =&gt;</span> o.watchOptions || &#123;&#125;) : options.watchOptions || &#123;&#125;;</span><br><span class="line">      <span class="keyword">return</span> compiler.watch(watchOptions, callback);</span><br><span class="line">    &#125;</span><br><span class="line">    compiler.run(callback);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> compiler;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>WebpackOptionsDefaulter</code>继承了<code>OptionsDefaulter</code>类，它的<code>set</code>方法用于设置每一项的默认值，比如<br><code>this.set(&quot;entry&quot;, &quot;./src&quot;)</code>就是另<code>entry</code>的默认值为<code>./src</code>.</p>
+<p>前半部分代码比较好懂，另外我们暂时不关注<code>watch</code>选项，所以接下来会调用<code>compiler.run</code>。在继续之前先看看<code>WebpackOptionsApply.process</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">process</span>(<span class="params">options, compiler</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ... 巨量插件</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">new</span> EntryOptionPlugin().apply(compiler);</span><br><span class="line">  compiler.hooks.entryOption.call(options.context, options.entry);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 巨量插件。。。</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>应用插件的代码比较无趣都略过了，比较关键的是<code>EntryOptionPlugin</code>，它监听的事件恰好就是<code>compiler.hooks.entryOption</code>,所以监听函数会立马得到执行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> itemToPlugin = <span class="function">(<span class="params">context, item, name</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(item)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> MultiEntryPlugin(context, item, name);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> SingleEntryPlugin(context, item, name);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">EntryOptionPlugin</span> </span>&#123;</span><br><span class="line">  apply(compiler) &#123;</span><br><span class="line">    compiler.hooks.entryOption.tap(<span class="string">'EntryOptionPlugin'</span>, (context, entry) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">typeof</span> entry === <span class="string">'string'</span> || <span class="built_in">Array</span>.isArray(entry)) &#123;</span><br><span class="line">        itemToPlugin(context, entry, <span class="string">'main'</span>).apply(compiler);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> entry === <span class="string">'object'</span>) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">const</span> name <span class="keyword">of</span> <span class="built_in">Object</span>.keys(entry)) &#123;</span><br><span class="line">          itemToPlugin(context, entry[name], name).apply(compiler);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> entry === <span class="string">'function'</span>) &#123;</span><br><span class="line">        <span class="keyword">new</span> DynamicEntryPlugin(context, entry).apply(compiler);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>很明显，针对我们配置的<code>entry</code>选项来应用不同的<code>Plugin</code>，以单入口<code>SingleEntryPlugin</code>为例，另外两个类似：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SingleEntryPlugin</span> </span>&#123;</span><br><span class="line">  apply(compiler) &#123;</span><br><span class="line">    compiler.hooks.compilation.tap(<span class="string">'SingleEntryPlugin'</span>, (compilation, &#123; normalModuleFactory &#125;) =&gt; &#123;</span><br><span class="line">      compilation.dependencyFactories.set(SingleEntryDependency, normalModuleFactory);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    compiler.hooks.make.tapAsync(<span class="string">'SingleEntryPlugin'</span>, (compilation, callback) =&gt; &#123;</span><br><span class="line">      <span class="keyword">const</span> &#123; entry, name, context &#125; = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">const</span> dep = SingleEntryPlugin.createDependency(entry, name);</span><br><span class="line">      compilation.addEntry(context, dep, name, callback);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> createDependency(entry, name) &#123;</span><br><span class="line">    <span class="keyword">const</span> dep = <span class="keyword">new</span> SingleEntryDependency(entry);</span><br><span class="line">    dep.loc = &#123; name &#125;;</span><br><span class="line">    <span class="keyword">return</span> dep;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>监听了两个很重要的事件钩子<code>compilation</code>和<code>make</code>,在我们的流程图里也有这两个钩子，等后续钩子触发我们再看具体的实现。</p>
+<p>之后就是调用<code>compiler.run</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">run(callback) &#123;</span><br><span class="line">    <span class="comment">// 。。。</span></span><br><span class="line">		<span class="keyword">const</span> onCompiled = <span class="function">(<span class="params">err, compilation</span>) =&gt;</span> &#123;</span><br><span class="line">			<span class="comment">// ...</span></span><br><span class="line">		&#125;;</span><br><span class="line">		<span class="keyword">this</span>.hooks.beforeRun.callAsync(<span class="keyword">this</span>, err =&gt; &#123;</span><br><span class="line">      <span class="comment">// 。。。</span></span><br><span class="line">			<span class="keyword">this</span>.hooks.run.callAsync(<span class="keyword">this</span>, err =&gt; &#123;</span><br><span class="line">        <span class="comment">// 。。。</span></span><br><span class="line">				<span class="keyword">this</span>.readRecords(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">					<span class="comment">// 。。。</span></span><br><span class="line">					<span class="keyword">this</span>.compile(onCompiled);</span><br><span class="line">				&#125;);</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>beforeRun</code>和<code>run</code>两个钩子没有什么要特别注意的，最后调用了<code>compile</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">compile(callback) &#123;</span><br><span class="line">		<span class="keyword">const</span> params = <span class="keyword">this</span>.newCompilationParams();</span><br><span class="line">		<span class="keyword">this</span>.hooks.beforeCompile.callAsync(params, err =&gt; &#123;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.compile.call(params);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">const</span> compilation = <span class="keyword">this</span>.newCompilation(params);</span><br><span class="line">			<span class="keyword">this</span>.hooks.make.callAsync(compilation, err =&gt; &#123;</span><br><span class="line"></span><br><span class="line">				compilation.finish();</span><br><span class="line">        <span class="comment">// 此时compilation.moudles存放所有生成的modules</span></span><br><span class="line"></span><br><span class="line">				compilation.seal(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">					<span class="keyword">this</span>.hooks.afterCompile.callAsync(compilation, err =&gt; &#123;</span><br><span class="line">						<span class="keyword">return</span> callback(<span class="literal">null</span>, compilation);</span><br><span class="line">					&#125;);</span><br><span class="line"></span><br><span class="line">				&#125;);</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>newCompilationParams</code>会实例化两个工厂类<code>NormalModuleFactory</code>、<code>ContextModuleFactory</code>，它们的<code>create</code>方法会创建<code>NormalModule</code>、<code>ContextModule</code>，通过这两个<code>Module</code>类我们可以将每个模块结合对应的<code>loader</code>转化为<code>js</code>代码。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">newCompilationParams() &#123;</span><br><span class="line">		<span class="keyword">const</span> params = &#123;</span><br><span class="line">			normalModuleFactory: <span class="keyword">this</span>.createNormalModuleFactory(),</span><br><span class="line">			contextModuleFactory: <span class="keyword">this</span>.createContextModuleFactory(),</span><br><span class="line">			compilationDependencies: <span class="keyword">new</span> <span class="built_in">Set</span>()</span><br><span class="line">		&#125;;</span><br><span class="line">		<span class="keyword">return</span> params;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>newCompilation</code>用于创建一个<code>Compilation</code>对象，这个对象挂载了各种各样的构建产物，非常核心：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">newCompilation(params) &#123;</span><br><span class="line">		<span class="keyword">const</span> compilation = <span class="keyword">this</span>.createCompilation();</span><br><span class="line">		compilation.fileTimestamps = <span class="keyword">this</span>.fileTimestamps;</span><br><span class="line">		compilation.contextTimestamps = <span class="keyword">this</span>.contextTimestamps;</span><br><span class="line">		compilation.name = <span class="keyword">this</span>.name;</span><br><span class="line">		compilation.records = <span class="keyword">this</span>.records;</span><br><span class="line">		compilation.compilationDependencies = params.compilationDependencies;</span><br><span class="line">    <span class="keyword">this</span>.hooks.thisCompilation.call( compilation, params ); <span class="comment">// 最快能够获取到 Compilation 实例的任务点</span></span><br><span class="line">		<span class="keyword">this</span>.hooks.compilation.call(compilation, params);</span><br><span class="line">		<span class="keyword">return</span> compilation;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>注意在这里触发了<code>hooks.compilation</code>，还记得之前在<code>SingleEntryPlugin</code>注册了这个钩子吗？</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">compiler.hooks.compilation.tap(<span class="string">'SingleEntryPlugin'</span>, (compilation, &#123; normalModuleFactory &#125;) =&gt; &#123;</span><br><span class="line">  compilation.dependencyFactories.set(SingleEntryDependency, normalModuleFactory);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><code>dependencyFactories</code>是一个<code>Map</code>，用于记录<code>Dependency</code>与<code>ModuleFactory</code>之间的映射，在后续<code>hooks.make</code>钩子中会用到。</p>
+<p>接下来就是<code>hooks.make</code>钩子了，我们的编译准备工作也做完了。</p>
+<h1 id="生成modules和chunks"><a href="#生成modules和chunks" class="headerlink" title="生成modules和chunks"></a>生成<code>modules</code>和<code>chunks</code></h1><p><code>make</code>是代码分析的核心流程,包括创建模块、构建模块的工作，而构建模块步骤又包含了：</p>
+<ul>
+<li><code>loader</code>来处理资源</li>
+<li>处理后的<code>js</code>进行<code>AST</code>转换并分析语句</li>
+<li>语句中发现的依赖关系再处理拆分成<code>dep</code>,即依赖<code>module</code>,形成依赖网</li>
+<li><code>chunks</code> 生成，找到 <code>chunk</code> 所需要包含的 <code>modules</code></li>
+</ul>
+<p><code>SingleEntryPlugin</code>也注册了<code>make</code>钩子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">compiler.hooks.make.tapAsync(<span class="string">'SingleEntryPlugin'</span>, (compilation, callback) =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; entry, name, context &#125; = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> dep = SingleEntryPlugin.createDependency(entry, name);</span><br><span class="line">  compilation.addEntry(context, dep, name, callback);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>很简单，看看<code>addEntry</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 触发第一批 module 的解析，这些 module 就是 entry 中配置的模块。</span></span><br><span class="line">addEntry(context, entry, name, callback) &#123;</span><br><span class="line">	<span class="keyword">this</span>.hooks.addEntry.call(entry, name);</span><br><span class="line"></span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	<span class="keyword">this</span>._addModuleChain(</span><br><span class="line">		context,</span><br><span class="line">		entry,</span><br><span class="line">		<span class="built_in">module</span> =&gt; &#123;</span><br><span class="line">			<span class="keyword">this</span>.entries.push(<span class="built_in">module</span>);</span><br><span class="line">		&#125;,</span><br><span class="line">		(err, <span class="built_in">module</span>) =&gt; &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="built_in">module</span>) &#123;</span><br><span class="line">				slot.module = <span class="built_in">module</span>;</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				<span class="keyword">const</span> idx = <span class="keyword">this</span>._preparedEntrypoints.indexOf(slot);</span><br><span class="line">				<span class="keyword">if</span> (idx &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">					<span class="keyword">this</span>._preparedEntrypoints.splice(idx, <span class="number">1</span>);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">this</span>.hooks.succeedEntry.call(entry, name, <span class="built_in">module</span>);</span><br><span class="line">			<span class="keyword">return</span> callback(<span class="literal">null</span>, <span class="built_in">module</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基本上就是调用内部方法<code>_addModuleChain</code>，另外就是触发了 2 个钩子。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_addModuleChain</span>(<span class="params">context, dependency, onModule, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> Dep = <span class="comment">/** @type &#123;DepConstructor&#125; */</span> (dependency.constructor);</span><br><span class="line">  <span class="keyword">const</span> moduleFactory = <span class="keyword">this</span>.dependencyFactories.get(Dep);</span><br><span class="line"></span><br><span class="line">  moduleFactory.create(</span><br><span class="line">    &#123;</span><br><span class="line">      contextInfo: &#123;</span><br><span class="line">        issuer: <span class="string">''</span>,</span><br><span class="line">        compiler: <span class="keyword">this</span>.compiler.name,</span><br><span class="line">      &#125;,</span><br><span class="line">      context: context,</span><br><span class="line">      dependencies: [dependency],</span><br><span class="line">    &#125;,</span><br><span class="line">    (err, <span class="built_in">module</span>) =&gt; &#123;</span><br><span class="line">      <span class="keyword">let</span> afterFactory;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">const</span> addModuleResult = <span class="keyword">this</span>.addModule(<span class="built_in">module</span>);</span><br><span class="line">      <span class="built_in">module</span> = addModuleResult.module;</span><br><span class="line"></span><br><span class="line">      onModule(<span class="built_in">module</span>);</span><br><span class="line"></span><br><span class="line">      dependency.module = <span class="built_in">module</span>;</span><br><span class="line">      <span class="built_in">module</span>.addReason(<span class="literal">null</span>, dependency);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">const</span> afterBuild = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (addModuleResult.dependencies) &#123;</span><br><span class="line">          <span class="keyword">this</span>.processModuleDependencies(<span class="built_in">module</span>, err =&gt; &#123;</span><br><span class="line">            callback(<span class="literal">null</span>, <span class="built_in">module</span>);</span><br><span class="line">          &#125;);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">return</span> callback(<span class="literal">null</span>, <span class="built_in">module</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (addModuleResult.build) &#123;</span><br><span class="line">        <span class="keyword">this</span>.buildModule(<span class="built_in">module</span>, <span class="literal">false</span>, <span class="literal">null</span>, <span class="literal">null</span>, err =&gt; &#123;</span><br><span class="line">          afterBuild();</span><br><span class="line">        &#125;);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>this.dependencyFactories.get(Dep)</code>就是我们在<code>compilation</code>钩子中注册的那个，对于<code>SingleEntryDependency</code>我们拿到的是<code>NormalModuleFactory</code>. 看看它的<code>create</code>方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lib/NormalModuleFactory.js</span></span><br><span class="line"></span><br><span class="line">create(data, callback) &#123;</span><br><span class="line">		<span class="keyword">const</span> dependencies = data.dependencies;</span><br><span class="line">		<span class="keyword">const</span> cacheEntry = dependencyCache.get(dependencies[<span class="number">0</span>]);</span><br><span class="line">		<span class="keyword">if</span> (cacheEntry) <span class="keyword">return</span> callback(<span class="literal">null</span>, cacheEntry);</span><br><span class="line">		<span class="keyword">const</span> context = data.context || <span class="keyword">this</span>.context;</span><br><span class="line">		<span class="keyword">const</span> resolveOptions = data.resolveOptions || EMPTY_RESOLVE_OPTIONS;</span><br><span class="line">		<span class="keyword">const</span> request = dependencies[<span class="number">0</span>].request;</span><br><span class="line">		<span class="keyword">const</span> contextInfo = data.contextInfo || &#123;&#125;;</span><br><span class="line">		<span class="keyword">this</span>.hooks.beforeResolve.callAsync(</span><br><span class="line">			&#123;</span><br><span class="line">				contextInfo,</span><br><span class="line">				resolveOptions,</span><br><span class="line">				context,</span><br><span class="line">				request,</span><br><span class="line">				dependencies</span><br><span class="line">			&#125;,</span><br><span class="line">			(err, result) =&gt; &#123;</span><br><span class="line">				<span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Ignored</span></span><br><span class="line">				<span class="keyword">if</span> (!result) <span class="keyword">return</span> callback();</span><br><span class="line"></span><br><span class="line">				<span class="keyword">const</span> factory = <span class="keyword">this</span>.hooks.factory.call(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">				<span class="comment">// Ignored</span></span><br><span class="line">				<span class="keyword">if</span> (!factory) <span class="keyword">return</span> callback();</span><br><span class="line"></span><br><span class="line">				factory(result, (err, <span class="built_in">module</span>) =&gt; &#123;</span><br><span class="line">					<span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (<span class="built_in">module</span> &amp;&amp; <span class="keyword">this</span>.cachePredicate(<span class="built_in">module</span>)) &#123;</span><br><span class="line">						<span class="keyword">for</span> (<span class="keyword">const</span> d <span class="keyword">of</span> dependencies) &#123;</span><br><span class="line">							dependencyCache.set(d, <span class="built_in">module</span>);</span><br><span class="line">						&#125;</span><br><span class="line">					&#125;</span><br><span class="line"></span><br><span class="line">					callback(<span class="literal">null</span>, <span class="built_in">module</span>);</span><br><span class="line">				&#125;);</span><br><span class="line">			&#125;</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>如果在<code>beforeResolve</code>钩子中返回<code>false</code>，则后续流程会被跳过，即此模块不会被打包。例如<code>IgnorePlugin</code>处理<code>moment</code>的打包问题就很典型：</p>
+<p>测试发现<code>import moment</code>时会将所有<code>locale</code>都打包进了，追查发现在<code>moment</code>源码中有个函数可以执行导入,虽然默认不会执行:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">loadLocale</span>(<span class="params">name</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="built_in">require</span>(<span class="string">'./locale/'</span> + name);</span><br><span class="line">  <span class="comment">//....</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在<code>webpack</code>打包过程中，在解析完<code>moment</code>后发现有<code>locale</code>的依赖，就会去解析<code>locale</code>。 在<code>IgnorePlugin</code>中打断点发现会尝试解析 <code>./locale</code>（即<code>result.request</code>的值）:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="string">'resourceRegExp'</span> <span class="keyword">in</span> <span class="keyword">this</span>.options &amp;&amp; <span class="keyword">this</span>.options.resourceRegExp &amp;&amp; <span class="keyword">this</span>.options.resourceRegExp.test(result.request)) &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>利用 <code>BundleAnalyzerPlugin</code> 可以很明显发现打包产物包含了所有 <code>locale</code> 文件。</p>
+<p>解决办法，添加如下配置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> webpack.IgnorePlugin(&#123;</span><br><span class="line">  resourceRegExp: <span class="regexp">/^\.\/locale$/</span>,</span><br><span class="line">  contextRegExp: <span class="regexp">/moment$/</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>此时 <code>IgnorePlugin</code>会返回 <code>null</code>,这样我们就跳过了整个<code>locale</code>的打包。 (此插件注册了 <code>NormalModuleFactory</code> 和 <code>ContextModuleFactory</code> 的 <code>beforeResolve</code> 钩子，<code>locale</code> 的解析是在 <code>ContextModuleFactory</code> 的).</p>
+<p>参考资料</p>
+<ul>
+<li><a href="https://webpack.js.org/plugins/ignore-plugin/" target="_blank" rel="noopener">ignore-plugin</a></li>
+<li><a href="https://github.com/moment/moment/issues/2373" target="_blank" rel="noopener">moment issues</a></li>
+</ul>
+<p>以上就是<code>beforeResolve</code>的一个作用，接下来的<code>factory</code>钩子的监听函数中会生成<code>NormalModule</code>实例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.hooks.factory.tap(<span class="string">'NormalModuleFactory'</span>, () =&gt; <span class="function">(<span class="params">result, callback</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="comment">// resolver解析 module 需要用到的一些属性，比如需要用到的 loaders, 资源路径 resource 等等，</span></span><br><span class="line">  <span class="comment">// 最终将解析完毕的参数传给 NormalModule 构建函数。</span></span><br><span class="line">  <span class="keyword">let</span> resolver = <span class="keyword">this</span>.hooks.resolver.call(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Ignored</span></span><br><span class="line">  <span class="keyword">if</span> (!resolver) <span class="keyword">return</span> callback();</span><br><span class="line"></span><br><span class="line">  resolver(result, (err, data) =&gt; &#123;</span><br><span class="line">    <span class="comment">// 此时的data就是module需要的那些属性对象</span></span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Ignored</span></span><br><span class="line">    <span class="keyword">if</span> (!data) <span class="keyword">return</span> callback();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// direct module</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">typeof</span> data.source === <span class="string">'function'</span>) <span class="keyword">return</span> callback(<span class="literal">null</span>, data);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">this</span>.hooks.afterResolve.callAsync(data, (err, result) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">      <span class="comment">// Ignored</span></span><br><span class="line">      <span class="keyword">if</span> (!result) <span class="keyword">return</span> callback();</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> createdModule = <span class="keyword">this</span>.hooks.createModule.call(result);</span><br><span class="line">      <span class="keyword">if</span> (!createdModule) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!result.request) &#123;</span><br><span class="line">          <span class="keyword">return</span> callback(<span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Empty dependency (no request)'</span>));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        createdModule = <span class="keyword">new</span> NormalModule(result);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      createdModule = <span class="keyword">this</span>.hooks.module.call(createdModule, result);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> callback(<span class="literal">null</span>, createdModule);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>传入<code>new NormalModule</code>的参数对象类型示范,这些数据是在<code>resolver</code>监听中生成的:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">result = &#123;</span><br><span class="line">  context,</span><br><span class="line">  request,</span><br><span class="line">  dependencies,</span><br><span class="line">  userRequest,</span><br><span class="line">  rawRequest,</span><br><span class="line">  loaders,</span><br><span class="line">  resource,</span><br><span class="line">  matchResource,</span><br><span class="line">  resourceResolveData,</span><br><span class="line">  settings,</span><br><span class="line">  type,</span><br><span class="line">  parser,</span><br><span class="line">  generator,</span><br><span class="line">  resolveOptions,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>生成了<code>NormalModule</code>后会回到<code>Compilation.prototype._addModuleChain</code>，并在随后调用<code>buildModule</code>方法并传入新创建的<code>NormalModule</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">buildModule(<span class="built_in">module</span>, optional, origin, dependencies, thisCallback) &#123;</span><br><span class="line">		<span class="keyword">let</span> callbackList = <span class="keyword">this</span>._buildingModules.get(<span class="built_in">module</span>);</span><br><span class="line">		<span class="keyword">if</span> (callbackList) &#123;</span><br><span class="line">			callbackList.push(thisCallback);</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">this</span>._buildingModules.set(<span class="built_in">module</span>, (callbackList = [thisCallback]));</span><br><span class="line"></span><br><span class="line">		<span class="keyword">const</span> callback = <span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">			<span class="keyword">this</span>._buildingModules.delete(<span class="built_in">module</span>);</span><br><span class="line">			<span class="keyword">for</span> (<span class="keyword">const</span> cb <span class="keyword">of</span> callbackList) &#123;</span><br><span class="line">				cb(err);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.buildModule.call(<span class="built_in">module</span>);</span><br><span class="line">		<span class="built_in">module</span>.build(</span><br><span class="line">			<span class="keyword">this</span>.options,</span><br><span class="line">			<span class="keyword">this</span>,</span><br><span class="line">			<span class="keyword">this</span>.resolverFactory.get(<span class="string">"normal"</span>, <span class="built_in">module</span>.resolveOptions),</span><br><span class="line">			<span class="keyword">this</span>.inputFileSystem,</span><br><span class="line">			error =&gt; &#123;</span><br><span class="line">        <span class="comment">// module.dependencies表示此module的所有依赖，例如require的其他module</span></span><br><span class="line">				<span class="keyword">const</span> originalMap = <span class="built_in">module</span>.dependencies.reduce(<span class="function">(<span class="params">map, v, i</span>) =&gt;</span> &#123;</span><br><span class="line">					map.set(v, i);</span><br><span class="line">					<span class="keyword">return</span> map;</span><br><span class="line">				&#125;, <span class="keyword">new</span> <span class="built_in">Map</span>());</span><br><span class="line">				<span class="built_in">module</span>.dependencies.sort(<span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">					<span class="keyword">const</span> cmp = compareLocations(a.loc, b.loc);</span><br><span class="line">					<span class="keyword">if</span> (cmp) <span class="keyword">return</span> cmp;</span><br><span class="line">					<span class="keyword">return</span> originalMap.get(a) - originalMap.get(b);</span><br><span class="line">				&#125;);</span><br><span class="line"></span><br><span class="line">				<span class="keyword">this</span>.hooks.succeedModule.call(<span class="built_in">module</span>);</span><br><span class="line">				<span class="keyword">return</span> callback();</span><br><span class="line">			&#125;</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>核心还是<code>NormalModule.prototype.build</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line">build(options, compilation, resolver, fs, callback) &#123;</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">this</span>.doBuild(options, compilation, resolver, fs, err =&gt; &#123;</span><br><span class="line">			<span class="keyword">const</span> handleParseResult = <span class="function"><span class="params">result</span> =&gt;</span> &#123;</span><br><span class="line">				<span class="keyword">this</span>._lastSuccessfulBuildMeta = <span class="keyword">this</span>.buildMeta;</span><br><span class="line">				<span class="keyword">this</span>._initBuildHash(compilation);</span><br><span class="line">				<span class="keyword">return</span> callback();</span><br><span class="line">			&#125;;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">try</span> &#123;</span><br><span class="line">				<span class="keyword">const</span> result = <span class="keyword">this</span>.parser.parse(</span><br><span class="line">					<span class="keyword">this</span>._ast || <span class="keyword">this</span>._source.source(),</span><br><span class="line">					&#123;</span><br><span class="line">						current: <span class="keyword">this</span>,</span><br><span class="line">						<span class="built_in">module</span>: <span class="keyword">this</span>,</span><br><span class="line">						compilation: compilation,</span><br><span class="line">						options: options</span><br><span class="line">					&#125;,</span><br><span class="line">					(err, result) =&gt; &#123;</span><br><span class="line">						handleParseResult(result);</span><br><span class="line">					&#125;</span><br><span class="line">				);</span><br><span class="line">				<span class="keyword">if</span> (result !== <span class="literal">undefined</span>) &#123;</span><br><span class="line">					<span class="comment">// parse is sync</span></span><br><span class="line">					handleParseResult(result);</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">doBuild(options, compilation, resolver, fs, callback) &#123;</span><br><span class="line">		<span class="keyword">const</span> loaderContext = <span class="keyword">this</span>.createLoaderContext(</span><br><span class="line">			resolver,</span><br><span class="line">			options,</span><br><span class="line">			compilation,</span><br><span class="line">			fs</span><br><span class="line">		);</span><br><span class="line">    <span class="comment">// 使用module的loaders处理，得到转化后的js代码，放入_source属性中</span></span><br><span class="line">		runLoaders(</span><br><span class="line">			&#123;</span><br><span class="line">				resource: <span class="keyword">this</span>.resource,</span><br><span class="line">				loaders: <span class="keyword">this</span>.loaders,</span><br><span class="line">				context: loaderContext,</span><br><span class="line">				readResource: fs.readFile.bind(fs)</span><br><span class="line">			&#125;,</span><br><span class="line">			(err, result) =&gt; &#123;</span><br><span class="line">				<span class="keyword">if</span> (result) &#123;</span><br><span class="line">					<span class="keyword">this</span>.buildInfo.cacheable = result.cacheable;</span><br><span class="line">					<span class="keyword">this</span>.buildInfo.fileDependencies = <span class="keyword">new</span> <span class="built_in">Set</span>(result.fileDependencies);</span><br><span class="line">					<span class="keyword">this</span>.buildInfo.contextDependencies = <span class="keyword">new</span> <span class="built_in">Set</span>(</span><br><span class="line">						result.contextDependencies</span><br><span class="line">					);</span><br><span class="line">				&#125;</span><br><span class="line"></span><br><span class="line">				<span class="keyword">const</span> resourceBuffer = result.resourceBuffer;</span><br><span class="line">				<span class="keyword">const</span> source = result.result[<span class="number">0</span>];</span><br><span class="line">				<span class="keyword">const</span> sourceMap = result.result.length &gt;= <span class="number">1</span> ? result.result[<span class="number">1</span>] : <span class="literal">null</span>;</span><br><span class="line">				<span class="keyword">const</span> extraInfo = result.result.length &gt;= <span class="number">2</span> ? result.result[<span class="number">2</span>] : <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">				<span class="keyword">this</span>._source = <span class="keyword">this</span>.createSource(</span><br><span class="line">					<span class="keyword">this</span>.binary ? asBuffer(source) : asString(source),</span><br><span class="line">					resourceBuffer,</span><br><span class="line">					sourceMap</span><br><span class="line">				);</span><br><span class="line">				<span class="keyword">this</span>._ast =</span><br><span class="line">					<span class="keyword">typeof</span> extraInfo === <span class="string">"object"</span> &amp;&amp;</span><br><span class="line">					extraInfo !== <span class="literal">null</span> &amp;&amp;</span><br><span class="line">					extraInfo.webpackAST !== <span class="literal">undefined</span></span><br><span class="line">						? extraInfo.webpackAST</span><br><span class="line">						: <span class="literal">null</span>;</span><br><span class="line">				<span class="keyword">return</span> callback();</span><br><span class="line">			&#125;</span><br><span class="line">		);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>内部使用了<code>runLoaders</code>这个库来转化<code>module</code>，<strong>如何确定每个<code>Module</code>对应的<code>loaders</code>呢？在初始化<code>NormalModuleFactory</code>时会解析<code>options.rules</code>得到一个<code>ruleSet</code>属性。 <code>ruleSet</code>会去匹配文件类型并结合<code>rules</code>找到需要的<code>loaders</code>。</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// lib/NormalModuleFactory.js</span></span><br><span class="line"><span class="keyword">constructor</span>(context, resolverFactory, options) &#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">this</span>.ruleSet = <span class="keyword">new</span> RuleSet(options.defaultRules.concat(options.rules));</span><br><span class="line">  <span class="keyword">this</span>.hooks.resolver.tap(<span class="string">"NormalModuleFactory"</span>, () =&gt; <span class="function">(<span class="params">data, callback</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 。。。</span></span><br><span class="line">    <span class="keyword">const</span> result = <span class="keyword">this</span>.ruleSet.exec(&#123;</span><br><span class="line">						resource: resourcePath,</span><br><span class="line">						realResource:</span><br><span class="line">							matchResource !== <span class="literal">undefined</span></span><br><span class="line">								? resource.replace(<span class="regexp">/\?.*/</span>, <span class="string">""</span>)</span><br><span class="line">								: resourcePath,</span><br><span class="line">						resourceQuery,</span><br><span class="line">						issuer: contextInfo.issuer,</span><br><span class="line">						compiler: contextInfo.compiler</span><br><span class="line">					&#125;);</span><br><span class="line">    <span class="comment">// 。。。</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>RuleSet</code>的解析过程比较复杂，主要是因为<code>rules</code>配置很灵活，还要兼容一些过时的配置方式，具体过程大家自行了解。</p>
+<p><code>runLoaders</code>在内部主要是读取<code>module</code>内容，再迭代<code>loaders</code>的处理方法，关键的代码有：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// loader-runner/lib/LoaderRunner.js</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">processResource</span>(<span class="params">options, loaderContext, callback</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// set loader index to last loader</span></span><br><span class="line">  loaderContext.loaderIndex = loaderContext.loaders.length - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> resourcePath = loaderContext.resourcePath;</span><br><span class="line">  <span class="keyword">if</span> (resourcePath) &#123;</span><br><span class="line">    loaderContext.addDependency(resourcePath);</span><br><span class="line">    <span class="comment">// 读取module内容</span></span><br><span class="line">    options.readResource(resourcePath, <span class="function"><span class="keyword">function</span>(<span class="params">err, buffer</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line">      options.resourceBuffer = buffer;</span><br><span class="line">      iterateNormalLoaders(options, loaderContext, [buffer], callback);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    iterateNormalLoaders(options, loaderContext, [<span class="literal">null</span>], callback);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">iterateNormalLoaders</span>(<span class="params">options, loaderContext, args, callback</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (loaderContext.loaderIndex &lt; <span class="number">0</span>) <span class="keyword">return</span> callback(<span class="literal">null</span>, args);</span><br><span class="line"></span><br><span class="line">  <span class="comment">//当前的loader</span></span><br><span class="line">  <span class="keyword">var</span> currentLoaderObject = loaderContext.loaders[loaderContext.loaderIndex];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// iterate</span></span><br><span class="line">  <span class="keyword">if</span> (currentLoaderObject.normalExecuted) &#123;</span><br><span class="line">    loaderContext.loaderIndex--;</span><br><span class="line">    <span class="keyword">return</span> iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> fn = currentLoaderObject.normal;</span><br><span class="line">  currentLoaderObject.normalExecuted = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">if</span> (!fn) &#123;</span><br><span class="line">    <span class="keyword">return</span> iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  convertArgs(args, currentLoaderObject.raw);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// fn: function ( source, inputSourceMap ) &#123; … &#125;</span></span><br><span class="line">  <span class="comment">// 此处执行loader逻辑</span></span><br><span class="line">  runSyncOrAsync(fn, loaderContext, args, <span class="function"><span class="keyword">function</span>(<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">return</span> callback(err);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> args = <span class="built_in">Array</span>.prototype.slice.call(<span class="built_in">arguments</span>, <span class="number">1</span>);</span><br><span class="line">    iterateNormalLoaders(options, loaderContext, args, callback);</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注释中也有写到，一个<code>loader</code>其实就是一个函数：<code>(source: string, inputSourceMap) =&gt; string</code>，比如<code>babel-loader</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> (<span class="params">source, inputSourceMap</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// Make the loader async</span></span><br><span class="line">    <span class="keyword">const</span> callback = <span class="keyword">this</span>.async();</span><br><span class="line">    loader.call(<span class="keyword">this</span>, source, inputSourceMap, overrides).then(<span class="function"><span class="params">args</span> =&gt;</span> callback(<span class="literal">null</span>, ...args), err =&gt; callback(err));</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<p><code>doBuild</code>方法结束后会拿到<code>module</code>转化后的<code>js</code>代码，并在接下来使用<code>Parser.prototype.parse</code>方法将<code>js</code>转为<code>AST</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">parse(source, initialState) &#123;</span><br><span class="line">		<span class="keyword">let</span> ast;</span><br><span class="line">		<span class="keyword">let</span> comments;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">typeof</span> source === <span class="string">"object"</span> &amp;&amp; source !== <span class="literal">null</span>) &#123;</span><br><span class="line">			ast = source;</span><br><span class="line">			comments = source.comments;</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			comments = [];</span><br><span class="line">			ast = Parser.parse(source, &#123;</span><br><span class="line">				sourceType: <span class="keyword">this</span>.sourceType,</span><br><span class="line">				onComment: comments</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">const</span> oldScope = <span class="keyword">this</span>.scope;</span><br><span class="line">		<span class="keyword">const</span> oldState = <span class="keyword">this</span>.state;</span><br><span class="line">		<span class="keyword">const</span> oldComments = <span class="keyword">this</span>.comments;</span><br><span class="line">		<span class="keyword">this</span>.scope = &#123;</span><br><span class="line">			topLevelScope: <span class="literal">true</span>,</span><br><span class="line">			inTry: <span class="literal">false</span>,</span><br><span class="line">			inShorthand: <span class="literal">false</span>,</span><br><span class="line">			isStrict: <span class="literal">false</span>,</span><br><span class="line">			definitions: <span class="keyword">new</span> StackedSetMap(),</span><br><span class="line">			renames: <span class="keyword">new</span> StackedSetMap()</span><br><span class="line">		&#125;;</span><br><span class="line">		<span class="keyword">const</span> state = (<span class="keyword">this</span>.state = initialState || &#123;&#125;);</span><br><span class="line">		<span class="keyword">this</span>.comments = comments;</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">this</span>.hooks.program.call(ast, comments) === <span class="literal">undefined</span>) &#123;</span><br><span class="line">			<span class="keyword">this</span>.detectStrictMode(ast.body);</span><br><span class="line">			<span class="keyword">this</span>.prewalkStatements(ast.body);</span><br><span class="line">			<span class="keyword">this</span>.walkStatements(ast.body);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">this</span>.scope = oldScope;</span><br><span class="line">		<span class="keyword">this</span>.state = oldState;</span><br><span class="line">		<span class="keyword">this</span>.comments = oldComments;</span><br><span class="line">		<span class="keyword">return</span> state;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Parser.parse</code>中是利用<code>acorn</code>这个第三方库来生成<code>AST</code>的，类似的还有<code>esprima</code>。</p>
+<p>一个<code>Module</code>可能依赖其他<code>Module</code>，这需要逐个解析<code>AST</code>节点来确定，由于依赖的方式有很多种比如<code>require</code>、<code>require.ensure</code>、<code>import</code>等，对于每一种依赖都有对应的类例如<code>AMDRequireDependency</code>，依赖的形式如此之多以至于<code>webpack</code>专门建了一个<code>lib/dependencies</code>文件夹。</p>
+<blockquote>
+<p>当 <code>parser</code> 解析完成之后，<code>module</code> 的解析过程就完成了。每个 <code>module</code> 解析完成之后，都会触发 <code>Compilation</code> 实例对象的任务点 <code>succeedModule</code>，我们可以在这个任务点获取到刚解析完的 <code>module</code> 对象。正如前面所说，<code>module</code> 接下来还要继续递归解析它的依赖模块，最终我们会得到项目所依赖的所有 <code>modules</code>。此时任务点 <code>make</code> 结束。注意<code>require.ensure</code>在<code>build</code>后被放入了<code>module.blocks</code>而不是<code>module.dependencies</code>。</p>
+</blockquote>
+<p>接下来按照流程图我们会调用<code>Compilation</code>对象的<code>finish</code>和<code>seal</code>方法。<code>finish</code>很简单就触发了一个钩子，我们的重点放在<code>seal</code>上：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br></pre></td><td class="code"><pre><span class="line">seal(callback) &#123;</span><br><span class="line">		<span class="keyword">this</span>.hooks.seal.call();</span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.beforeChunks.call();</span><br><span class="line">    <span class="comment">// 根据modules生成chunks。</span></span><br><span class="line">    <span class="comment">// webpack 中的 chunk 概念，要不就是配置在 entry 中的模块，要不就是动态引入（比如 require.ensure）的模块。</span></span><br><span class="line">    <span class="comment">// chunk 的生成算法：</span></span><br><span class="line">    <span class="comment">// 1. webpack 先将 entry 中对应的 module 都生成一个新的 chunk</span></span><br><span class="line">    <span class="comment">// 2. 遍历 module 的依赖列表，将依赖的 module 也加入到 chunk 中</span></span><br><span class="line">    <span class="comment">// 3. 如果一个依赖 module 是动态引入的模块，那么就会根据这个 module 创建一个新的 chunk，继续遍历依赖</span></span><br><span class="line">    <span class="comment">// 4. 重复上面的过程，直至得到所有的 chunks</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">const</span> preparedEntrypoint <span class="keyword">of</span> <span class="keyword">this</span>._preparedEntrypoints) &#123;</span><br><span class="line">			<span class="keyword">const</span> <span class="built_in">module</span> = preparedEntrypoint.module;</span><br><span class="line">			<span class="keyword">const</span> name = preparedEntrypoint.name;</span><br><span class="line">			<span class="keyword">const</span> chunk = <span class="keyword">this</span>.addChunk(name);</span><br><span class="line">			<span class="keyword">const</span> entrypoint = <span class="keyword">new</span> Entrypoint(name);</span><br><span class="line">			entrypoint.setRuntimeChunk(chunk);</span><br><span class="line">			entrypoint.addOrigin(<span class="literal">null</span>, name, preparedEntrypoint.request);</span><br><span class="line">			<span class="keyword">this</span>.namedChunkGroups.set(name, entrypoint);</span><br><span class="line">			<span class="keyword">this</span>.entrypoints.set(name, entrypoint);</span><br><span class="line">			<span class="keyword">this</span>.chunkGroups.push(entrypoint);</span><br><span class="line"></span><br><span class="line">			GraphHelpers.connectChunkGroupAndChunk(entrypoint, chunk);</span><br><span class="line">			GraphHelpers.connectChunkAndModule(chunk, <span class="built_in">module</span>);</span><br><span class="line"></span><br><span class="line">			chunk.entryModule = <span class="built_in">module</span>;</span><br><span class="line">			chunk.name = name;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.assignDepth(<span class="built_in">module</span>); <span class="comment">// 给module设置depth属性</span></span><br><span class="line">		&#125;</span><br><span class="line">    <span class="comment">// creates the Chunk graph from the Module graph</span></span><br><span class="line">    <span class="comment">// 在此时还只有一个入口chunk，处理完后动态引入的module会生成额外chunk</span></span><br><span class="line">		<span class="keyword">this</span>.processDependenciesBlocksForChunkGroups(<span class="keyword">this</span>.chunkGroups.slice());</span><br><span class="line">		<span class="keyword">this</span>.sortModules(<span class="keyword">this</span>.modules);</span><br><span class="line">		<span class="keyword">this</span>.hooks.afterChunks.call(<span class="keyword">this</span>.chunks);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.optimize.call();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.afterOptimizeModules.call(<span class="keyword">this</span>.modules);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.afterOptimizeChunks.call(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.chunkGroups);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">this</span>.hooks.optimizeTree.callAsync(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.modules, err =&gt; &#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.afterOptimizeTree.call(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.modules);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.afterOptimizeChunkModules.call(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.modules);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">const</span> shouldRecord = <span class="keyword">this</span>.hooks.shouldRecord.call() !== <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.reviveModules.call(<span class="keyword">this</span>.modules, <span class="keyword">this</span>.records);</span><br><span class="line">			<span class="keyword">this</span>.hooks.optimizeModuleOrder.call(<span class="keyword">this</span>.modules);</span><br><span class="line">			<span class="keyword">this</span>.hooks.advancedOptimizeModuleOrder.call(<span class="keyword">this</span>.modules);</span><br><span class="line">			<span class="keyword">this</span>.hooks.beforeModuleIds.call(<span class="keyword">this</span>.modules);</span><br><span class="line">			<span class="keyword">this</span>.hooks.moduleIds.call(<span class="keyword">this</span>.modules);</span><br><span class="line">			<span class="keyword">this</span>.applyModuleIds();</span><br><span class="line">			<span class="keyword">this</span>.hooks.optimizeModuleIds.call(<span class="keyword">this</span>.modules);</span><br><span class="line">			<span class="keyword">this</span>.hooks.afterOptimizeModuleIds.call(<span class="keyword">this</span>.modules);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.sortItemsWithModuleIds();</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.reviveChunks.call(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.records);</span><br><span class="line">			<span class="keyword">this</span>.hooks.optimizeChunkOrder.call(<span class="keyword">this</span>.chunks);</span><br><span class="line">			<span class="keyword">this</span>.hooks.beforeChunkIds.call(<span class="keyword">this</span>.chunks);</span><br><span class="line">			<span class="keyword">this</span>.applyChunkIds();</span><br><span class="line">			<span class="keyword">this</span>.hooks.optimizeChunkIds.call(<span class="keyword">this</span>.chunks);</span><br><span class="line">			<span class="keyword">this</span>.hooks.afterOptimizeChunkIds.call(<span class="keyword">this</span>.chunks);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.sortItemsWithChunkIds();</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (shouldRecord) &#123;</span><br><span class="line">				<span class="keyword">this</span>.hooks.recordModules.call(<span class="keyword">this</span>.modules, <span class="keyword">this</span>.records);</span><br><span class="line">				<span class="keyword">this</span>.hooks.recordChunks.call(<span class="keyword">this</span>.chunks, <span class="keyword">this</span>.records);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.beforeHash.call();</span><br><span class="line">      <span class="comment">// 生成这次构建的 hash，同时每个chunk也会生成自己的chunkhash</span></span><br><span class="line">			<span class="keyword">this</span>.createHash();</span><br><span class="line">			<span class="keyword">this</span>.hooks.afterHash.call();</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (shouldRecord) &#123;</span><br><span class="line">				<span class="keyword">this</span>.hooks.recordHash.call(<span class="keyword">this</span>.records);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.beforeModuleAssets.call();</span><br><span class="line">			<span class="keyword">this</span>.createModuleAssets();</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">this</span>.hooks.shouldGenerateChunkAssets.call() !== <span class="literal">false</span>) &#123;</span><br><span class="line">				<span class="keyword">this</span>.hooks.beforeChunkAssets.call();</span><br><span class="line">        <span class="comment">// 生成chunk代码文件放入compilation.assets</span></span><br><span class="line">				<span class="keyword">this</span>.createChunkAssets();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">this</span>.hooks.additionalChunkAssets.call(<span class="keyword">this</span>.chunks);</span><br><span class="line">			<span class="keyword">this</span>.summarizeDependencies();</span><br><span class="line">			<span class="keyword">if</span> (shouldRecord) &#123;</span><br><span class="line">				<span class="keyword">this</span>.hooks.record.call(<span class="keyword">this</span>, <span class="keyword">this</span>.records);</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">this</span>.hooks.additionalAssets.callAsync(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">				<span class="keyword">if</span> (err) &#123;</span><br><span class="line">					<span class="keyword">return</span> callback(err);</span><br><span class="line">				&#125;</span><br><span class="line">				<span class="keyword">this</span>.hooks.optimizeChunkAssets.callAsync(<span class="keyword">this</span>.chunks, err =&gt; &#123;</span><br><span class="line">					<span class="keyword">if</span> (err) &#123;</span><br><span class="line">						<span class="keyword">return</span> callback(err);</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">this</span>.hooks.afterOptimizeChunkAssets.call(<span class="keyword">this</span>.chunks);</span><br><span class="line">					<span class="keyword">this</span>.hooks.optimizeAssets.callAsync(<span class="keyword">this</span>.assets, err =&gt; &#123;</span><br><span class="line">						<span class="keyword">if</span> (err) &#123;</span><br><span class="line">							<span class="keyword">return</span> callback(err);</span><br><span class="line">						&#125;</span><br><span class="line">						<span class="keyword">this</span>.hooks.afterOptimizeAssets.call(<span class="keyword">this</span>.assets);</span><br><span class="line">						<span class="keyword">if</span> (<span class="keyword">this</span>.hooks.needAdditionalSeal.call()) &#123;</span><br><span class="line">							<span class="keyword">this</span>.unseal();</span><br><span class="line">							<span class="keyword">return</span> <span class="keyword">this</span>.seal(callback);</span><br><span class="line">						&#125;</span><br><span class="line">						<span class="keyword">return</span> <span class="keyword">this</span>.hooks.afterSeal.callAsync(callback);</span><br><span class="line">					&#125;);</span><br><span class="line">				&#125;);</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;);</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>到了<code>seal</code>方法，我们已经处理了所有<code>Module</code>并统一打平放到了<code>compilation.modules</code>中，现在需要根据<code>modules</code>生成<code>chunks</code>，代码中放了一些大致流程的注释，内部的实现还是很复杂的。</p>
+<p><code>moduleId</code>和<code>chunkId</code>作用： 在<code>filename</code>的变换时会用到<code>[id]/[moduleid]</code>； <code>chunhHash</code>会用到<code>chunk id</code>; 生成的打包代码会将名称替换为<code>id</code>;</p>
+<p><code>createHash</code>的会生成<code>hash、moduleHash、chunkHash</code>,<code>hash</code>生成算法核心是<code>crypto.createHash + ‘md4’</code>。在随后的<code>createChunkAssets -&gt; TemplatedPathPlugin</code>中替换<code>filename</code>、<code>chunkfileName</code>的<code>[hash]</code>、<code>[chunkhash]</code>.</p>
+<h2 id="modules生成chunks"><a href="#modules生成chunks" class="headerlink" title="modules生成chunks"></a><code>modules</code>生成<code>chunks</code></h2><p>没有看完，这里记录掌握的东西。涉及到 3 个核心对象：</p>
+<ul>
+<li><code>ChunkGroup</code>: 内部维护了 <code>chunks</code>、<code>children</code>、<code>parents</code>3 个数组，并添加了一系列方法来维护这 3 个数组。<code>chunks</code>表示这个<code>group</code>下面拥有多少<code>chunk</code>；</li>
+<li><code>Chunk</code>：内部维护了 <code>groups</code>、<code>modules</code> 数组。<code>groups</code>表示此 <code>chunk</code> 存在于哪些 <code>chunkgroup</code> 中；<code>modules</code>表示此 <code>chunk</code> 内部含有多少 <code>module</code></li>
+<li><code>Module</code>：内部维护了 <code>chunks</code> 数组。<code>chunks</code>表示此 <code>module</code> 存在于哪些 <code>chunks</code> 当中。</li>
+</ul>
+<p><code>assignDepth</code>方法：从 entry 出发，为每个 module 添加一个 depth 属性</p>
+<ul>
+<li><code>entry</code>的<code>depth</code>为 0</li>
+<li>依赖的静态模块<code>depth</code> +1</li>
+<li>动态模块的<code>depth</code>也是 +1</li>
+<li>层级遍历</li>
+</ul>
+<p>一些参考文档：</p>
+<ul>
+<li><a href="https://medium.com/webpack/the-chunk-graph-algorithm-week-26-29-7c88aa5e4b4e" target="_blank" rel="noopener">参考 1</a></li>
+<li><a href="https://webpack.js.org/api/stats/" target="_blank" rel="noopener">参考 2</a></li>
+<li><a href="https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366" target="_blank" rel="noopener">参考 3</a></li>
+</ul>
+<p>生成了<code>chunks</code>之后，第二阶段就完成了，接下来就是生成打包产物阶段了。</p>
+<h1 id="生成打包产物"><a href="#生成打包产物" class="headerlink" title="生成打包产物"></a>生成打包产物</h1><p>根据 <code>chunks</code> 生成最终文件，主要有三个步骤：</p>
+<ul>
+<li>模板 <code>hash</code></li>
+<li>更新模板渲染 <code>chunk</code></li>
+<li>生成文件</li>
+</ul>
+<blockquote>
+<p><code>Compilation</code> 在实例化的时候，就会同时实例化三个对象：<code>MainTemplate</code>、<code>ChunkTemplate</code>、<code>ModuleTemplate</code>。这三个对象是用来渲染 <code>chunk</code> 对象，得到最终代码的模板。第一个对应了在 <code>entry</code> 配置的入口 <code>chunk</code> 的渲染模板，第二个是动态引入的非入口 <code>chunk</code> 的渲染模板，最后是 <code>chunk</code> 中的 <code>module</code> 的渲染模板。</p>
+</blockquote>
+<p>上面<code>seal</code>方法中调用的<code>createHash</code>就是用于生成模板<code>hash</code>的，<code>hash</code>包含两种：</p>
+<ul>
+<li>本次构建的整体<code>hash</code>，用于替换<code>output</code>选项中的<code>[hash]</code>,如<code>[name].[hash].js</code></li>
+<li>每个<code>chunk</code>也会生成一个基于内容的<code>hash</code>，用于替换<code>output</code>选项中的<code>[chunkhash]</code>,如<code>[name].[chunkhash].js</code></li>
+</ul>
+<p><code>createHash</code>的主要代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">createHash() &#123;</span><br><span class="line">	<span class="keyword">const</span> outputOptions = <span class="keyword">this</span>.outputOptions;</span><br><span class="line">	<span class="keyword">const</span> hashFunction = outputOptions.hashFunction;</span><br><span class="line">	<span class="keyword">const</span> hashDigest = outputOptions.hashDigest;</span><br><span class="line">	<span class="keyword">const</span> hashDigestLength = outputOptions.hashDigestLength;</span><br><span class="line">	<span class="keyword">const</span> hash = createHash(hashFunction);</span><br><span class="line">	<span class="keyword">if</span> (outputOptions.hashSalt) &#123;</span><br><span class="line">		hash.update(outputOptions.hashSalt);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">this</span>.mainTemplate.updateHash(hash);</span><br><span class="line">	<span class="keyword">this</span>.chunkTemplate.updateHash(hash);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">of</span> <span class="built_in">Object</span>.keys(<span class="keyword">this</span>.moduleTemplates).sort()) &#123;</span><br><span class="line">		<span class="keyword">this</span>.moduleTemplates[key].updateHash(hash);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">const</span> child <span class="keyword">of</span> <span class="keyword">this</span>.children) &#123;</span><br><span class="line">		hash.update(child.hash);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">const</span> warning <span class="keyword">of</span> <span class="keyword">this</span>.warnings) &#123;</span><br><span class="line">		hash.update(<span class="string">`<span class="subst">$&#123;warning.message&#125;</span>`</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">const</span> error <span class="keyword">of</span> <span class="keyword">this</span>.errors) &#123;</span><br><span class="line">		hash.update(<span class="string">`<span class="subst">$&#123;error.message&#125;</span>`</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">const</span> modules = <span class="keyword">this</span>.modules;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; modules.length; i++) &#123;</span><br><span class="line">		<span class="keyword">const</span> <span class="built_in">module</span> = modules[i];</span><br><span class="line">		<span class="keyword">const</span> moduleHash = createHash(hashFunction);</span><br><span class="line">		<span class="built_in">module</span>.updateHash(moduleHash);</span><br><span class="line">		<span class="built_in">module</span>.hash = moduleHash.digest(hashDigest);</span><br><span class="line">		<span class="built_in">module</span>.renderedHash = <span class="built_in">module</span>.hash.substr(<span class="number">0</span>, hashDigestLength);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// clone needed as sort below is inplace mutation</span></span><br><span class="line">	<span class="keyword">const</span> chunks = <span class="keyword">this</span>.chunks.slice();</span><br><span class="line">	<span class="comment">/**</span></span><br><span class="line"><span class="comment">	 * sort here will bring all "falsy" values to the beginning</span></span><br><span class="line"><span class="comment">	 * this is needed as the "hasRuntime()" chunks are dependent on the</span></span><br><span class="line"><span class="comment">	 * hashes of the non-runtime chunks.</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	chunks.sort(<span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">		<span class="keyword">const</span> aEntry = a.hasRuntime();</span><br><span class="line">		<span class="keyword">const</span> bEntry = b.hasRuntime();</span><br><span class="line">		<span class="keyword">if</span> (aEntry &amp;&amp; !bEntry) <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">		<span class="keyword">if</span> (!aEntry &amp;&amp; bEntry) <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		<span class="keyword">return</span> byId(a, b);</span><br><span class="line">	&#125;);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; chunks.length; i++) &#123;</span><br><span class="line">		<span class="keyword">const</span> chunk = chunks[i];</span><br><span class="line">     <span class="comment">// 每个chunk也会生成自己的chunkhash</span></span><br><span class="line">		<span class="keyword">const</span> chunkHash = createHash(hashFunction);</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (outputOptions.hashSalt) &#123;</span><br><span class="line">				chunkHash.update(outputOptions.hashSalt);</span><br><span class="line">			&#125;</span><br><span class="line">			chunk.updateHash(chunkHash);</span><br><span class="line">			<span class="keyword">const</span> template = chunk.hasRuntime()</span><br><span class="line">				? <span class="keyword">this</span>.mainTemplate</span><br><span class="line">				: <span class="keyword">this</span>.chunkTemplate;</span><br><span class="line">			template.updateHashForChunk(</span><br><span class="line">				chunkHash,</span><br><span class="line">				chunk,</span><br><span class="line">				<span class="keyword">this</span>.moduleTemplates.javascript,</span><br><span class="line">				<span class="keyword">this</span>.dependencyTemplates</span><br><span class="line">			);</span><br><span class="line">			<span class="keyword">this</span>.hooks.chunkHash.call(chunk, chunkHash);</span><br><span class="line">			chunk.hash = chunkHash.digest(hashDigest);</span><br><span class="line">			hash.update(chunk.hash);</span><br><span class="line">			chunk.renderedHash = chunk.hash.substr(<span class="number">0</span>, hashDigestLength);</span><br><span class="line">			<span class="keyword">this</span>.hooks.contentHash.call(chunk);</span><br><span class="line">		&#125; <span class="keyword">catch</span> (err) &#123;</span><br><span class="line">			<span class="keyword">this</span>.errors.push(<span class="keyword">new</span> ChunkRenderError(chunk, <span class="string">""</span>, err));</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">this</span>.fullHash = hash.digest(hashDigest);</span><br><span class="line">   <span class="comment">// 本次构建的hash</span></span><br><span class="line">	<span class="keyword">this</span>.hash = <span class="keyword">this</span>.fullHash.substr(<span class="number">0</span>, hashDigestLength);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>hash</code>生成后接下来就会利用<code>createChunkAssets</code>方法生成每个<code>chunk</code>的代码。</p>
+<p>首先判断是否为<code>entry</code>来选择<code>Template</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// createChunkAssets()</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> template = chunk.hasRuntime() ? <span class="keyword">this</span>.mainTemplate : <span class="keyword">this</span>.chunkTemplate;</span><br></pre></td></tr></table></figure>
+<p>然后生成文件名：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 根据配置中的 output.filename 来生成文件名称</span></span><br><span class="line">file = <span class="keyword">this</span>.getPath(filenameTemplate, fileManifest.pathOptions);</span><br></pre></td></tr></table></figure>
+<p>最后根据模板来拼接文件内容：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> manifest = template.getRenderManifest(&#123;</span><br><span class="line">  chunk,</span><br><span class="line">  hash: <span class="keyword">this</span>.hash,</span><br><span class="line">  fullHash: <span class="keyword">this</span>.fullHash,</span><br><span class="line">  outputOptions,</span><br><span class="line">  moduleTemplates: <span class="keyword">this</span>.moduleTemplates,</span><br><span class="line">  dependencyTemplates: <span class="keyword">this</span>.dependencyTemplates,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// [&#123; render(), filenameTemplate, pathOptions, identifier, hash &#125;]</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> fileManifest <span class="keyword">of</span> manifest) &#123;</span><br><span class="line">  source = fileManifest.render();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>render</code>方法其实是在<code>chunk</code>内容前后添加各种样板代码，例如<code>MainTemplate</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line">render(hash, chunk, moduleTemplate, dependencyTemplates) &#123;</span><br><span class="line">		<span class="comment">// 前置启动代码</span></span><br><span class="line">    <span class="keyword">const</span> buf = <span class="keyword">this</span>.renderBootstrap(</span><br><span class="line">			hash,</span><br><span class="line">			chunk,</span><br><span class="line">			moduleTemplate,</span><br><span class="line">			dependencyTemplates</span><br><span class="line">		);</span><br><span class="line"></span><br><span class="line">		<span class="keyword">let</span> source = <span class="keyword">this</span>.hooks.render.call(</span><br><span class="line">			<span class="keyword">new</span> OriginalSource(</span><br><span class="line">				Template.prefix(buf, <span class="string">" \t"</span>) + <span class="string">"\n"</span>,</span><br><span class="line">				<span class="string">"webpack/bootstrap"</span></span><br><span class="line">			),</span><br><span class="line">			chunk,</span><br><span class="line">			hash,</span><br><span class="line">			moduleTemplate,</span><br><span class="line">			dependencyTemplates</span><br><span class="line">		);</span><br><span class="line">		<span class="keyword">if</span> (chunk.hasEntryModule()) &#123;</span><br><span class="line">			source = <span class="keyword">this</span>.hooks.renderWithEntry.call(source, chunk, hash);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		chunk.rendered = <span class="literal">true</span>;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">new</span> ConcatSource(source, <span class="string">";"</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  renderBootstrap(hash, chunk, moduleTemplate, dependencyTemplates) &#123;</span><br><span class="line">		<span class="keyword">const</span> buf = [];</span><br><span class="line">		buf.push(</span><br><span class="line">			<span class="keyword">this</span>.hooks.bootstrap.call(</span><br><span class="line">				<span class="string">""</span>,</span><br><span class="line">				chunk,</span><br><span class="line">				hash,</span><br><span class="line">				moduleTemplate,</span><br><span class="line">				dependencyTemplates</span><br><span class="line">			)</span><br><span class="line">		);</span><br><span class="line">		buf.push(<span class="keyword">this</span>.hooks.localVars.call(<span class="string">""</span>, chunk, hash));</span><br><span class="line">		buf.push(<span class="string">""</span>);</span><br><span class="line">		buf.push(<span class="string">"// The require function"</span>);</span><br><span class="line">		buf.push(<span class="string">`function <span class="subst">$&#123;<span class="keyword">this</span>.requireFn&#125;</span>(moduleId) &#123;`</span>);</span><br><span class="line">		buf.push(Template.indent(<span class="keyword">this</span>.hooks.require.call(<span class="string">""</span>, chunk, hash)));</span><br><span class="line">		buf.push(<span class="string">"&#125;"</span>);</span><br><span class="line">		buf.push(<span class="string">""</span>);</span><br><span class="line">		buf.push(</span><br><span class="line">			Template.asString(<span class="keyword">this</span>.hooks.requireExtensions.call(<span class="string">""</span>, chunk, hash))</span><br><span class="line">		);</span><br><span class="line">		buf.push(<span class="string">""</span>);</span><br><span class="line">		buf.push(Template.asString(<span class="keyword">this</span>.hooks.beforeStartup.call(<span class="string">""</span>, chunk, hash)));</span><br><span class="line">		buf.push(Template.asString(<span class="keyword">this</span>.hooks.startup.call(<span class="string">""</span>, chunk, hash)));</span><br><span class="line">		<span class="keyword">return</span> buf;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.hooks.render.tap(</span><br><span class="line">			<span class="string">"MainTemplate"</span>,</span><br><span class="line">			(bootstrapSource, chunk, hash, moduleTemplate, dependencyTemplates) =&gt; &#123;</span><br><span class="line">				<span class="keyword">const</span> source = <span class="keyword">new</span> ConcatSource();</span><br><span class="line">				source.add(<span class="string">"/******/ (function(modules) &#123; // webpackBootstrap\n"</span>);</span><br><span class="line">				source.add(<span class="keyword">new</span> PrefixSource(<span class="string">"/******/"</span>, bootstrapSource));</span><br><span class="line">				source.add(<span class="string">"/******/ &#125;)\n"</span>);</span><br><span class="line">				source.add(</span><br><span class="line">					<span class="string">"/************************************************************************/\n"</span></span><br><span class="line">				);</span><br><span class="line">				source.add(<span class="string">"/******/ ("</span>);</span><br><span class="line">				source.add(</span><br><span class="line">          <span class="comment">// 遍历module生成代码</span></span><br><span class="line">					<span class="keyword">this</span>.hooks.modules.call(</span><br><span class="line">						<span class="keyword">new</span> RawSource(<span class="string">""</span>),</span><br><span class="line">						chunk,</span><br><span class="line">						hash,</span><br><span class="line">						moduleTemplate,</span><br><span class="line">						dependencyTemplates</span><br><span class="line">					)</span><br><span class="line">				);</span><br><span class="line">				source.add(<span class="string">")"</span>);</span><br><span class="line">				<span class="keyword">return</span> source;</span><br><span class="line">			&#125;</span><br><span class="line">		);</span><br></pre></td></tr></table></figure>
+<p><code>bootstrap</code>钩子在多个插件中有注册，例如<code>JsonpMainTemplatePlugin</code>中的部分示例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">mainTemplate.hooks.bootstrap.tap(<span class="string">'JsonpMainTemplatePlugin'</span>, (source, chunk, hash) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (needChunkLoadingCode(chunk)) &#123;</span><br><span class="line">    <span class="keyword">const</span> withDefer = needEntryDeferringCode(chunk);</span><br><span class="line">    <span class="keyword">const</span> withPrefetch = needPrefetchingCode(chunk);</span><br><span class="line">    <span class="keyword">return</span> Template.asString([</span><br><span class="line">      source,</span><br><span class="line">      <span class="string">''</span>,</span><br><span class="line">      <span class="string">'// install a JSONP callback for chunk loading'</span>,</span><br><span class="line">      <span class="string">'function webpackJsonpCallback(data) &#123;'</span>,</span><br><span class="line">      Template.indent([</span><br><span class="line">        <span class="string">'var chunkIds = data[0];'</span>,</span><br><span class="line">        <span class="string">'var moreModules = data[1];'</span>,</span><br><span class="line">        withDefer ? <span class="string">'var executeModules = data[2];'</span> : <span class="string">''</span>,</span><br><span class="line">        withPrefetch ? <span class="string">'var prefetchChunks = data[3] || [];'</span> : <span class="string">''</span>,</span><br><span class="line">        <span class="string">'// add "moreModules" to the modules object,'</span>,</span><br><span class="line">        <span class="string">'// then flag all "chunkIds" as loaded and fire callback'</span>,</span><br><span class="line">        <span class="string">'var moduleId, chunkId, i = 0, resolves = [];'</span>,</span><br><span class="line">        <span class="string">'for(;i &lt; chunkIds.length; i++) &#123;'</span>,</span><br><span class="line">        Template.indent([</span><br><span class="line">          <span class="string">'chunkId = chunkIds[i];'</span>,</span><br><span class="line">          <span class="string">'if(installedChunks[chunkId]) &#123;'</span>,</span><br><span class="line">          Template.indent(<span class="string">'resolves.push(installedChunks[chunkId][0]);'</span>),</span><br><span class="line">          <span class="string">'&#125;'</span>,</span><br><span class="line">          <span class="string">'installedChunks[chunkId] = 0;'</span>,</span><br><span class="line">        ]),</span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line">    ]);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> source;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>每个<code>chunk</code>的代码生成后就会放到<code>compilation.assets</code>数组中。</p>
+<p>生成代码后只剩最后将其输出到文件中了，这一步是在<code>Compiler.prototype.emitAssets</code>函数中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> targetPath = <span class="keyword">this</span>.outputFileSystem.join(outputPath, targetFile);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> content = source.source(); <span class="comment">// 待写入的文件内容</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!Buffer.isBuffer(content)) &#123;</span><br><span class="line">  content = Buffer.from(content, <span class="string">'utf8'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">source.existsAt = targetPath;</span><br><span class="line">source.emitted = <span class="literal">true</span>;</span><br><span class="line"><span class="keyword">this</span>.outputFileSystem.writeFile(targetPath, content, callback); <span class="comment">// 写入文件</span></span><br></pre></td></tr></table></figure>
+<p>以上就是<code>webpack</code>的主体流程了~</p>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ul>
+<li><a href="https://lxzjj.github.io/2017/11/02/%E7%8E%A9%E8%BD%ACwebpack%EF%BC%88%E4%B8%80%EF%BC%89/" target="_blank" rel="noopener">玩转 webpack</a></li>
+<li><a href="https://github[.com/youngwind/blog/issues/99" target="_blank" rel="noopener">webpack 源码学习系列</a>](webpack 各个击破)</li>
+<li><a href="https://bbs.huaweicloud.com/blogs/1c0ca278a42611e89fc57ca23e93a89f" target="_blank" rel="noopener">webpack 各个击破</a></li>
+<li><a href="https://github.com/lihongxun945/diving-into-webpack/blob/master/2-babel-loader.md" target="_blank" rel="noopener">diving-into-webpack</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/29551683" target="_blank" rel="noopener">webpack 源码分析</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/webpack/" rel="tag"># webpack</a>
+          
+            <a href="/tags/tapable/" rel="tag"># tapable</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/13/hexo-blog-note/" rel="next" title="hexo搭建笔记">
+                <i class="fa fa-chevron-left"></i> hexo搭建笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/01/02/webpack-bundle-code-analysis/" rel="prev" title="webpack打包产物代码分析">
+                webpack打包产物代码分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#流程图"><span class="nav-number">1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编译准备阶段"><span class="nav-number">2.</span> <span class="nav-text">编译准备阶段</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#生成modules和chunks"><span class="nav-number">3.</span> <span class="nav-text">生成modules和chunks</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#modules生成chunks"><span class="nav-number">3.1.</span> <span class="nav-text">modules生成chunks</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#生成打包产物"><span class="nav-number">4.</span> <span class="nav-text">生成打包产物</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">5.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/12/26/tapable-usage-in-webpack-main-procedure/';
+          this.page.identifier = '2018/12/26/tapable-usage-in-webpack-main-procedure/';
+          this.page.title = 'tapable在webpack主流程中的应用';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

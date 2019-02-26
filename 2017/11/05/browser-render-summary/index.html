@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="BROWSER,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="渲染过程 以下参考【2】  Create/Update DOM And request css/image/js：浏览器请求到HTML代码后，在生成DOM的最开始阶段（应该是 Bytes → characters 后），并行发起css、图片、js的请求，无论他们是否在HEAD里。注意：发起 js 文件的下载 request 并不需要 DOM 处理到那个 script 节点。 Create/Upda">
+<meta name="keywords" content="BROWSER">
+<meta property="og:type" content="article">
+<meta property="og:title" content="浏览器渲染过程小结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/11/05/browser-render-summary/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="渲染过程 以下参考【2】  Create/Update DOM And request css/image/js：浏览器请求到HTML代码后，在生成DOM的最开始阶段（应该是 Bytes → characters 后），并行发起css、图片、js的请求，无论他们是否在HEAD里。注意：发起 js 文件的下载 request 并不需要 DOM 处理到那个 script 节点。 Create/Upda">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://mmbiz.qpic.cn/mmbiz_jpg/zPh0erYjkib2bsVdjOuFlloia1GkjzgwkcwZNU3ncVFK6UTzJvoDJdZdyQqmfo3kPaJWHG5Phy8g28l5rtwKR9Eg/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/DOM-tree.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/render-tree.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/img-load-time.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/display-none-img.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/defer-domcontentloaded.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/browser-render/async-domcontentload.png">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.720Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="浏览器渲染过程小结">
+<meta name="twitter:description" content="渲染过程 以下参考【2】  Create/Update DOM And request css/image/js：浏览器请求到HTML代码后，在生成DOM的最开始阶段（应该是 Bytes → characters 后），并行发起css、图片、js的请求，无论他们是否在HEAD里。注意：发起 js 文件的下载 request 并不需要 DOM 处理到那个 script 节点。 Create/Upda">
+<meta name="twitter:image" content="http://mmbiz.qpic.cn/mmbiz_jpg/zPh0erYjkib2bsVdjOuFlloia1GkjzgwkcwZNU3ncVFK6UTzJvoDJdZdyQqmfo3kPaJWHG5Phy8g28l5rtwKR9Eg/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/11/05/browser-render-summary/">
+
+
+
+
+
+  <title>浏览器渲染过程小结 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/11/05/browser-render-summary/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">浏览器渲染过程小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-11-05T11:30:00+08:00">
+                2017-11-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/11/05/browser-render-summary/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/11/05/browser-render-summary/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="渲染过程"><a href="#渲染过程" class="headerlink" title="渲染过程"></a>渲染过程</h1><p><img src="http://mmbiz.qpic.cn/mmbiz_jpg/zPh0erYjkib2bsVdjOuFlloia1GkjzgwkcwZNU3ncVFK6UTzJvoDJdZdyQqmfo3kPaJWHG5Phy8g28l5rtwKR9Eg/640?wx_fmt=jpeg&amp;tp=webp&amp;wxfrom=5&amp;wx_lazy=1" alt=""></p>
+<p>以下参考【2】</p>
+<ol>
+<li><strong>Create/Update DOM And request css/image/js</strong>：浏览器请求到HTML代码后，在生成DOM的最开始阶段（应该是 Bytes → characters 后），并行发起css、图片、js的请求，无论他们是否在HEAD里。<strong>注意</strong>：发起 js 文件的下载 request 并不需要 DOM 处理到那个 script 节点。</li>
+<li><strong>Create/Update Render CSSOM</strong>：CSS文件下载完成，开始构建CSSOM</li>
+<li><strong>Create/Update Render Tree</strong>：所有CSS文件下载完成，CSSOM构建结束后，和 DOM 一起生成 Render Tree。</li>
+<li><strong>Layout</strong>：有了Render Tree，浏览器已经能知道网页中有哪些节点、各个节点的CSS定义以及他们的从属关系。下一步操作称之为Layout，顾名思义就是计算出每个节点在屏幕中的位置。</li>
+<li><strong>Painting</strong>：Layout后，浏览器已经知道了哪些节点要显示（which nodes are visible）、每个节点的CSS属性是什么（their computed styles）、每个节点在屏幕中的位置是哪里（geometry）。就进入了最后一步：Painting，按照算出来的规则，通过显卡，把内容画到屏幕上。</li>
+</ol>
+<p>以上五个步骤前3个步骤之所有使用 “Create/Update” 是因为DOM、CSSOM、Render Tree都可能在第一次Painting后又被更新多次，比如JS修改了DOM或者CSS属性。</p>
+<p>Layout 和 Painting 也会被重复执行，除了DOM、CSSOM更新的原因外，图片下载完成后也需要调用Layout 和 Painting来更新网页。</p>
+<p><strong>值得注意的地方</strong>：</p>
+<ol>
+<li>首屏时间和DomContentLoad事件没有必然的先后关系</li>
+<li>所有CSS尽早加载是减少首屏时间的最关键,因为渲染树需要CSSOM的参与</li>
+<li>js的下载和执行会阻塞Dom树的构建（严谨地说是中断了Dom树的更新），所以script标签放在首屏范围内的HTML代码段里会截断首屏的内容。<strong>也就是说，会只显示在script上方的内容。</strong></li>
+<li>普通script标签放在body底部，做与不做async或者defer处理，都不会影响首屏时间，但影响DomContentLoad和load的时间，进而影响依赖他们的代码的执行的开始时间。</li>
+</ol>
+<h2 id="DOM树构建过程"><a href="#DOM树构建过程" class="headerlink" title="DOM树构建过程"></a>DOM树构建过程</h2><p>DOM 树的构建过程是一个深度遍历过程：当前节点的所有子节点都构建好后才会去构建当前节点的下一个兄弟节点。DOM 和 CSSOM 都是以 Bytes → characters → tokens → nodes → object model. 这样的方式生成最终的数据。如下图所示：</p>
+<p><img src="/images/browser-render/DOM-tree.png" alt=""></p>
+<h2 id="渲染树"><a href="#渲染树" class="headerlink" title="渲染树"></a>渲染树</h2><p>DOM 和 CSSOM 合并后生成 Render Tree：</p>
+<p><img src="/images/browser-render/render-tree.png" alt=""></p>
+<p><strong>注意</strong>：display:none 的节点不会被加入 Render Tree，而 visibility: hidden 则会，所以，如果某个节点最开始是不显示的，设为 display:none 是更优的。</p>
+<h2 id="图片加载时机"><a href="#图片加载时机" class="headerlink" title="图片加载时机"></a>图片加载时机</h2><p>参考【3】</p>
+<ul>
+<li>解析HTML<strong>遇到<code>&lt;img&gt;</code>标签加载图片</strong> —&gt; 构建DOM树</li>
+<li>加载样式 —&gt; 解析样式 <strong>遇到背景图片链接不加载</strong> —&gt; 构建样式规则树</li>
+<li>加载javascript —&gt; 执行javascript代码</li>
+<li>把DOM树和样式规则树匹配构建渲染树 <strong>加载渲染树上的背景图片</strong></li>
+<li>计算元素位置进行布局</li>
+<li>绘制 <strong>开始渲染图片</strong></li>
+</ul>
+<p><img src="/images/browser-render/img-load-time.png" alt=""></p>
+<p>这里需要注意：</p>
+<p><strong>设置了display:none属性的元素，图片不会渲染出来，但会加载</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">.img-purple &#123;</span></span><br><span class="line"><span class="undefined">    background-image: url(../image/purple.png);</span></span><br><span class="line"><span class="undefined">&#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">"../image/pink.png"</span> <span class="attr">style</span>=<span class="string">"display:none"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">"img-purple"</span> <span class="attr">style</span>=<span class="string">"display:none"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/browser-render/display-none-img.png" alt=""></p>
+<p><strong>这里是我不明白的地方，如果按照上图的解释，purple那张图应该不会加载</strong></p>
+<h1 id="阻塞渲染：CSS-与-JavaScript"><a href="#阻塞渲染：CSS-与-JavaScript" class="headerlink" title="阻塞渲染：CSS 与 JavaScript"></a>阻塞渲染：CSS 与 JavaScript</h1><p>现代浏览器总是并行加载资源。例如，当 HTML 解析器（HTML Parser）被脚本阻塞时，解析器虽然会停止构建 DOM，但仍会识别该脚本后面的资源，并进行预加载。不同浏览器并行加载的数量可能会不同，chrome对于同个域名，一次最多并行加载6个资源。</p>
+<p>同时，由于下面两点：</p>
+<ul>
+<li>默认情况下，CSS 被视为阻塞渲染的资源，这意味着浏览器将不会渲染任何已处理的内容，直至 CSSOM 构建完毕。</li>
+<li>JavaScript 不仅可以读取和修改 DOM 属性，还可以读取和修改 CSSOM 属性。 </li>
+</ul>
+<p>存在阻塞的 CSS 资源时，浏览器会延迟 JavaScript 的执行和 DOM 构建。另外：</p>
+<ol>
+<li>当浏览器遇到一个 script 标记时，DOM 构建将暂停，直至脚本完成执行。</li>
+<li>JavaScript 可以查询和修改 DOM 与 CSSOM。</li>
+<li>CSSOM 构建时，JavaScript 执行将暂停，直至 CSSOM 就绪。 </li>
+</ol>
+<h1 id="defer-与-async"><a href="#defer-与-async" class="headerlink" title="defer 与 async"></a>defer 与 async</h1><h2 id="defer"><a href="#defer" class="headerlink" title="defer"></a>defer</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"app1.js"</span> <span class="attr">defer</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"app2.js"</span> <span class="attr">defer</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"app3.js"</span> <span class="attr">defer</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>defer 属性表示延迟执行引入的 JavaScript，即这段 JavaScript 加载时 HTML 并未停止解析，这两个过程是并行的。整个 document 解析完毕且 defer-script 也加载完成之后（这两件事情的顺序无关），会<strong>执行所有由 defer-script 加载的 JavaScript 代码，然后触发 DOMContentLoaded 事件</strong>。</p>
+<p><strong>defer 不会改变 script 中代码的执行顺序</strong>，示例代码会按照 1、2、3 的顺序执行。</p>
+<p>所以，defer 与相比普通 script，有两点区别：</p>
+<ul>
+<li>载入 JavaScript 文件时不阻塞 HTML 的解析，</li>
+<li>执行阶段被放到 HTML 标签解析完成之后。</li>
+</ul>
+<h2 id="async"><a href="#async" class="headerlink" title="async"></a>async</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"app.js"</span> <span class="attr">async</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"ad.js"</span> <span class="attr">async</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"statistics.js"</span> <span class="attr">async</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>async 属性表示异步执行引入的 JavaScript，与 defer 的区别在于，如果已经加载好，就会开始执行——无论此刻是 HTML 解析阶段还是 DOMContentLoaded 触发之后。需要注意的是，这种方式加载的 JavaScript 依然会阻塞 load 事件。换句话说，<strong>async-script 可能在 DOMContentLoaded 触发之前或之后执行，但一定在 load 触发之前执行</strong>。</p>
+<p>从上一段也能推出，<strong>多个 async-script 的执行顺序是不确定的</strong>。值得注意的是，向 document 动态添加 script 标签时，async 属性默认是 true</p>
+<h2 id="试验验证"><a href="#试验验证" class="headerlink" title="试验验证"></a>试验验证</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"./lodash.js"</span> <span class="attr">defer</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- &lt;script src="./lodash.js" async&gt;&lt;/script&gt; --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在chrome -&gt; network中，将网速调成<code>slow 3G</code>，然后测试<code>lodash</code>是在<code>DOMContentLoaded</code>之前还是之后加载完成.</p>
+<p><code>defer</code> - 始终在<code>DOMContentLoaded</code>之前完成，最差情况下也是一起完成</p>
+<p><img src="/images/browser-render/defer-domcontentloaded.png" alt=""></p>
+<p><code>async</code> - 网速快时会在<code>DOMContentLoaded</code>之前加载完成，网速慢时会在它之后完成</p>
+<p><img src="/images/browser-render/async-domcontentload.png" alt=""></p>
+<h1 id="重绘-Repaint"><a href="#重绘-Repaint" class="headerlink" title="重绘 Repaint"></a>重绘 Repaint</h1><p>当页面元素样式的改变不影响元素在文档流中的位置时（例如background-color, border-color,visibility）,浏览器只会将新样式赋予元素并进行重绘操作。</p>
+<h1 id="回流-重排-Reflow"><a href="#回流-重排-Reflow" class="headerlink" title="回流/重排 Reflow"></a>回流/重排 Reflow</h1><p>当改变影响文档内容或者结构，或者元素位置时，回流操作就会被触发，一般有以下几种情况：</p>
+<ul>
+<li>DOM操作（对元素的增删改，顺序变化等）；</li>
+<li>内容变化，包括表单区域内的文本改变；</li>
+<li>CSS属性的更改或重新计算；</li>
+<li>增删样式表内容；</li>
+<li>修改class属性；</li>
+<li>浏览器窗口变化（滚动或缩放）；</li>
+<li>伪类样式激活（:hover等）。 </li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="https://mp.weixin.qq.com/s/1XDgtEFb_6YHxcdJQ92rbg" target="_blank" rel="noopener">前端开发者应知必会：浏览器是如何渲染网页的</a></li>
+<li><a href="https://mp.weixin.qq.com/s/I9IgzC_NvKLP2-TmuDTSKQ" target="_blank" rel="noopener">JS 一定要放在 Body 的最底部么？聊聊浏览器的渲染机制</a></li>
+<li><a href="https://mp.weixin.qq.com/s/1neKv_knMnnzb1hyRx789Q" target="_blank" rel="noopener">Web图片资源的加载与渲染时机</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/BROWSER/" rel="tag"># BROWSER</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/11/04/javascript-closure-summary/" rel="next" title="JavaScript闭包小结">
+                <i class="fa fa-chevron-left"></i> JavaScript闭包小结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/05/javascript-event-loop-summary/" rel="prev" title="JavaScript事件循环小结">
+                JavaScript事件循环小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#渲染过程"><span class="nav-number">1.</span> <span class="nav-text">渲染过程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DOM树构建过程"><span class="nav-number">1.1.</span> <span class="nav-text">DOM树构建过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#渲染树"><span class="nav-number">1.2.</span> <span class="nav-text">渲染树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#图片加载时机"><span class="nav-number">1.3.</span> <span class="nav-text">图片加载时机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#阻塞渲染：CSS-与-JavaScript"><span class="nav-number">2.</span> <span class="nav-text">阻塞渲染：CSS 与 JavaScript</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#defer-与-async"><span class="nav-number">3.</span> <span class="nav-text">defer 与 async</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#defer"><span class="nav-number">3.1.</span> <span class="nav-text">defer</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#async"><span class="nav-number">3.2.</span> <span class="nav-text">async</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#试验验证"><span class="nav-number">3.3.</span> <span class="nav-text">试验验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#重绘-Repaint"><span class="nav-number">4.</span> <span class="nav-text">重绘 Repaint</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#回流-重排-Reflow"><span class="nav-number">5.</span> <span class="nav-text">回流/重排 Reflow</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2017/11/05/browser-render-summary/';
+          this.page.identifier = '2017/11/05/browser-render-summary/';
+          this.page.title = '浏览器渲染过程小结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

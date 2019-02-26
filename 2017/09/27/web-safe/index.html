@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="HTML,safe,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前段时间我们的前端项目被公司安全部门扫出很多漏洞，涨了很多姿势，特意总结一下，对于安全这块也要开始重视起来了。 测试文件与必需文件控制我们的前端项目在编译完成后，需要压缩成一个 zip 包才能部署到生产服务器上。压缩 zip 包是利用了一个 maven 的 assembly 插件，它有一个对应的 assembly.xml 配置文件，其中可以配置任意的规则用来剔除/包含文件。配置好插件后，可以在命令">
+<meta name="keywords" content="HTML,safe">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端安全小结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/09/27/web-safe/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前段时间我们的前端项目被公司安全部门扫出很多漏洞，涨了很多姿势，特意总结一下，对于安全这块也要开始重视起来了。 测试文件与必需文件控制我们的前端项目在编译完成后，需要压缩成一个 zip 包才能部署到生产服务器上。压缩 zip 包是利用了一个 maven 的 assembly 插件，它有一个对应的 assembly.xml 配置文件，其中可以配置任意的规则用来剔除/包含文件。配置好插件后，可以在命令">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/assembly.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/nginx-danger.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/nginx-safe.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/database-xss-attack.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/reflect-xss-attack.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/dom-xss-attack.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/web-safe/html-entity-encode.png">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.716Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端安全小结">
+<meta name="twitter:description" content="前段时间我们的前端项目被公司安全部门扫出很多漏洞，涨了很多姿势，特意总结一下，对于安全这块也要开始重视起来了。 测试文件与必需文件控制我们的前端项目在编译完成后，需要压缩成一个 zip 包才能部署到生产服务器上。压缩 zip 包是利用了一个 maven 的 assembly 插件，它有一个对应的 assembly.xml 配置文件，其中可以配置任意的规则用来剔除/包含文件。配置好插件后，可以在命令">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/web-safe/assembly.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/09/27/web-safe/">
+
+
+
+
+
+  <title>前端安全小结 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/09/27/web-safe/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端安全小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-09-27T10:08:00+08:00">
+                2017-09-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/09/27/web-safe/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/09/27/web-safe/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前段时间我们的前端项目被公司安全部门扫出很多漏洞，涨了很多姿势，特意总结一下，对于安全这块也要开始重视起来了。</p>
+<h1 id="测试文件与必需文件控制"><a href="#测试文件与必需文件控制" class="headerlink" title="测试文件与必需文件控制"></a>测试文件与必需文件控制</h1><p>我们的前端项目在编译完成后，需要压缩成一个 zip 包才能部署到生产服务器上。压缩 zip 包是利用了一个 maven 的 assembly 插件，它有一个对应的 assembly.xml 配置文件，其中可以配置任意的规则用来剔除/包含文件。配置好插件后，可以在命令行中输入命令就能自动压缩了。</p>
+<p>在生产环境下，我们不能将一些无关的文件/文件夹打到 zip 里，例如一些测试入口页面，不然被别人知道了就有很大的风险。</p>
+<p>为此在每个移动前端项目的<code>www</code>目录下面都放一个<code>assembly_prod.xml</code>文件，把它配置为生产构建时的资源白名单，只有在名单中的文件/文件夹才会打包到生产包中。<br><img src="/images/web-safe/assembly.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&lt;fileSets&gt;</span><br><span class="line">    &lt;fileSet&gt;</span><br><span class="line">      &lt;directory&gt;/&lt;/directory&gt;</span><br><span class="line">      &lt;!--&lt;outputDirectory&gt;/&lt;/outputDirectory&gt;--&gt;</span><br><span class="line">      &lt;includes&gt;</span><br><span class="line"></span><br><span class="line">          &lt;!--文件夹--&gt;</span><br><span class="line">          &lt;include&gt;build/&lt;/include&gt;</span><br><span class="line"></span><br><span class="line">          &lt;!--文件--&gt;</span><br><span class="line">          &lt;include&gt;index.html&lt;/include&gt;</span><br><span class="line"></span><br><span class="line">      &lt;/includes&gt;</span><br><span class="line">      &lt;excludes&gt;</span><br><span class="line">        &lt;!--&lt;exclude&gt;assembly.xml&lt;/exclude&gt;--&gt;</span><br><span class="line">      &lt;/excludes&gt;</span><br><span class="line">    &lt;/fileSet&gt;</span><br><span class="line">  &lt;/fileSets&gt;</span><br></pre></td></tr></table></figure>
+<p>只需在白名单中把想要留存的文件配置好就行。</p>
+<h1 id="js-安全措施：-主要是eval函数"><a href="#js-安全措施：-主要是eval函数" class="headerlink" title="js 安全措施： 主要是eval函数"></a>js 安全措施： 主要是<code>eval</code>函数</h1><h3 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h3><p>此函数会将参数中的字符串当做<code>javascript</code>来解析， 会有潜在的 XSS 攻击风险，另外效率也非常低。 在我们前端项目中，有一些古老的 js 文件中使用到了它，其中最常见的是利用它来把字符串解析成<code>json</code>对象</p>
+<h3 id="防范"><a href="#防范" class="headerlink" title="防范"></a>防范</h3><p>重写<code>eval</code>对应的代码，所有用<code>eval</code>的逻辑都可以使用更安全的语句来替代。 例如解析 JSON 可以利用<code>JSON.parse</code>函数。</p>
+<h1 id="重要cookie设为-HTTP-only"><a href="#重要cookie设为-HTTP-only" class="headerlink" title="重要cookie设为 HTTP only"></a>重要<code>cookie</code>设为 HTTP only</h1><p>此类 cookie 可以从浏览器或服务器端设置，但只能从服务端读取，客户端<code>JavaScript</code>无法获取他们的值。</p>
+<h1 id="nginx-conf-文件泄露"><a href="#nginx-conf-文件泄露" class="headerlink" title="nginx.conf 文件泄露"></a>nginx.conf 文件泄露</h1><h3 id="描述-1"><a href="#描述-1" class="headerlink" title="描述"></a>描述</h3><p>之前我们项目的 nginx 配置有一些风险，配置如下：<br><img src="/images/web-safe/nginx-danger.png" alt=""></p>
+<p>我们将所有的错误日志、访问日志都放到了和应用代码同级目录中。这样如果知道了域名，就尝试几次得到我们的这些日志：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">myhost/nginx/logs/error.log  # 这样可以得到错误日志</span><br><span class="line">myhost/nginx/logs/access.log  # 这样可以得到访问日志</span><br></pre></td></tr></table></figure>
+<p>知道访问日志是蛮危险的一件事，因为可以知道所有资源的 URL，别人就可以随意拿到我们网站的内容了。</p>
+<h3 id="防范-1"><a href="#防范-1" class="headerlink" title="防范"></a>防范</h3><p>修改 nginx 配置<br><img src="/images/web-safe/nginx-safe.png" alt=""></p>
+<p>将错误日志输出到标准输出、关闭访问日志、将应用代码和<code>nginx.conf</code>放到不同的目录中。这样用户就不能通过 url 拿到我们的 nginx 配置了。</p>
+<p>另外，添加一条 nginx 配置，如果请求 conf 文件，一律全部禁止：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location ~/.*\.conf &#123;</span><br><span class="line"> 	deny all;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时如果直接通过 URL 请求 nginx.conf 文件，会返回<code>403 Forbidden</code>响应</p>
+<p>另外如果请求中有认证串，需要给串设置过期机制，超过期间无效。</p>
+<h1 id="XSS-攻击"><a href="#XSS-攻击" class="headerlink" title="XSS 攻击"></a>XSS 攻击</h1><h2 id="何为-XSS-攻击"><a href="#何为-XSS-攻击" class="headerlink" title="何为 XSS 攻击"></a>何为 XSS 攻击</h2><p>跨站点脚本（Cross-site scripting，XSS）是一种允许攻击者在另一个用户的浏览器中执行恶意脚本的脚本注入式攻击。</p>
+<p>攻击者并不直接锁定受害者。而是利用一个受害者可能会访问的存在漏洞的网站，通过这个网站间接把恶意代码呈递给受害者。对于受害者的浏览器而言，这些恶意代码看上去就是网站正常的一部分，而网站也就无意中成了攻击者的帮凶。</p>
+<p><strong>也就是攻击者借助一个有漏洞的网站来攻击别人，窃取他的各种信息</strong></p>
+<p><strong>XSS 最关键的地方就是需要在漏洞网站上执行精心构造的恶意脚本。</strong></p>
+<h2 id="恶意脚本后果"><a href="#恶意脚本后果" class="headerlink" title="恶意脚本后果"></a>恶意脚本后果</h2><p>这种在其他用户的浏览器中执行任意脚本的权限，赋予了攻击者有能力发动以下几类攻击：</p>
+<ul>
+<li><strong>Cookie 窃取</strong>：攻击者能够通过 document.cookie 访问受害者与网站关联的 cookie，然后传送到攻击者自己的服务器，接着从这些 cookie 中提取敏感信息，如 Session ID。</li>
+<li><strong>记录用户行为</strong>：攻击者可以使用 addEventListener 方法注册用于监听键盘事件的回调函数，并且把所有用户的敲击行为发送到他自己的服务器，这些敲击行为可能记录着用户的敏感信息，比如密码和信用卡号码。</li>
+<li><strong>钓鱼网站</strong>：攻击者可以通过修改 DOM 在页面上插入一个假的登陆框，也可以把表单的 action 属性指向他自己的服务器地址，然后欺骗用户提交自己的敏感信息。</li>
+</ul>
+<h2 id="XSS-攻击种类"><a href="#XSS-攻击种类" class="headerlink" title="XSS 攻击种类"></a>XSS 攻击种类</h2><p>主要有 3 种：</p>
+<ul>
+<li>存储型 XSS 攻击：恶意文本来源于网站的数据库</li>
+<li>反射型 XSS 攻击：恶意文本来源于受害者的请求</li>
+<li>基于 DOM 的 XSS 攻击：利用客户端而不是服务端代码漏洞发动攻击</li>
+</ul>
+<h3 id="存储型-XSS-攻击"><a href="#存储型-XSS-攻击" class="headerlink" title="存储型 XSS 攻击"></a>存储型 XSS 攻击</h3><p>数据库中存有的存在 XSS 攻击的数据，返回给客户端，若数据未经过任何转义，被浏览器渲染，就可能导致 XSS 攻击。示意图如下：</p>
+<p><img src="/images/web-safe/database-xss-attack.png" alt="存储型XSS示意"></p>
+<p><strong>具体步骤</strong></p>
+<ol>
+<li>攻击者利用 HTTP 请求将一段恶意文本插入网站的数据库中</li>
+<li>受害者向网站请求页面</li>
+<li>网站从数据库中取出恶意文本把它包含进返回给受害者的页面中</li>
+<li>受害者的浏览器执行返回页面中的恶意脚本</li>
+</ol>
+<p>此类型的攻击持续性很长，只要数据库中还存有恶意文本，那么用户就可能受害。</p>
+<p><strong>可能发生的场景</strong><br>在一个拥有评论或者搜索的页面，后端将前端输入的文本不加校验就存储到数据库中，若攻击者故意输入精心构造的恶意文本，那么就可能发生此种攻击。</p>
+<h3 id="反射型-XSS-攻击"><a href="#反射型-XSS-攻击" class="headerlink" title="反射型 XSS 攻击"></a>反射型 XSS 攻击</h3><p>在一个反射型 XSS 攻击中，恶意文本属于受害者发送给网站的请求中的一部分。随后网站又把恶意文本包含进用于响应用户的返回页面中，发还给用户。示意图：</p>
+<p><img src="/images/web-safe/reflect-xss-attack.png" alt=""></p>
+<p><strong>攻击步骤</strong></p>
+<ol>
+<li><p>攻击者构造了一个包含恶意文本的 URL 发送给受害者</p>
+</li>
+<li><p>受害者被攻击者欺骗，通过访问这个 URL 向网站发出请求</p>
+</li>
+<li>网站给受害者的返回中包含了来自 URL 的的恶意文本</li>
+<li>受害者的浏览器执行了来自返回中的恶意脚本</li>
+</ol>
+<p>此类攻击最关键之处是要诱导受害者去点击恶意的 URL。</p>
+<p><strong>可能发生的场景</strong><br>发送包含恶意 URL 链接的短信、邮件给受害者，一般还会带有一些诱导性的语言，譬如红包、中奖之类。</p>
+<h3 id="DOM-型-XSS-攻击"><a href="#DOM-型-XSS-攻击" class="headerlink" title="DOM 型 XSS 攻击"></a>DOM 型 XSS 攻击</h3><p>在基于 DOM 的 XSS 的攻击中，除非网站自身的合法脚本被执行，否则恶意文本不会被受害者的浏览器解析。</p>
+<p><img src="/images/web-safe/dom-xss-attack.png" alt=""></p>
+<p><strong>攻击步骤</strong></p>
+<ol>
+<li>攻击者构造一个包含恶意文本的 URL 发送受害者</li>
+<li>受害者被攻击者欺骗，通过访问这个 URL 向网站发出请求</li>
+<li>网站收到请求，但是恶意文本并没有包含在给受害者的返回页面中</li>
+<li>受害者的浏览器执行来自网站返回页面里的合法脚本，导致恶意脚本被插入进页面中</li>
+<li>受害者的浏览器执行插入进页面的恶意脚本</li>
+</ol>
+<p>DOM 型 XSS 前两种攻击最大的不同就在于执行恶意代码的时机不同，前两个都是在恶意代码一返回到受害者浏览器就会执行，DOM-XSS 会在浏览器解析 DOM 的时候才会执行攻击。</p>
+<p><strong>可能发生的场景</strong><br>与反射性类似</p>
+<h2 id="防范-XSS-攻击"><a href="#防范-XSS-攻击" class="headerlink" title="防范 XSS 攻击"></a>防范 XSS 攻击</h2><h3 id="编码转义用户的输入"><a href="#编码转义用户的输入" class="headerlink" title="编码转义用户的输入"></a>编码转义用户的输入</h3><ol>
+<li>编码让浏览器把一些 html 实体当做普通的文本，而不是当做特殊代码。<br><img src="/images/web-safe/html-entity-encode.png" alt=""></li>
+<li>将 url 编码</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;a href=&quot;/site/search?value=UNTRUSTED DATA&quot;&gt;clickme&lt;/a&gt;</span><br></pre></td></tr></table></figure>
+<p><strong>局限性</strong></p>
+<ol>
+<li>不能防范类似<code>javascript:</code>这样的恶意代码</li>
+<li>如果页面需要让用户使用 HTML 自定义一些样式时，会无法工作</li>
+</ol>
+<h3 id="校验，对用户的输入进行过滤"><a href="#校验，对用户的输入进行过滤" class="headerlink" title="校验，对用户的输入进行过滤"></a>校验，对用户的输入进行过滤</h3><p>使用黑名单、白名单的机制。</p>
+<h4 id="黑名单"><a href="#黑名单" class="headerlink" title="黑名单"></a>黑名单</h4><p>如果前端的输入匹配到了黑名单中的某一条，那么就认为非法。譬如<code>&lt;script&gt;</code>、<code>javascript:</code></p>
+<p><strong>缺点</strong>：难以维护，例如<code>&lt;Script&gt;</code>或者<code>JavaScript:</code>；需要不断进行维护以避免过时。</p>
+<h4 id="白名单"><a href="#白名单" class="headerlink" title="白名单"></a>白名单</h4><p>只允许在名单内的才算通过。例如只允许<code>&lt;em&gt;</code>和<code>&lt;strong&gt;</code>这两种 HTML 标签存入数据库，或者如果是 url 的，只允许<code>http</code>、<code>https</code>两种格式</p>
+<p>相对来说比黑名单更好维护。</p>
+<h3 id="利用框架自带的安全策略"><a href="#利用框架自带的安全策略" class="headerlink" title="利用框架自带的安全策略"></a>利用框架自带的安全策略</h3><p>我们项目中前端使用的是 Angular 框架，它内置了防护 XSS 和 XSRF 攻击的机制。参考<a href="https://angular.cn/guide/security" target="_blank" rel="noopener">Angular 安全</a>，只要不人为违反它的建议，应当来说可以防范大部分常见的攻击。</p>
+<blockquote>
+<p>针对常见的漏洞和攻击，比如跨站脚本攻击 XSS，Angular 提供了一些内置的保护措施。</p>
+</blockquote>
+<hr>
+<blockquote>
+<p>Angular 内置了一些支持来防范两个常见的 HTTP 漏洞：跨站请求伪造（XSRF）和跨站脚本包含（XSSI）。 这两个漏洞主要在服务器端防范，但是 Angular 也自带了一些辅助特性，可以让客户端的集成变得更容易。</p>
+</blockquote>
+<h2 id="CSRF-跨站请求伪造攻击"><a href="#CSRF-跨站请求伪造攻击" class="headerlink" title="CSRF 跨站请求伪造攻击"></a>CSRF 跨站请求伪造攻击</h2><h3 id="描述-2"><a href="#描述-2" class="headerlink" title="描述"></a>描述</h3><p>当存心不良的 Web 站点导致用户的浏览器在可信的站点上进行非意愿的活动时，我们就说发生了跨站请求伪造(CSRF)攻击。</p>
+<p>关于 CSRF 可以参见这两篇博客：</p>
+<ol>
+<li><a href="http://www.cnblogs.com/hyddd/archive/2009/04/09/1432744.html" target="_blank" rel="noopener">浅谈 CSRF 攻击方式</a></li>
+<li><a href="http://www.jianshu.com/p/7f33f9c7997b" target="_blank" rel="noopener">浅谈 CSRF</a></li>
+</ol>
+<h3 id="防范-2"><a href="#防范-2" class="headerlink" title="防范"></a>防范</h3><blockquote>
+<p><strong>常见的反 XSRF 技术是服务器随机生成一个用户认证令牌到 cookie 中。 客户端代码获取这个 cookie，并用它为接下来所有的请求添加自定义请求页头。 服务器比较收到的 cookie 值与请求页头的值，如果它们不匹配，便拒绝请求。</strong><br>这个技术之所以有效，是因为所有浏览器都实现了同源策略。只有设置 cookie 的网站的代码可以访问该站的 cookie，并为该站的请求设置自定义页头。 这就是说，只有你的应用程序可以获取这个 cookie 令牌和设置自定义页头。evil.com 的恶意代码不能。</p>
+</blockquote>
+<h1 id="未授权访问"><a href="#未授权访问" class="headerlink" title="未授权访问"></a>未授权访问</h1><h3 id="描述-3"><a href="#描述-3" class="headerlink" title="描述"></a>描述</h3><p>如果资源请求不对用户的身份进行认证，那么任何人只要知道资源的 URL 就能获取。例如文件下载，如果请求的 URL 是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">www.test.com/file.do?fileId=1</span><br></pre></td></tr></table></figure>
+<p>任何知道它的人都可以拿到这个文件。</p>
+<p>这里另一个潜在的风险是这里的 fileId，如果后台存储文件时的主键 id 是自增的，那么这里将 fileId 设为 2 就能拿到另一个文件，也就是说我们所有的文件都可以被别人拿到。</p>
+<h3 id="防范-3"><a href="#防范-3" class="headerlink" title="防范"></a>防范</h3><ul>
+<li>访问权限认证，所有请求都要经过权限认证，可以在 url 上添加各种校验认证串，只有通过认证才能返回资源</li>
+<li>对于这样的资源，不要将主键弄成简单的规则，可以使用类似 uuid 这样的串</li>
+</ul>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="http://mp.weixin.qq.com/s/GMA2OpBLtRTEU2E2DoE_iQ" target="_blank" rel="noopener">如何让前端更安全</a></li>
+<li><a href="http://mp.weixin.qq.com/s/_6ue0F5CjbtKG5L7D7LzFQ" target="_blank" rel="noopener">了解 XSS</a></li>
+<li><a href="http://mp.weixin.qq.com/s/Cgt4lVl7O-WpE3Fi9DA5aw" target="_blank" rel="noopener">JavaScript 防 http 劫持与 XSS</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/HTML/" rel="tag"># HTML</a>
+          
+            <a href="/tags/safe/" rel="tag"># safe</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/09/24/how-do-network-connect/" rel="next" title="从浏览器输入url按回车后发生了什么">
+                <i class="fa fa-chevron-left"></i> 从浏览器输入url按回车后发生了什么
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/10/08/javascript-bind/" rel="prev" title="javascript bind函数小结">
+                javascript bind函数小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#测试文件与必需文件控制"><span class="nav-number">1.</span> <span class="nav-text">测试文件与必需文件控制</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#js-安全措施：-主要是eval函数"><span class="nav-number">2.</span> <span class="nav-text">js 安全措施： 主要是eval函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#描述"><span class="nav-number">2.0.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防范"><span class="nav-number">2.0.2.</span> <span class="nav-text">防范</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#重要cookie设为-HTTP-only"><span class="nav-number">3.</span> <span class="nav-text">重要cookie设为 HTTP only</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nginx-conf-文件泄露"><span class="nav-number">4.</span> <span class="nav-text">nginx.conf 文件泄露</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#描述-1"><span class="nav-number">4.0.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防范-1"><span class="nav-number">4.0.2.</span> <span class="nav-text">防范</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#XSS-攻击"><span class="nav-number">5.</span> <span class="nav-text">XSS 攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#何为-XSS-攻击"><span class="nav-number">5.1.</span> <span class="nav-text">何为 XSS 攻击</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#恶意脚本后果"><span class="nav-number">5.2.</span> <span class="nav-text">恶意脚本后果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#XSS-攻击种类"><span class="nav-number">5.3.</span> <span class="nav-text">XSS 攻击种类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#存储型-XSS-攻击"><span class="nav-number">5.3.1.</span> <span class="nav-text">存储型 XSS 攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#反射型-XSS-攻击"><span class="nav-number">5.3.2.</span> <span class="nav-text">反射型 XSS 攻击</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DOM-型-XSS-攻击"><span class="nav-number">5.3.3.</span> <span class="nav-text">DOM 型 XSS 攻击</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#防范-XSS-攻击"><span class="nav-number">5.4.</span> <span class="nav-text">防范 XSS 攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编码转义用户的输入"><span class="nav-number">5.4.1.</span> <span class="nav-text">编码转义用户的输入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#校验，对用户的输入进行过滤"><span class="nav-number">5.4.2.</span> <span class="nav-text">校验，对用户的输入进行过滤</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#黑名单"><span class="nav-number">5.4.2.1.</span> <span class="nav-text">黑名单</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#白名单"><span class="nav-number">5.4.2.2.</span> <span class="nav-text">白名单</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用框架自带的安全策略"><span class="nav-number">5.4.3.</span> <span class="nav-text">利用框架自带的安全策略</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CSRF-跨站请求伪造攻击"><span class="nav-number">5.5.</span> <span class="nav-text">CSRF 跨站请求伪造攻击</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#描述-2"><span class="nav-number">5.5.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防范-2"><span class="nav-number">5.5.2.</span> <span class="nav-text">防范</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#未授权访问"><span class="nav-number">6.</span> <span class="nav-text">未授权访问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#描述-3"><span class="nav-number">6.0.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防范-3"><span class="nav-number">6.0.2.</span> <span class="nav-text">防范</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">7.</span> <span class="nav-text">参考</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2017/09/27/web-safe/';
+          this.page.identifier = '2017/09/27/web-safe/';
+          this.page.title = '前端安全小结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

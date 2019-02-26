@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="CROSS-ORIGIN,JAVASCRIPT,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="在公众号中陆陆续续有看到一些讲前端跨域的文章，自己工作中也用到了一些。印象中的跨域方法有很多种，但一直记不全，索性将之前收藏的文章再过一遍，自己做个总结，以后就不用辛苦翻看那些零散的文档了。🙄🙄🙄 JSONP适用范围前端向跨域后端接口请求数据。 缺陷 它没有关于JSONP调用的错误处理，一旦回调函数调用失败，浏览器会以静默失败的方式处理。 它只支持GET请求，这是由于该技术本身的特性所决定的">
+<meta name="keywords" content="CROSS-ORIGIN,JAVASCRIPT">
+<meta property="og:type" content="article">
+<meta property="og:title" content="前端跨域方法小结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2017/10/29/front-end-cross-origin-summary/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="在公众号中陆陆续续有看到一些讲前端跨域的文章，自己工作中也用到了一些。印象中的跨域方法有很多种，但一直记不全，索性将之前收藏的文章再过一遍，自己做个总结，以后就不用辛苦翻看那些零散的文档了。🙄🙄🙄 JSONP适用范围前端向跨域后端接口请求数据。 缺陷 它没有关于JSONP调用的错误处理，一旦回调函数调用失败，浏览器会以静默失败的方式处理。 它只支持GET请求，这是由于该技术本身的特性所决定的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/cross-origin/tabs-communicate.png">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.719Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="前端跨域方法小结">
+<meta name="twitter:description" content="在公众号中陆陆续续有看到一些讲前端跨域的文章，自己工作中也用到了一些。印象中的跨域方法有很多种，但一直记不全，索性将之前收藏的文章再过一遍，自己做个总结，以后就不用辛苦翻看那些零散的文档了。🙄🙄🙄 JSONP适用范围前端向跨域后端接口请求数据。 缺陷 它没有关于JSONP调用的错误处理，一旦回调函数调用失败，浏览器会以静默失败的方式处理。 它只支持GET请求，这是由于该技术本身的特性所决定的">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/cross-origin/tabs-communicate.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2017/10/29/front-end-cross-origin-summary/">
+
+
+
+
+
+  <title>前端跨域方法小结 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2017/10/29/front-end-cross-origin-summary/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">前端跨域方法小结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-10-29T22:30:00+08:00">
+                2017-10-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/10/29/front-end-cross-origin-summary/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2017/10/29/front-end-cross-origin-summary/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>在公众号中陆陆续续有看到一些讲前端跨域的文章，自己工作中也用到了一些。印象中的跨域方法有很多种，但一直记不全，索性将之前收藏的文章再过一遍，自己做个总结，以后就不用辛苦翻看那些零散的文档了。🙄🙄🙄</p>
+<h1 id="JSONP"><a href="#JSONP" class="headerlink" title="JSONP"></a><code>JSONP</code></h1><h3 id="适用范围"><a href="#适用范围" class="headerlink" title="适用范围"></a>适用范围</h3><p>前端向跨域后端接口请求数据。</p>
+<h3 id="缺陷"><a href="#缺陷" class="headerlink" title="缺陷"></a>缺陷</h3><ol>
+<li>它没有关于<code>JSONP</code>调用的错误处理，一旦回调函数调用失败，浏览器会以静默失败的方式处理。</li>
+<li>它只支持<code>GET</code>请求，这是由于该技术本身的特性所决定的。因此，对于一些需要对安全性有要求的跨域请求，<code>JSONP</code>的使用需要谨慎一点了。</li>
+</ol>
+<h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h3><p>由于<code>JSONP</code>对于老浏览器兼容性方面比较良好，因此，对于那些对<code>IE8</code>以下仍然需要支持的网站来说，仍然被广泛应用。</p>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>通过<code>script</code>标签引入的<code>js</code>是不受同源策略的限制的。所以我们可以通过<code>script</code>标签引入一个<code>js</code>或者是一个其他后缀形式（如<code>php</code>等）的文件，此文件返回一个<code>js</code>函数的调用。<code>JSONP</code>正是利用这个特性来实现的。</p>
+<h3 id="示范"><a href="#示范" class="headerlink" title="示范"></a>示范</h3><p>详细细节参考【1】，大致如下：</p>
+<p><strong>前端</strong></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">  <span class="function"><span class="keyword">function</span> <span class="title">dosomething</span>(<span class="params">jsondata</span>) </span>&#123;</span></span><br><span class="line"><span class="javascript">    <span class="comment">//处理获得的json数据</span></span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://example.com/data.php?callback=dosomething"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>后端</strong></p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$callback = $_GET[<span class="string">'callback'</span>];<span class="comment">//得到回调函数名</span></span><br><span class="line">$data = <span class="keyword">array</span>(<span class="string">'a'</span>,<span class="string">'b'</span>,<span class="string">'c'</span>);<span class="comment">//要返回的数据</span></span><br><span class="line"><span class="keyword">echo</span> $callback.<span class="string">'('</span>.json_encode($data).<span class="string">')'</span>;<span class="comment">//输出</span></span><br></pre></td></tr></table></figure>
+<p>或者利用 jquery 封装的方法</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">  $.getJSON(<span class="string">'http://example.com/data.php?callback=?,function(jsondata)'</span>)&#123;</span></span><br><span class="line"><span class="javascript">      <span class="comment">//处理获得的json数据</span></span></span><br><span class="line"><span class="undefined">  &#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="document-domain"><a href="#document-domain" class="headerlink" title="document.domain"></a><code>document.domain</code></h1><h3 id="适用范围-1"><a href="#适用范围-1" class="headerlink" title="适用范围"></a>适用范围</h3><p>两个前端页面拥有共同的主域，但子域不同，可自由相互通信。</p>
+<p>推荐一个使用 iframe 跨域的库<code>https://github.com/jpillora/xdomain</code>。</p>
+<h3 id="示范-1"><a href="#示范-1" class="headerlink" title="示范"></a>示范</h3><p>详细细节参考【1】，大致如下：</p>
+<p>把<code>http://www.example.com/a.html</code>  和  <code>http://example.com/b.html</code>这两个页面的<code>document.domain</code>都设成相同的域名就可以了。</p>
+<p>但要注意的是，<code>document.domain</code>的设置是有限制的，我们只能把<code>document.domain</code>设置成自身或更高一级的父域，且主域必须相同。例如：<code>a.b.example.com</code> 中某个文档的<code>document.domain</code> 可以设成<code>a.b.example.com</code>、<code>b.example.com</code> 、<code>example.com</code>中的任意一个，但是不可以设成 <code>c.a.b.example.com</code>,因为这是当前域的子域，也不可以设成<code>baidu.com</code>,因为主域已经不相同了。</p>
+<h1 id="window-name"><a href="#window-name" class="headerlink" title="window.name"></a>window.name</h1><h3 id="适用范围-2"><a href="#适用范围-2" class="headerlink" title="适用范围"></a>适用范围</h3><p>两个前端页面完全跨域，更多用于单向通信</p>
+<h3 id="原理-1"><a href="#原理-1" class="headerlink" title="原理"></a>原理</h3><p><code>window</code>对象有个<code>name</code>属性，该属性有个特征：即在一个窗口(<code>window</code>)的生命周期内,窗口载入的所有的页面都是共享一个<code>window.name</code>的，每个页面对<code>window.name</code>都有读写的权限，<code>window.name</code>是持久存在一个窗口载入过的所有页面中的，并不会因新页面的载入而进行重置。</p>
+<h3 id="示范-2"><a href="#示范-2" class="headerlink" title="示范"></a>示范</h3><p>详细细节参考【1】。</p>
+<p>其中 A 页面若想和跨域的 B 页面通信，可以在 A 下利用一个<code>iframe</code>先加载 B，往<code>window.name</code>中设置数据，再利用此<code>iframe</code>转到与 A 同域的任一页面，此时 A 就能直接从<code>iframe</code>的<code>window.name</code>中拿数据了。</p>
+<h1 id="iframe-location-hash"><a href="#iframe-location-hash" class="headerlink" title="iframe+location.hash"></a><code>iframe</code>+<code>location.hash</code></h1><h3 id="适用范围-3"><a href="#适用范围-3" class="headerlink" title="适用范围"></a>适用范围</h3><p>两个前端页面完全跨域，可自由相互通信。</p>
+<h3 id="原理-2"><a href="#原理-2" class="headerlink" title="原理"></a>原理</h3><p>与上面介绍的<code>window.name</code>有一点类似，只不过一个是修改<code>name</code>，一个是修改<code>url hash</code>。</p>
+<p>监听<code>hash</code>变化可以使用<code>onhashchange</code>事件，在不支持的浏览器上通过只能通过定时器轮询。</p>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><ol>
+<li>在改变<code>hash</code>时还会增加浏览器历史记录。</li>
+<li>数据直接暴露在了<code>url</code>中，数据容量和类型都有限等。</li>
+</ol>
+<h3 id="示范-3"><a href="#示范-3" class="headerlink" title="示范"></a>示范</h3><p>此方法用的比较少，详细细节参照【2】</p>
+<h1 id="window-postMessage"><a href="#window-postMessage" class="headerlink" title="window.postMessage"></a><code>window.postMessage</code></h1><h3 id="适用范围-4"><a href="#适用范围-4" class="headerlink" title="适用范围"></a>适用范围</h3><p>两个前端页面完全跨域，可自由相互通信。此为<code>HTML5</code>的 API，具体使用可以参见<code>MDN</code>，在此不详述。</p>
+<h1 id="反向代理"><a href="#反向代理" class="headerlink" title="反向代理"></a>反向代理</h1><p>主要是利用<code>http</code>服务器例如<code>nginx</code>的反向代理配置来转发请求。例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">     &quot;/test-nginx&quot;: &#123;</span><br><span class="line">        &quot;target&quot;: &quot;http://localhost:3000&quot;,</span><br><span class="line">        &quot;secure&quot;: false,</span><br><span class="line">        &quot;pathRewrite&quot;: &#123;</span><br><span class="line">            &quot;^/test-nginx&quot;: &quot;&quot;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="CORS"><a href="#CORS" class="headerlink" title="CORS"></a><code>CORS</code></h1><h3 id="适用范围-5"><a href="#适用范围-5" class="headerlink" title="适用范围"></a>适用范围</h3><p>与<code>JSONP</code>类似，前端向跨域后端接口请求数据。</p>
+<h3 id="优点-1"><a href="#优点-1" class="headerlink" title="优点"></a>优点</h3><ol>
+<li>除了 <code>GET</code> 方法外，也支持其它的 <code>HTTP</code> 请求方法如 <code>POST</code>、 <code>PUT</code> 等。</li>
+<li>可以使用 <code>XHR</code>进行传输，所以它的错误处理方式比 <code>JSONP</code> 好。</li>
+</ol>
+<h3 id="原理-3"><a href="#原理-3" class="headerlink" title="原理"></a>原理</h3><p>通过一系列新增的<code>HTTP</code>头信息来实现服务器和客户端之间的通信。所以，要支持<code>CORS</code>，服务端需要做好相应的配置。具体细节参见【5】</p>
+<h1 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h1><ul>
+<li><code>WebSocket</code>协议跨域【3】</li>
+</ul>
+<p>【4】中介绍了一种在两个完全不相干的浏览器跨域 tab 页之间进行通信的技巧，核心思想是这两个 tab 页都嵌入一个<code>iframe</code>，两个<code>iframe</code>加载两个同域的页面。 tab 页和<code>iframe</code>之间的通信可以使用上面说的方法（例如<code>postMessage</code>），两个<code>iframe</code>之间因为是同域的，可以使用<code>localStorage</code>传递数据。<br><img src="/images/cross-origin/tabs-communicate.png" alt=""></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li><a href="https://mp.weixin.qq.com/s/IWMm7t5362xrj9WRoTlPfw" target="_blank" rel="noopener">JS 中几种实用的跨域方法原理详解</a></li>
+<li><a href="https://mp.weixin.qq.com/s/Ulh3dq-9eHwbS2ggOcu7jA" target="_blank" rel="noopener">JavaScript 跨域总结与解决办法</a></li>
+<li><a href="https://mp.weixin.qq.com/s/fDlyrRTv6zp-PQ1iRkTpBQ" target="_blank" rel="noopener">前端常见跨域解决方案（全）</a></li>
+<li><a href="https://mp.weixin.qq.com/s?__biz=MjM5MTA1MjAxMQ==&amp;mid=2651226984&amp;idx=1&amp;sn=4fbe4e3903afbf5f33035870b38d04b5&amp;chksm=bd495aec8a3ed3fa86404f9d24d326a7aeab481f9fd61bbbf818be78099d1559c7025413ed4e&amp;scene=21#wechat_redirect" target="_blank" rel="noopener">跨浏览器 tab 页的通信解决方案尝试</a></li>
+<li><a href="https://mp.weixin.qq.com/s/-1FUAU29nBGzvOWquEzunQ" target="_blank" rel="noopener">详解 CORS 跨域资源共享</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/CROSS-ORIGIN/" rel="tag"># CROSS-ORIGIN</a>
+          
+            <a href="/tags/JAVASCRIPT/" rel="tag"># JAVASCRIPT</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/10/25/tslint-recommend-rules/" rel="next" title="Tslint官方推荐规则详细解释">
+                <i class="fa fa-chevron-left"></i> Tslint官方推荐规则详细解释
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/11/04/javascript-closure-summary/" rel="prev" title="JavaScript闭包小结">
+                JavaScript闭包小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JSONP"><span class="nav-number">1.</span> <span class="nav-text">JSONP</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围"><span class="nav-number">1.0.1.</span> <span class="nav-text">适用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺陷"><span class="nav-number">1.0.2.</span> <span class="nav-text">缺陷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优点"><span class="nav-number">1.0.3.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理"><span class="nav-number">1.0.4.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示范"><span class="nav-number">1.0.5.</span> <span class="nav-text">示范</span></a></li></ol></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#document-domain"><span class="nav-number">2.</span> <span class="nav-text">document.domain</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围-1"><span class="nav-number">2.0.1.</span> <span class="nav-text">适用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示范-1"><span class="nav-number">2.0.2.</span> <span class="nav-text">示范</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#window-name"><span class="nav-number">3.</span> <span class="nav-text">window.name</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围-2"><span class="nav-number">3.0.1.</span> <span class="nav-text">适用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理-1"><span class="nav-number">3.0.2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示范-2"><span class="nav-number">3.0.3.</span> <span class="nav-text">示范</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#iframe-location-hash"><span class="nav-number">4.</span> <span class="nav-text">iframe+location.hash</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围-3"><span class="nav-number">4.0.1.</span> <span class="nav-text">适用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理-2"><span class="nav-number">4.0.2.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缺点"><span class="nav-number">4.0.3.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示范-3"><span class="nav-number">4.0.4.</span> <span class="nav-text">示范</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#window-postMessage"><span class="nav-number">5.</span> <span class="nav-text">window.postMessage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围-4"><span class="nav-number">5.0.1.</span> <span class="nav-text">适用范围</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#反向代理"><span class="nav-number">6.</span> <span class="nav-text">反向代理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CORS"><span class="nav-number">7.</span> <span class="nav-text">CORS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用范围-5"><span class="nav-number">7.0.1.</span> <span class="nav-text">适用范围</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优点-1"><span class="nav-number">7.0.2.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#原理-3"><span class="nav-number">7.0.3.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#其他"><span class="nav-number">8.</span> <span class="nav-text">其他</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考"><span class="nav-number">9.</span> <span class="nav-text">参考</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2017/10/29/front-end-cross-origin-summary/';
+          this.page.identifier = '2017/10/29/front-end-cross-origin-summary/';
+          this.page.title = '前端跨域方法小结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

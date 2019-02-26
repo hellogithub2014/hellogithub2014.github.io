@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="lodash,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="源码阅读经验lodash的代码分为两大块： 一个是.internal目录里的文件，这些是lodash内部使用的『基础函数』，不会暴露在全局的lodash对象上；其他的文件都在根目录下，每个函数对应一个文件，这些都会挂在lodash/_下，我习惯称为『外部函数』。 『外部函数』通常会依赖一些『基础函数』，而『基础函数』很少有依赖，自成一统。lodash通过这种方式最大化使代码复用。 [TOC] Ar">
+<meta name="keywords" content="lodash">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lodash源码学习之Array篇">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/05/19/lodash-array/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="源码阅读经验lodash的代码分为两大块： 一个是.internal目录里的文件，这些是lodash内部使用的『基础函数』，不会暴露在全局的lodash对象上；其他的文件都在根目录下，每个函数对应一个文件，这些都会挂在lodash/_下，我习惯称为『外部函数』。 『外部函数』通常会依赖一些『基础函数』，而『基础函数』很少有依赖，自成一统。lodash通过这种方式最大化使代码复用。 [TOC] Ar">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Lodash-Array/lodash-array-part1.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Lodash-Array/lodash-array-part2.png">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.727Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="lodash源码学习之Array篇">
+<meta name="twitter:description" content="源码阅读经验lodash的代码分为两大块： 一个是.internal目录里的文件，这些是lodash内部使用的『基础函数』，不会暴露在全局的lodash对象上；其他的文件都在根目录下，每个函数对应一个文件，这些都会挂在lodash/_下，我习惯称为『外部函数』。 『外部函数』通常会依赖一些『基础函数』，而『基础函数』很少有依赖，自成一统。lodash通过这种方式最大化使代码复用。 [TOC] Ar">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/Lodash-Array/lodash-array-part1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/05/19/lodash-array/">
+
+
+
+
+
+  <title>lodash源码学习之Array篇 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/05/19/lodash-array/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">lodash源码学习之Array篇</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-19T10:30:00+08:00">
+                2018-05-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/19/lodash-array/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/19/lodash-array/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="源码阅读经验"><a href="#源码阅读经验" class="headerlink" title="源码阅读经验"></a>源码阅读经验</h1><p><code>lodash</code>的代码分为两大块： 一个是<code>.internal</code>目录里的文件，这些是<code>lodash</code>内部使用的『基础函数』，不会暴露在全局的<code>lodash</code>对象上；其他的文件都在根目录下，每个函数对应一个文件，这些都会挂在<code>lodash/_</code>下，我习惯称为『外部函数』。</p>
+<p>『外部函数』通常会依赖一些『基础函数』，而『基础函数』很少有依赖，自成一统。<code>lodash</code>通过这种方式最大化使代码复用。</p>
+<p>[TOC]</p>
+<h1 id="Array"><a href="#Array" class="headerlink" title="Array"></a>Array</h1><p>整理了一下<code>Array</code>类别下『外部函数』与『基础函数』的对应关系，画个图：</p>
+<p><strong><code>lodash-array-part1</code></strong></p>
+<p><img src="/images/Lodash-Array/lodash-array-part1.png" alt=""></p>
+<p><strong><code>lodash-array-part2</code></strong></p>
+<p><img src="/images/Lodash-Array/lodash-array-part2.png" alt=""></p>
+<h2 id="concat"><a href="#concat" class="headerlink" title="concat"></a>concat</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">_.concat([<span class="number">1</span>], [<span class="number">2</span>], [<span class="number">3</span>, <span class="number">4</span>]);</span><br><span class="line"><span class="comment">// =&gt; [1,2,3,4]</span></span><br><span class="line"></span><br><span class="line">_.concat([<span class="number">1</span>], <span class="number">2</span>, [<span class="number">3</span>], [[<span class="number">4</span>]]);</span><br><span class="line"><span class="comment">// =&gt; [1,2,3,[4]]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Creates a new array concatenating `array` with any additional arrays</span></span><br><span class="line"><span class="comment"> * and/or values.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @static</span></span><br><span class="line"><span class="comment"> * @memberOf _</span></span><br><span class="line"><span class="comment"> * @since 4.0.0</span></span><br><span class="line"><span class="comment"> * @category Array</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to concatenate.</span></span><br><span class="line"><span class="comment"> * @param &#123;...*&#125; [values] The values to concatenate.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new concatenated array.</span></span><br><span class="line"><span class="comment"> * @example</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * var array = [1];</span></span><br><span class="line"><span class="comment"> * var other = _.concat(array, 2, [3], [[4]]);</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * console.log(other);</span></span><br><span class="line"><span class="comment"> * // =&gt; [1, 2, 3, [4]]</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * console.log(array);</span></span><br><span class="line"><span class="comment"> * // =&gt; [1]</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">concat</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> length = <span class="built_in">arguments</span>.length;</span><br><span class="line">  <span class="keyword">if</span> (!length) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">var</span> args = <span class="built_in">Array</span>(length - <span class="number">1</span>),</span><br><span class="line">    array = <span class="built_in">arguments</span>[<span class="number">0</span>],</span><br><span class="line">    index = length;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (index--) &#123;</span><br><span class="line">    args[index - <span class="number">1</span>] = <span class="built_in">arguments</span>[index];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 使用Array.isArray来判断是否为数组，避免多个Frame问题</span></span><br><span class="line">  <span class="comment">// baseFlatten(args,1)功能大体上类似把args中所有元素全部串联起来(concat)</span></span><br><span class="line">  <span class="keyword">return</span> arrayPush(isArray(array) ? copyArray(array) : [array], baseFlatten(args, <span class="number">1</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="difference"><a href="#difference" class="headerlink" title="difference"></a>difference</h2><p><strong>示范：</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">_.difference([<span class="number">2</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">3</span>]); <span class="comment">// [1]</span></span><br><span class="line">_.difference([<span class="number">2</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">2</span>], [<span class="number">2</span>, <span class="number">3</span>]); <span class="comment">// [1]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">difference</span>(<span class="params">array, ...values</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 先用baseFlatten把values数组打平，然后比较两个打平后的数组</span></span><br><span class="line">  <span class="keyword">return</span> isArrayLikeObject(array) ? baseDifference(array, baseFlatten(values, <span class="number">1</span>, isArrayLikeObject, <span class="literal">true</span>)) : [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>baseFlatten</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `flatten` with support for restricting flattening.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to flatten.</span></span><br><span class="line"><span class="comment"> * @param &#123;number&#125; depth The maximum recursion depth.</span></span><br><span class="line"><span class="comment"> * @param &#123;boolean&#125; [predicate=isFlattenable] The function invoked per iteration.</span></span><br><span class="line"><span class="comment"> * @param &#123;boolean&#125; [isStrict] Restrict to values that pass `predicate` checks.</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; [result=[]] The initial result value.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new flattened array.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseFlatten</span>(<span class="params">array, depth, predicate, isStrict, result</span>) </span>&#123;</span><br><span class="line">  predicate || (predicate = isFlattenable); <span class="comment">//isFlattenable 判断是否为可平摊的对象，如数组和arguments</span></span><br><span class="line">  result || (result = []);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (array == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> value <span class="keyword">of</span> array) &#123;</span><br><span class="line">    <span class="keyword">if</span> (depth &gt; <span class="number">0</span> &amp;&amp; predicate(value)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (depth &gt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="comment">// Recursively flatten arrays (susceptible to call stack limits).</span></span><br><span class="line">        baseFlatten(value, depth - <span class="number">1</span>, predicate, isStrict, result);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// depth === 1,将可平摊对象打平然后放到result中</span></span><br><span class="line">        result.push(...value);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!isStrict) &#123;</span><br><span class="line">      <span class="comment">// 如果不要求严格通过predicate，那么不管是predicate条件不满足还是depth =0, 都直接放到result末尾，无需打平。</span></span><br><span class="line">      result[result.length] = value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>baseDifference</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of methods like `difference` without support</span></span><br><span class="line"><span class="comment"> * for excluding multiple arrays.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; values The values to exclude.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [comparator] The comparator invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new array of filtered values.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseDifference</span>(<span class="params">array, values, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> includes = arrayIncludes;</span><br><span class="line">  <span class="keyword">let</span> isCommon = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line">  <span class="keyword">const</span> valuesLength = values.length;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!array.length) &#123;</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (iteratee) &#123;</span><br><span class="line">    values = map(values, value =&gt; iteratee(value));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (comparator) &#123;</span><br><span class="line">    includes = arrayIncludesWith;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (values.length &gt;= LARGE_ARRAY_SIZE) &#123;</span><br><span class="line">    <span class="comment">// 数组较大时使用Set进行查找</span></span><br><span class="line">    includes = cacheHas;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">    values = <span class="keyword">new</span> SetCache(values);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 找到array中所有不在values中的元素</span></span><br><span class="line">  outer: <span class="keyword">for</span> (<span class="keyword">let</span> value <span class="keyword">of</span> array) &#123;</span><br><span class="line">    <span class="keyword">const</span> computed = iteratee == <span class="literal">null</span> ? value : iteratee(value);</span><br><span class="line"></span><br><span class="line">    value = comparator || value !== <span class="number">0</span> ? value : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// computed === computed 只有在NaN时才不成立</span></span><br><span class="line">    <span class="keyword">if</span> (isCommon &amp;&amp; computed === computed) &#123;</span><br><span class="line">      <span class="comment">// 在values中查找是否存在computed</span></span><br><span class="line">      <span class="keyword">let</span> valuesIndex = valuesLength;</span><br><span class="line">      <span class="keyword">while</span> (valuesIndex--) &#123;</span><br><span class="line">        <span class="keyword">if</span> (values[valuesIndex] === computed) &#123;</span><br><span class="line">          <span class="keyword">continue</span> outer;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      result.push(value); <span class="comment">// 最终放到result的是原始的value，而不是可能被转化过的computed</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!includes(values, computed, comparator)) &#123;</span><br><span class="line">      <span class="comment">// 利用comparator来进行查找</span></span><br><span class="line">      result.push(value);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="dropRightWhile、dropWhile"><a href="#dropRightWhile、dropWhile" class="headerlink" title="dropRightWhile、dropWhile"></a>dropRightWhile、dropWhile</h2><p><strong>示范</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> users = [&#123; <span class="attr">user</span>: <span class="string">'barney'</span>, <span class="attr">active</span>: <span class="literal">true</span> &#125;, &#123; <span class="attr">user</span>: <span class="string">'fred'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;, &#123; <span class="attr">user</span>: <span class="string">'pebbles'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;];</span><br><span class="line">_.dropRightWhile(users, <span class="function"><span class="keyword">function</span>(<span class="params">o</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> !o.active;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// =&gt; objects for ['barney']</span></span><br><span class="line"><span class="comment">// The `_.matches` iteratee shorthand.</span></span><br><span class="line">_.dropRightWhile(users, &#123; <span class="attr">user</span>: <span class="string">'pebbles'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;);</span><br><span class="line"><span class="comment">// =&gt; objects for ['barney', 'fred']</span></span><br><span class="line"><span class="comment">// The `_.matchesProperty` iteratee shorthand.</span></span><br><span class="line">_.dropRightWhile(users, [<span class="string">'active'</span>, <span class="literal">false</span>]);</span><br><span class="line"><span class="comment">// =&gt; objects for ['barney']</span></span><br><span class="line"><span class="comment">// The `_.property` iteratee shorthand.</span></span><br><span class="line">_.dropRightWhile(users, <span class="string">'active'</span>);</span><br><span class="line"><span class="comment">// =&gt; objects for ['barney', 'fred', 'pebbles']</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> users = [&#123; <span class="attr">user</span>: <span class="string">'barney'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;, &#123; <span class="attr">user</span>: <span class="string">'fred'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;, &#123; <span class="attr">user</span>: <span class="string">'pebbles'</span>, <span class="attr">active</span>: <span class="literal">true</span> &#125;];</span><br><span class="line">_.dropWhile(users, <span class="function"><span class="keyword">function</span>(<span class="params">o</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> !o.active;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="comment">// =&gt; objects for ['pebbles']</span></span><br><span class="line"><span class="comment">// The `_.matches` iteratee shorthand.</span></span><br><span class="line">_.dropWhile(users, &#123; <span class="attr">user</span>: <span class="string">'barney'</span>, <span class="attr">active</span>: <span class="literal">false</span> &#125;);</span><br><span class="line"><span class="comment">// =&gt; objects for ['fred', 'pebbles']</span></span><br><span class="line"><span class="comment">// The `_.matchesProperty` iteratee shorthand.</span></span><br><span class="line">_.dropWhile(users, [<span class="string">'active'</span>, <span class="literal">false</span>]);</span><br><span class="line"><span class="comment">// =&gt; objects for ['pebbles']</span></span><br><span class="line"><span class="comment">// The `_.property` iteratee shorthand.</span></span><br><span class="line">_.dropWhile(users, <span class="string">'active'</span>);</span><br><span class="line"><span class="comment">// =&gt; objects for ['barney', 'fred', 'pebbles']</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dropRightWhile</span>(<span class="params">array, predicate</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> array != <span class="literal">null</span> &amp;&amp; array.length ? baseWhile(array, predicate, <span class="literal">true</span>, <span class="literal">true</span>) : [];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">dropWhile</span>(<span class="params">array, predicate</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> array != <span class="literal">null</span> &amp;&amp; array.length ? baseWhile(array, predicate, <span class="literal">true</span>) : [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>底层都是用的同一个<code>baseWhile</code>函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of methods like `dropWhile` and `takeWhile`.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to query.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; predicate The function invoked per iteration.</span></span><br><span class="line"><span class="comment"> * @param &#123;boolean&#125; [isDrop] Specify dropping elements instead of taking them.</span></span><br><span class="line"><span class="comment"> * @param &#123;boolean&#125; [fromRight] Specify iterating from right to left.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the slice of `array`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseWhile</span>(<span class="params">array, predicate, isDrop, fromRight</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; length &#125; = array;</span><br><span class="line">  <span class="keyword">let</span> index = fromRight ? length : <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 先遍历到第一个不满足predicte的地方，或者直接遍历完数组</span></span><br><span class="line">  <span class="keyword">while</span> ((fromRight ? index-- : ++index &lt; length) &amp;&amp; predicate(array[index], index, array)) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 根据isDrop、fromRight的取值来决定接下来往取array中的哪些范围数据</span></span><br><span class="line">  <span class="keyword">return</span> isDrop</span><br><span class="line">    ? slice(array, fromRight ? <span class="number">0</span> : index, fromRight ? index + <span class="number">1</span> : length)</span><br><span class="line">    : slice(array, fromRight ? index + <span class="number">1</span> : <span class="number">0</span>, fromRight ? length : index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="flattern、flatternDeep"><a href="#flattern、flatternDeep" class="headerlink" title="flattern、flatternDeep"></a><code>flattern</code>、<code>flatternDeep</code></h2><p>底层也是用的<code>baseFlattern</code>函数，见<code>difference</code></p>
+<h2 id="indexOf"><a href="#indexOf" class="headerlink" title="indexOf"></a><code>indexOf</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">_.indexOf([<span class="number">1</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">2</span>], <span class="number">2</span>);</span><br><span class="line"><span class="comment">// =&gt; 1</span></span><br><span class="line"><span class="comment">// Search from the `fromIndex`.</span></span><br><span class="line">_.indexOf([<span class="number">1</span>, <span class="number">2</span>, <span class="number">1</span>, <span class="number">2</span>], <span class="number">2</span>, <span class="number">2</span>);</span><br><span class="line"><span class="comment">// =&gt; 3</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">indexOf</span>(<span class="params">array, value, fromIndex</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> length = array == <span class="literal">null</span> ? <span class="number">0</span> : array.length;</span><br><span class="line">  <span class="keyword">if</span> (!length) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> index = fromIndex == <span class="literal">null</span> ? <span class="number">0</span> : +fromIndex;</span><br><span class="line">  <span class="keyword">if</span> (index &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    index = <span class="built_in">Math</span>.max(length + index, <span class="number">0</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> baseIndexOf(array, value, index);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要是要考虑 NaN 的情况.</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `indexOf` without `fromIndex` bounds checks.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;*&#125; value The value to search for.</span></span><br><span class="line"><span class="comment"> * @param &#123;number&#125; fromIndex The index to search from.</span></span><br><span class="line"><span class="comment"> * @returns &#123;number&#125; Returns the index of the matched value, else `-1`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseIndexOf</span>(<span class="params">array, value, fromIndex</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// value === value 在NaN的情况下不成立</span></span><br><span class="line">  <span class="comment">//baseFindIndex(array, baseIsNaN, fromIndex)  用于在数组中查找第一个NaN</span></span><br><span class="line">  <span class="keyword">return</span> value === value ? strictIndexOf(array, value, fromIndex) : baseFindIndex(array, baseIsNaN, fromIndex);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="intersection、intersectionBy、intersectionWith"><a href="#intersection、intersectionBy、intersectionWith" class="headerlink" title="intersection、intersectionBy、intersectionWith"></a><code>intersection</code>、<code>intersectionBy</code>、<code>intersectionWith</code></h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">_.intersection([<span class="number">2</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">3</span>]);</span><br><span class="line"><span class="comment">// =&gt; [2]</span></span><br><span class="line"></span><br><span class="line">_.intersectionBy([<span class="number">2.1</span>, <span class="number">1.2</span>], [<span class="number">2.3</span>, <span class="number">3.4</span>], <span class="built_in">Math</span>.floor);</span><br><span class="line"><span class="comment">// =&gt; [2.1]</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> objects = [&#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">2</span>, <span class="attr">y</span>: <span class="number">1</span> &#125;];</span><br><span class="line"><span class="keyword">var</span> others = [&#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;];</span><br><span class="line">_.intersectionWith(objects, others, _.isEqual);</span><br><span class="line"><span class="comment">// =&gt; [&#123; 'x': 1, 'y': 2 &#125;]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<p>大致思路： 迭代第一个参数数组，看看每一个元素在其他参数数组中是否存在，如果都存在就放在交集中。在判断是否存在时，会根据情况使用 Set/Map 或者数组进行查找。同时第一个数组中的元素也要去重。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of methods like `intersection` that accepts an</span></span><br><span class="line"><span class="comment"> * array of arrays to inspect.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; arrays The arrays to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [comparator] The comparator invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new array of shared values.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseIntersection</span>(<span class="params">arrays, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> includes = comparator ? arrayIncludesWith : arrayIncludes;</span><br><span class="line">  <span class="keyword">const</span> length = arrays[<span class="number">0</span>].length;</span><br><span class="line">  <span class="keyword">const</span> othLength = arrays.length;</span><br><span class="line">  <span class="keyword">const</span> caches = <span class="keyword">new</span> <span class="built_in">Array</span>(othLength);</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> array;</span><br><span class="line">  <span class="keyword">let</span> maxLength = <span class="literal">Infinity</span>;</span><br><span class="line">  <span class="keyword">let</span> othIndex = othLength;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 尝试转换arrays,并视情况是否是否Set缓存</span></span><br><span class="line">  <span class="keyword">while</span> (othIndex--) &#123;</span><br><span class="line">    array = arrays[othIndex];</span><br><span class="line">    <span class="keyword">if</span> (othIndex &amp;&amp; iteratee) &#123;</span><br><span class="line">      array = map(array, value =&gt; iteratee(value));</span><br><span class="line">    &#125;</span><br><span class="line">    maxLength = <span class="built_in">Math</span>.min(array.length, maxLength);</span><br><span class="line">    <span class="comment">// 120作为分界线，小于120使用数组的includes进行查找，大于120使用SetCache</span></span><br><span class="line">    <span class="comment">// 在迭代到arrays[0]时，caches[0]始终是一个空的SetCache</span></span><br><span class="line">    caches[othIndex] = !comparator &amp;&amp; (iteratee || (length &gt;= <span class="number">120</span> &amp;&amp; array.length &gt;= <span class="number">120</span>)) ? <span class="keyword">new</span> SetCache(othIndex &amp;&amp; array) : <span class="literal">undefined</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  array = arrays[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="comment">// 只取arrays[0]中的元素当做Set缓存。 seen的作用是给arrays[0]中的元素去重</span></span><br><span class="line">  <span class="comment">// _.intersection([2,2],[2]) =&gt; [2]</span></span><br><span class="line">  <span class="keyword">const</span> seen = caches[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 此处循环的大概思路是： 迭代arrays[0]中的每一个元素，先看看这个元素是不是一个在arrays[0]中本身就重复；</span></span><br><span class="line">  <span class="comment">// 如果不是，那么再依次查看arrays中其他数组，看看是否在其他每一个数组中都存在；</span></span><br><span class="line">  <span class="comment">// 如果在arrays每个子数组中都存在，那么就是一个放到交集中去</span></span><br><span class="line">  <span class="comment">// 在判断是否存在时，会依情况使用数组或者set</span></span><br><span class="line">  outer: <span class="keyword">while</span> (++index &lt; length &amp;&amp; result.length &lt; maxLength) &#123;</span><br><span class="line">    <span class="keyword">let</span> value = array[index];</span><br><span class="line">    <span class="keyword">const</span> computed = iteratee ? iteratee(value) : value;</span><br><span class="line"></span><br><span class="line">    value = comparator || value !== <span class="number">0</span> ? value : <span class="number">0</span>;</span><br><span class="line">    <span class="comment">// 如果computed在result结果集中不存在，或者在当前set缓存中不存在</span></span><br><span class="line">    <span class="comment">// 注意： 这里判断的是经iteratee转换的computed，而不是原始的value</span></span><br><span class="line">    <span class="keyword">if</span> (!(seen ? cacheHas(seen, computed) : includes(result, computed, comparator))) &#123;</span><br><span class="line">      <span class="comment">// 那么看看参数arrays中其他数组里有没有computed</span></span><br><span class="line">      othIndex = othLength;</span><br><span class="line">      <span class="keyword">while</span> (--othIndex) &#123;</span><br><span class="line">        <span class="keyword">const</span> cache = caches[othIndex];</span><br><span class="line">        <span class="comment">// 只要其中一个不包含computed，直接退出此轮查找</span></span><br><span class="line">        <span class="keyword">if</span> (!(cache ? cacheHas(cache, computed) : includes(arrays[othIndex], computed, comparator))) &#123;</span><br><span class="line">          <span class="keyword">continue</span> outer;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (seen) &#123;</span><br><span class="line">        seen.push(computed); <span class="comment">// 更新cache，如果后面有相同的元素出现，直接跳过</span></span><br><span class="line">      &#125;</span><br><span class="line">      result.push(value);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="pull、pullAll、pullAllBy、pullAllWith"><a href="#pull、pullAll、pullAllBy、pullAllWith" class="headerlink" title="pull、pullAll、pullAllBy、pullAllWith"></a>pull、pullAll、pullAllBy、pullAllWith</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> array = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>];</span><br><span class="line">_.pull(array, <span class="string">'a'</span>, <span class="string">'c'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; ['b', 'b']</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> array = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>];</span><br><span class="line">_.pullAll(array, [<span class="string">'a'</span>, <span class="string">'c'</span>]);</span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; ['b', 'b']</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> array = [&#123; <span class="attr">x</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">2</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">3</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">1</span> &#125;];</span><br><span class="line">_.pullAllBy(array, [&#123; <span class="attr">x</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">3</span> &#125;], <span class="string">'x'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; [&#123; 'x': 2 &#125;]</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> array = [&#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">5</span>, <span class="attr">y</span>: <span class="number">6</span> &#125;];</span><br><span class="line">_.pullAllWith(array, [&#123; <span class="attr">x</span>: <span class="number">3</span>, <span class="attr">y</span>: <span class="number">4</span> &#125;], _.isEqual);</span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; [&#123; 'x': 1, 'y': 2 &#125;, &#123; 'x': 5, 'y': 6 &#125;]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<p>底层用到了一个共同的函数<code>basePullAll</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `pullAllBy`.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to modify.</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; values The values to remove.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [comparator] The comparator invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns `array`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">basePullAll</span>(<span class="params">array, values, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> indexOf = comparator ? baseIndexOfWith : baseIndexOf;</span><br><span class="line">  <span class="keyword">const</span> length = values.length;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">let</span> seen = array;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (array === values) &#123;</span><br><span class="line">    values = copyArray(values);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// seen数组的目的是为了保护array不被iteratee改变</span></span><br><span class="line">  <span class="keyword">if</span> (iteratee) &#123;</span><br><span class="line">    seen = map(array, value =&gt; iteratee(value));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">let</span> fromIndex = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">const</span> value = values[index];</span><br><span class="line">    <span class="keyword">const</span> computed = iteratee ? iteratee(value) : value;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 从array、seen中删除所有computed，因为这里是先根据内容找到匹配的元素再进行删除，而不是直接删除指定索引处的元素，所以对查找删除的方向并不敏感</span></span><br><span class="line">    <span class="keyword">while</span> ((fromIndex = indexOf(seen, computed, fromIndex, comparator)) &gt; <span class="number">-1</span>) &#123;</span><br><span class="line">      <span class="comment">// 在有iteratee时，if分支成立。没有iteratee时，seen和array指向同一个地方</span></span><br><span class="line">      <span class="keyword">if</span> (seen !== array) &#123;</span><br><span class="line">        seen.splice(fromIndex, <span class="number">1</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      array.splice(fromIndex, <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> array;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="pullAt"><a href="#pullAt" class="headerlink" title="pullAt"></a>pullAt</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> array = [<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>];</span><br><span class="line"><span class="keyword">var</span> pulled = _.pullAt(array, [<span class="number">1</span>, <span class="number">3</span>]);</span><br><span class="line"><span class="built_in">console</span>.log(array);</span><br><span class="line"><span class="comment">// =&gt; ['a', 'c']</span></span><br><span class="line"><span class="built_in">console</span>.log(pulled);</span><br><span class="line"><span class="comment">// =&gt; ['b', 'd']</span></span><br></pre></td></tr></table></figure>
+<p>对应的核心文件是<code>basePullAt</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `pullAt` without support for individual</span></span><br><span class="line"><span class="comment"> * indexes or capturing the removed elements.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to modify.</span></span><br><span class="line"><span class="comment"> * @param &#123;number[]&#125; indexes The indexes of elements to remove.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns `array`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">basePullAt</span>(<span class="params">array, indexes</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> length = array ? indexes.length : <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">const</span> lastIndex = length - <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (length--) &#123;</span><br><span class="line">    <span class="keyword">let</span> previous;</span><br><span class="line">    <span class="keyword">const</span> index = indexes[length];</span><br><span class="line">    <span class="comment">// 如果是最后一个，或者和前一个不相等，那么表示array中有一个新元素需要被删除</span></span><br><span class="line">    <span class="comment">// previous的作用是为了不重复删除某个位置的数据，如indexes = [1,3,3]时，array[3]处的元素只会</span></span><br><span class="line">    <span class="comment">// 被删除一次。</span></span><br><span class="line">    <span class="keyword">if</span> (length == lastIndex || index !== previous) &#123;</span><br><span class="line">      previous = index;</span><br><span class="line">      <span class="keyword">if</span> (isIndex(index)) &#123;</span><br><span class="line">        <span class="comment">// 这里在删除时，有一个技巧，就是从后往前删的，即indexes是一个递增序列。</span></span><br><span class="line">        <span class="comment">// 例如array=[0,1,2,3], indexes=[1,2]，那么先删array[2]再删array[1]是没问题的，即删掉了数字1和2</span></span><br><span class="line">        <span class="comment">// 但是如果indexes = [2,1]，那么先删array[1]之后，array[2]所指的元素不再是2了，就会出问题。</span></span><br><span class="line">        array.splice(index, <span class="number">1</span>);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        baseUnset(array, index);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> array;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf"><a href="#sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf" class="headerlink" title="sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf"></a>sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf</h2><ul>
+<li style="list-style: none"><input type="checkbox"> TODO</li>
+</ul>
+<h2 id="sortedUniq、sortedUniqBy"><a href="#sortedUniq、sortedUniqBy" class="headerlink" title="sortedUniq、sortedUniqBy"></a>sortedUniq、sortedUniqBy</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">_.sortedUniq([<span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>]);</span><br><span class="line"><span class="comment">// =&gt; [1, 2]</span></span><br><span class="line"></span><br><span class="line">_.sortedUniqBy([<span class="number">1.1</span>, <span class="number">1.2</span>, <span class="number">2.3</span>, <span class="number">2.4</span>], <span class="built_in">Math</span>.floor);</span><br><span class="line"><span class="comment">// =&gt; [1.1, 2.3]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong><br>二者都是用到一个工具函数<code>baseSortedUniq</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `sortedUniq` and `sortedUniqBy`.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new duplicate free array.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseSortedUniq</span>(<span class="params">array, iteratee</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> seen;</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">let</span> resIndex = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> &#123; length &#125; = array;</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">const</span> value = array[index],</span><br><span class="line">      computed = iteratee ? iteratee(value) : value;</span><br><span class="line">    <span class="comment">// eq函数可以处理NaN的判等</span></span><br><span class="line">    <span class="keyword">if</span> (!index || !eq(computed, seen)) &#123;</span><br><span class="line">      <span class="comment">// seen是一个游标，记录着遍历array过程中，当前最后一个与它之前元素不相等的元素。</span></span><br><span class="line">      <span class="comment">// 如array=[1,2,3,3,3,4,4,5],在index = 5时，seen就是3（array[2]），因为array[2]=3，array[1] =2。</span></span><br><span class="line">      seen = computed;</span><br><span class="line">      result[resIndex++] = value === <span class="number">0</span> ? <span class="number">0</span> : value;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中的<code>eq</code>函数值得注意，它考虑了<code>NaN</code>的情况：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Performs a</span></span><br><span class="line"><span class="comment"> * [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)</span></span><br><span class="line"><span class="comment"> * comparison between two values to determine if they are equivalent.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @since 4.0.0</span></span><br><span class="line"><span class="comment"> * @category Lang</span></span><br><span class="line"><span class="comment"> * @param &#123;*&#125; value The value to compare.</span></span><br><span class="line"><span class="comment"> * @param &#123;*&#125; other The other value to compare.</span></span><br><span class="line"><span class="comment"> * @returns &#123;boolean&#125; Returns `true` if the values are equivalent, else `false`.</span></span><br><span class="line"><span class="comment"> * @example</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * const object = &#123; 'a': 1 &#125;</span></span><br><span class="line"><span class="comment"> * const other = &#123; 'a': 1 &#125;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * eq(object, object)</span></span><br><span class="line"><span class="comment"> * // =&gt; true</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * eq(object, other)</span></span><br><span class="line"><span class="comment"> * // =&gt; false</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * eq('a', 'a')</span></span><br><span class="line"><span class="comment"> * // =&gt; true</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * eq('a', Object('a'))</span></span><br><span class="line"><span class="comment"> * // =&gt; false</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * eq(NaN, NaN)</span></span><br><span class="line"><span class="comment"> * // =&gt; true</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">eq</span>(<span class="params">value, other</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> value === other || (value !== value &amp;&amp; other !== other);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="union、unionBy、unionWith、uniq、uniqBy、uniqWith"><a href="#union、unionBy、unionWith、uniq、uniqBy、uniqWith" class="headerlink" title="union、unionBy、unionWith、uniq、uniqBy、uniqWith"></a>union、unionBy、unionWith、uniq、uniqBy、uniqWith</h2><p>union 取并集、uniq 去重</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">_.union([<span class="number">2</span>], [<span class="number">1</span>, <span class="number">2</span>]);</span><br><span class="line"><span class="comment">// =&gt; [2, 1]</span></span><br><span class="line"></span><br><span class="line">_.uniqBy([<span class="number">2.1</span>, <span class="number">1.2</span>, <span class="number">2.3</span>], <span class="built_in">Math</span>.floor);</span><br><span class="line"><span class="comment">// =&gt; [2.1, 1.2]</span></span><br><span class="line"><span class="keyword">var</span> objects = [&#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">2</span>, <span class="attr">y</span>: <span class="number">1</span> &#125;];</span><br><span class="line"><span class="keyword">var</span> others = [&#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">1</span> &#125;, &#123; <span class="attr">x</span>: <span class="number">1</span>, <span class="attr">y</span>: <span class="number">2</span> &#125;];</span><br><span class="line">_.unionWith(objects, others, _.isEqual);</span><br><span class="line"><span class="comment">// =&gt; [&#123; 'x': 1, 'y': 2 &#125;, &#123; 'x': 2, 'y': 1 &#125;, &#123; 'x': 1, 'y': 1 &#125;]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong><br>union 操作符的思路都是先将所有参数数组打平合并到一个大数组里，然后对这个大数组去重。<br>uniq 的参数直接就是一个大数组</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">union</span>(<span class="params">...arrays</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> baseUniq(baseFlatten(arrays, <span class="number">1</span>, isArrayLikeObject, <span class="literal">true</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Used as the size to enable large array optimizations. */</span></span><br><span class="line"><span class="keyword">const</span> LARGE_ARRAY_SIZE = <span class="number">200</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `uniqBy`.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [comparator] The comparator invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new duplicate free array.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseUniq</span>(<span class="params">array, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">let</span> includes = arrayIncludes;</span><br><span class="line">  <span class="keyword">let</span> isCommon = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> &#123; length &#125; = array;</span><br><span class="line">  <span class="keyword">const</span> result = [];</span><br><span class="line">  <span class="comment">// 一个缓存，用于判断array当前迭代的元素在此前是否出现</span></span><br><span class="line">  <span class="keyword">let</span> seen = result;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (comparator) &#123;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">    includes = arrayIncludesWith;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (length &gt;= LARGE_ARRAY_SIZE) &#123;</span><br><span class="line">    <span class="keyword">const</span> set = iteratee ? <span class="literal">null</span> : createSet(array);</span><br><span class="line">    <span class="keyword">if</span> (set) &#123;</span><br><span class="line">      <span class="keyword">return</span> setToArray(set); <span class="comment">// 如果Set可用，直接利用Set转数组来去重</span></span><br><span class="line">    &#125;</span><br><span class="line">    isCommon = <span class="literal">false</span>;</span><br><span class="line">    includes = cacheHas;</span><br><span class="line">    seen = <span class="keyword">new</span> SetCache();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 如果有iteratee，那么seen中存放的是iteratee转换过的数据，而result中存放的是最终的原始数据</span></span><br><span class="line">    seen = iteratee ? [] : result;</span><br><span class="line">  &#125;</span><br><span class="line">  outer: <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">let</span> value = array[index];</span><br><span class="line">    <span class="keyword">const</span> computed = iteratee ? iteratee(value) : value;</span><br><span class="line"></span><br><span class="line">    value = comparator || value !== <span class="number">0</span> ? value : <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (isCommon &amp;&amp; computed === computed) &#123;</span><br><span class="line">      <span class="comment">// 查看computed是否已经在它之前出现过</span></span><br><span class="line">      <span class="keyword">let</span> seenIndex = seen.length;</span><br><span class="line">      <span class="keyword">while</span> (seenIndex--) &#123;</span><br><span class="line">        <span class="keyword">if</span> (seen[seenIndex] === computed) &#123;</span><br><span class="line">          <span class="keyword">continue</span> outer;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (iteratee) &#123;</span><br><span class="line">        seen.push(computed); <span class="comment">// 存放转换后数据</span></span><br><span class="line">      &#125;</span><br><span class="line">      result.push(value); <span class="comment">// 存放原始数据</span></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!includes(seen, computed, comparator)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (seen !== result) &#123;</span><br><span class="line">        seen.push(computed);</span><br><span class="line">      &#125;</span><br><span class="line">      result.push(value);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="zip、unzip"><a href="#zip、unzip" class="headerlink" title="zip、unzip"></a>zip、unzip</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> zipped = _.zip([<span class="string">'a'</span>, <span class="string">'b'</span>], [<span class="number">1</span>, <span class="number">2</span>], [<span class="literal">true</span>, <span class="literal">false</span>]);</span><br><span class="line"><span class="comment">// =&gt; [['a', 1, true], ['b', 2, false]]</span></span><br><span class="line">_.unzip(zipped);</span><br><span class="line"><span class="comment">// =&gt; [['a', 'b'], [1, 2], [true, false]]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 注意这里，</span></span><br><span class="line"><span class="comment">// _.unzip([['a', 'b'], [1, 2], [true, false]])</span></span><br><span class="line"><span class="comment">// =&gt; [['a', 1, true], ['b', 2, false]]</span></span><br><span class="line"><span class="comment">// 这个结果直接与_.zip(['a', 'b'], [1, 2], [true, false])相同~</span></span><br><span class="line"><span class="comment">// 即 zip(arr1,arr2,arr3) === unzip([arr1,arr2,arr3])</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * This method is like `zip` except that it accepts an array of grouped</span></span><br><span class="line"><span class="comment"> * elements and creates an array regrouping the elements to their pre-zip</span></span><br><span class="line"><span class="comment"> * configuration.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @since 1.2.0</span></span><br><span class="line"><span class="comment"> * @category Array</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; array The array of grouped elements to process.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new array of regrouped elements.</span></span><br><span class="line"><span class="comment"> * @see unzipWith, zip, zipObject, zipObjectDeep, zipWith</span></span><br><span class="line"><span class="comment"> * @example</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * const zipped = zip(['a', 'b'], [1, 2], [true, false])</span></span><br><span class="line"><span class="comment"> * // =&gt; [['a', 1, true], ['b', 2, false]]</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * unzip(zipped)</span></span><br><span class="line"><span class="comment"> * // =&gt; [['a', 'b'], [1, 2], [true, false]]</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unzip</span>(<span class="params">array</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!(array != <span class="literal">null</span> &amp;&amp; array.length)) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> length = <span class="number">0</span>; <span class="comment">// 所有子数组中最大的长度</span></span><br><span class="line">  <span class="comment">// 过滤所有非数组</span></span><br><span class="line">  array = filter(array, group =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (isArrayLikeObject(group)) &#123;</span><br><span class="line">      length = <span class="built_in">Math</span>.max(group.length, length);</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">const</span> result = <span class="keyword">new</span> <span class="built_in">Array</span>(length);</span><br><span class="line">  <span class="comment">// result数组中每一个元素均为一个数组，这个子数组是由array中每个元素对应位置的元素组成的</span></span><br><span class="line">  <span class="comment">// 联想rxjs中的zip、unzip操作符</span></span><br><span class="line">  <span class="comment">//     ----a1----------a2-----------a3---</span></span><br><span class="line">  <span class="comment">//     ----b1----------b2-----------b3---</span></span><br><span class="line">  <span class="comment">//     ----c1----------c2-----------c3---</span></span><br><span class="line">  <span class="comment">//            |               ^</span></span><br><span class="line">  <span class="comment">//           zip              |</span></span><br><span class="line">  <span class="comment">//            |             unzip</span></span><br><span class="line">  <span class="comment">//            v               |</span></span><br><span class="line">  <span class="comment">//     ---[a1,b1,c1]---[a2,b2,c2]---[a3,b3,c3]---</span></span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    result[index] = map(array, baseProperty(index));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">zip</span>(<span class="params">...arrays</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> unzip(arrays);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>unzipWith、zipWith</strong></p>
+<p><strong>源码</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 先将array进行unzip，然后针对结果集数组的每个子元素应用iteratee即可。</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">unzipWith</span>(<span class="params">array, iteratee</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!(array != <span class="literal">null</span> &amp;&amp; array.length)) &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> result = unzip(array);</span><br><span class="line">  <span class="keyword">return</span> map(result, group =&gt; iteratee.apply(<span class="literal">undefined</span>, group));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">zipWith</span>(<span class="params">...arrays</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 参数校验及预处理</span></span><br><span class="line">  <span class="keyword">const</span> length = arrays.length;</span><br><span class="line">  <span class="keyword">let</span> iteratee = length &gt; <span class="number">1</span> ? arrays[length - <span class="number">1</span>] : <span class="literal">undefined</span>;</span><br><span class="line">  iteratee = <span class="keyword">typeof</span> iteratee == <span class="string">'function'</span> ? (arrays.pop(), iteratee) : <span class="literal">undefined</span>;</span><br><span class="line">  <span class="keyword">return</span> unzipWith(arrays, iteratee);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="zipObjectDeep"><a href="#zipObjectDeep" class="headerlink" title="zipObjectDeep"></a>zipObjectDeep</h2><ul>
+<li style="list-style: none"><input type="checkbox"> TODO</li>
+</ul>
+<h2 id="xor、xorBy、xorWith"><a href="#xor、xorBy、xorWith" class="headerlink" title="xor、xorBy、xorWith"></a>xor、xorBy、xorWith</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">_.xor([<span class="number">2</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">3</span>]);</span><br><span class="line"><span class="comment">// =&gt; [1, 3]</span></span><br><span class="line"></span><br><span class="line">_.xor([<span class="number">2</span>, <span class="number">1</span>], [<span class="number">2</span>, <span class="number">3</span>]，[<span class="number">3</span>,<span class="number">4</span>]);</span><br><span class="line"><span class="comment">// =&gt; [1,4]</span></span><br><span class="line"></span><br><span class="line">_.xorBy([<span class="number">2.1</span>, <span class="number">1.2</span>], [<span class="number">2.3</span>, <span class="number">3.4</span>], <span class="built_in">Math</span>.floor);</span><br><span class="line"><span class="comment">// =&gt; [1.2, 3.4]</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> objects = [&#123; <span class="string">'x'</span>: <span class="number">1</span>, <span class="string">'y'</span>: <span class="number">2</span> &#125;, &#123; <span class="string">'x'</span>: <span class="number">2</span>, <span class="string">'y'</span>: <span class="number">1</span> &#125;];</span><br><span class="line"><span class="keyword">var</span> others = [&#123; <span class="string">'x'</span>: <span class="number">1</span>, <span class="string">'y'</span>: <span class="number">1</span> &#125;, &#123; <span class="string">'x'</span>: <span class="number">1</span>, <span class="string">'y'</span>: <span class="number">2</span> &#125;];</span><br><span class="line"></span><br><span class="line">_.xorWith(objects, others, _.isEqual);</span><br><span class="line"><span class="comment">// =&gt; [&#123; 'x': 2, 'y': 1 &#125;, &#123; 'x': 1, 'y': 1 &#125;]</span></span><br></pre></td></tr></table></figure>
+<p><strong>源码</strong></p>
+<p>底层都是用的同一个<code>baseXor</code>函数</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of methods like `xor` which accepts an array of</span></span><br><span class="line"><span class="comment"> * arrays to inspect.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;Array&#125; arrays The arrays to inspect.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [iteratee] The iteratee invoked per element.</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; [comparator] The comparator invoked per element.</span></span><br><span class="line"><span class="comment"> * @returns &#123;Array&#125; Returns the new array of values.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseXor</span>(<span class="params">arrays, iteratee, comparator</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> length = arrays.length;</span><br><span class="line">  <span class="keyword">if</span> (length &lt; <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> length ? baseUniq(arrays[<span class="number">0</span>]) : [];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">const</span> result = <span class="keyword">new</span> <span class="built_in">Array</span>(length);</span><br><span class="line"></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * result[index]记录arrays[index]与其他所有数组的差异</span></span><br><span class="line"><span class="comment">   * 例如arrays=[[2,1],[2,3],[3,4]]，result[0]的计算步骤，</span></span><br><span class="line"><span class="comment">   * 先比较  [2,1]和[2,3]的差异，得到[1]</span></span><br><span class="line"><span class="comment">   * 再比较  [1]和[3]的差异， 结果还是[1]. 那么result[0] = [1];</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * 同理可得result[1] = []; result[2] = [4];</span></span><br><span class="line"><span class="comment">   * 最终函数的结果就是[1,4].</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    <span class="keyword">const</span> array = arrays[index];</span><br><span class="line">    <span class="keyword">let</span> othIndex = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (++othIndex &lt; length) &#123;</span><br><span class="line">      <span class="keyword">if</span> (othIndex != index) &#123;</span><br><span class="line">        result[index] = baseDifference(result[index] || array, arrays[othIndex], iteratee, comparator);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// result打平去重</span></span><br><span class="line">  <span class="keyword">return</span> baseUniq(baseFlatten(result, <span class="number">1</span>), iteratee, comparator);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lodash/" rel="tag"># lodash</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/19/css-learning-at-w3school/" rel="next" title="css学习笔记之w3school启蒙">
+                <i class="fa fa-chevron-left"></i> css学习笔记之w3school启蒙
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/19/lodash-trick/" rel="prev" title="lodash源码学习之技巧篇">
+                lodash源码学习之技巧篇 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#源码阅读经验"><span class="nav-number">1.</span> <span class="nav-text">源码阅读经验</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Array"><span class="nav-number">2.</span> <span class="nav-text">Array</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#concat"><span class="nav-number">2.1.</span> <span class="nav-text">concat</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#difference"><span class="nav-number">2.2.</span> <span class="nav-text">difference</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dropRightWhile、dropWhile"><span class="nav-number">2.3.</span> <span class="nav-text">dropRightWhile、dropWhile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#flattern、flatternDeep"><span class="nav-number">2.4.</span> <span class="nav-text">flattern、flatternDeep</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#indexOf"><span class="nav-number">2.5.</span> <span class="nav-text">indexOf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#intersection、intersectionBy、intersectionWith"><span class="nav-number">2.6.</span> <span class="nav-text">intersection、intersectionBy、intersectionWith</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pull、pullAll、pullAllBy、pullAllWith"><span class="nav-number">2.7.</span> <span class="nav-text">pull、pullAll、pullAllBy、pullAllWith</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pullAt"><span class="nav-number">2.8.</span> <span class="nav-text">pullAt</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf"><span class="nav-number">2.9.</span> <span class="nav-text">sortedIndex、sortedIndexBy、sortedIndexOf、sortedLastIndex、sortedLastIndexBy、sortedLastIndexOf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sortedUniq、sortedUniqBy"><span class="nav-number">2.10.</span> <span class="nav-text">sortedUniq、sortedUniqBy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#union、unionBy、unionWith、uniq、uniqBy、uniqWith"><span class="nav-number">2.11.</span> <span class="nav-text">union、unionBy、unionWith、uniq、uniqBy、uniqWith</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zip、unzip"><span class="nav-number">2.12.</span> <span class="nav-text">zip、unzip</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zipObjectDeep"><span class="nav-number">2.13.</span> <span class="nav-text">zipObjectDeep</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xor、xorBy、xorWith"><span class="nav-number">2.14.</span> <span class="nav-text">xor、xorBy、xorWith</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/05/19/lodash-array/';
+          this.page.identifier = '2018/05/19/lodash-array/';
+          this.page.title = 'lodash源码学习之Array篇';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Vue,javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前面说到模板编译完会生成一个render函数，这篇文章要讲的是如何根据render函数生成对应的vnode。入口代码位于src/core/instance/render.js的Vue.prototype._render： 1vnode = render.call(vm._renderProxy, vm.$createElement); 一个render函数的格式在前面也说到过，类似于： 123wi">
+<meta name="keywords" content="Vue,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析8-render函数生成vnode">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-8-render-to-vnode/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前面说到模板编译完会生成一个render函数，这篇文章要讲的是如何根据render函数生成对应的vnode。入口代码位于src/core/instance/render.js的Vue.prototype._render： 1vnode = render.call(vm._renderProxy, vm.$createElement); 一个render函数的格式在前面也说到过，类似于： 123wi">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.737Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析8-render函数生成vnode">
+<meta name="twitter:description" content="前面说到模板编译完会生成一个render函数，这篇文章要讲的是如何根据render函数生成对应的vnode。入口代码位于src/core/instance/render.js的Vue.prototype._render： 1vnode = render.call(vm._renderProxy, vm.$createElement); 一个render函数的格式在前面也说到过，类似于： 123wi">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-8-render-to-vnode/">
+
+
+
+
+
+  <title>Vue源码解析8-render函数生成vnode | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-8-render-to-vnode/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析8-render函数生成vnode</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-04T16:20:00+08:00">
+                2018-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/04/vue-sourcecode-8-render-to-vnode/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/04/vue-sourcecode-8-render-to-vnode/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>前面说到模板编译完会生成一个<code>render</code>函数，这篇文章要讲的是如何根据<code>render</code>函数生成对应的<code>vnode</code>。入口代码位于<code>src/core/instance/render.js</code>的<code>Vue.prototype._render</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vnode = render.call(vm._renderProxy, vm.$createElement);</span><br></pre></td></tr></table></figure>
+<p>一个<code>render</code>函数的格式在前面也说到过，类似于：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> _c(<span class="string">'div'</span>, &#123; <span class="attr">attrs</span>: &#123; <span class="attr">id</span>: <span class="string">'app'</span> &#125; &#125;, [_c(<span class="string">'a'</span>, &#123; <span class="attr">attrs</span>: &#123; <span class="attr">href</span>: url &#125; &#125;, [_v(_s(message))]), _v(<span class="string">' '</span>), _m(<span class="number">0</span>)]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看到这里调用了<code>vm._c</code>，而<code>$createElement</code>是我们自己编写<code>render</code>函数作为参数传递的。看看<code>$createElement</code>及<code>_c</code>的格式：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// bind the createElement fn to this instance</span></span><br><span class="line"><span class="comment">// so that we get proper render context inside it.</span></span><br><span class="line"><span class="comment">// args order: tag, data, children, normalizationType, alwaysNormalize</span></span><br><span class="line"><span class="comment">// internal version is used by render functions compiled from templates</span></span><br><span class="line">vm._c = <span class="function">(<span class="params">a, b, c, d</span>) =&gt;</span> createElement(vm, a, b, c, d, <span class="literal">false</span>);</span><br><span class="line"><span class="comment">// normalization is always applied for the public version, used in</span></span><br><span class="line"><span class="comment">// user-written render functions.</span></span><br><span class="line">vm.$createElement = <span class="function">(<span class="params">a, b, c, d</span>) =&gt;</span> createElement(vm, a, b, c, d, <span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+<p>二者底层都是调用的<code>createElement</code>这个函数，唯一差别在于最后一个参数<code>alwaysNormalize</code>的赋值不一样，这个参数表示是否做深层归一化，后面会说。</p>
+<p>不知道大家有没有注意到<code>render</code>函数的细节：它是被<code>with(this)</code>包围起来的，同时在调用<code>render</code>时传入了<code>vm._renderProxy</code>。暂时可以把<code>vm._renderProxy</code>当做<code>vm</code>，这样我们<code>render</code>函数内部所有变量如<code>url</code>都是在<code>vm</code>上来查找，<strong>这也就是模板上的变量如何与我们组件中的数据如何关联起来的关键!</strong></p>
+<p>至此，我们知道生成<code>vnode</code>的绝大部分逻辑都在这个<code>createElement</code>里。不过在此之前还是说一下<code>vnode</code>是个什么。</p>
+<h1 id="vnode"><a href="#vnode" class="headerlink" title="vnode"></a>vnode</h1><p>它的构造函数位于<code>src/core/vdom/vnode.js</code>，含有的成员变量非常多，大部分变量已经加了注释。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">VNode</span> </span>&#123;</span><br><span class="line">  tag: string | <span class="keyword">void</span>;</span><br><span class="line">  data: VNodeData | <span class="keyword">void</span>;</span><br><span class="line">  children: ?<span class="built_in">Array</span>&lt;VNode&gt;;</span><br><span class="line">  text: string | <span class="keyword">void</span>;</span><br><span class="line">  elm: Node | <span class="keyword">void</span>;</span><br><span class="line">  ns: string | <span class="keyword">void</span>; <span class="comment">// 命名空间</span></span><br><span class="line">  context: Component | <span class="keyword">void</span>; <span class="comment">// rendered in this component's scope</span></span><br><span class="line">  key: string | number | <span class="keyword">void</span>;</span><br><span class="line">  componentOptions: VNodeComponentOptions | <span class="keyword">void</span>;</span><br><span class="line">  componentInstance: Component | <span class="keyword">void</span>; <span class="comment">// component instance</span></span><br><span class="line">  parent: VNode | <span class="keyword">void</span>; <span class="comment">// component placeholder node</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// strictly internal</span></span><br><span class="line">  raw: boolean; <span class="comment">// contains raw HTML? (server only)</span></span><br><span class="line">  isStatic: boolean; <span class="comment">// hoisted static node</span></span><br><span class="line">  isRootInsert: boolean; <span class="comment">// necessary for enter transition check</span></span><br><span class="line">  isComment: boolean; <span class="comment">// empty comment placeholder?</span></span><br><span class="line">  isCloned: boolean; <span class="comment">// is a cloned node?</span></span><br><span class="line">  isOnce: boolean; <span class="comment">// is a v-once node?</span></span><br><span class="line">  asyncFactory: <span class="built_in">Function</span> | <span class="keyword">void</span>; <span class="comment">// async component factory function</span></span><br><span class="line">  asyncMeta: <span class="built_in">Object</span> | <span class="keyword">void</span>;</span><br><span class="line">  isAsyncPlaceholder: boolean;</span><br><span class="line">  ssrContext: <span class="built_in">Object</span> | <span class="keyword">void</span>;</span><br><span class="line">  fnContext: Component | <span class="keyword">void</span>; <span class="comment">// real context vm for functional nodes</span></span><br><span class="line">  fnOptions: ?ComponentOptions; <span class="comment">// for SSR caching</span></span><br><span class="line">  fnScopeId: ?string; <span class="comment">// functional scope id support</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">constructor</span>(</span><br><span class="line">    tag?: string, // 标签名</span><br><span class="line">    data?: VNodeData, // 结点相关数据</span><br><span class="line">    children?: ?Array&lt;VNode&gt;, // 子结点对象数组</span><br><span class="line">    text?: string, // 文本内容</span><br><span class="line">    elm?: Node, // 原生节点元素</span><br><span class="line">    context?: Component, // context指当前元素所在的Vue实例</span><br><span class="line">    componentOptions?: VNodeComponentOptions, // VNode对象如果对应的是一个自定义组件，componentOptions保存组件相关事件、props数据等</span><br><span class="line">    asyncFactory?: Function,</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">this</span>.tag = tag;</span><br><span class="line">    <span class="keyword">this</span>.data = data;</span><br><span class="line">    <span class="keyword">this</span>.children = children;</span><br><span class="line">    <span class="keyword">this</span>.text = text;</span><br><span class="line">    <span class="keyword">this</span>.elm = elm;</span><br><span class="line">    <span class="keyword">this</span>.ns = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.context = context;</span><br><span class="line">    <span class="keyword">this</span>.fnContext = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.fnOptions = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.fnScopeId = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.key = data &amp;&amp; data.key;</span><br><span class="line">    <span class="keyword">this</span>.componentOptions = componentOptions;</span><br><span class="line">    <span class="keyword">this</span>.componentInstance = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.parent = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.raw = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.isStatic = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.isRootInsert = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">this</span>.isComment = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.isCloned = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.isOnce = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">this</span>.asyncFactory = asyncFactory;</span><br><span class="line">    <span class="keyword">this</span>.asyncMeta = <span class="literal">undefined</span>;</span><br><span class="line">    <span class="keyword">this</span>.isAsyncPlaceholder = <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="createElement"><a href="#createElement" class="headerlink" title="createElement"></a>createElement</h1><p>位于<code>src/core/vdom/create-element.js</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> SIMPLE_NORMALIZE = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">const</span> ALWAYS_NORMALIZE = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// wrapper function for providing a more flexible interface</span></span><br><span class="line"><span class="comment">// without getting yelled at by flow</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createElement</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  context: Component,</span></span></span><br><span class="line"><span class="function"><span class="params">  tag: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  data: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  children: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  normalizationType: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  alwaysNormalize: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">VNode</span> | <span class="title">Array</span>&lt;<span class="title">VNode</span>&gt; </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(data) || isPrimitive(data)) &#123;</span><br><span class="line">    normalizationType = children;</span><br><span class="line">    children = data;</span><br><span class="line">    data = <span class="literal">undefined</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (isTrue(alwaysNormalize)) &#123;</span><br><span class="line">    normalizationType = ALWAYS_NORMALIZE;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> _createElement(context, tag, data, children, normalizationType);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所以可以看出来<code>$createElement</code>对应的<code>normalizationType</code>值为 2，<code>_c</code>对应的是 1。这个函数只是针对性的处理了参数传递并没有实质逻辑，干活的是<code>_createElement</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">_createElement</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  context: Component,</span></span></span><br><span class="line"><span class="function"><span class="params">  tag?: string | Class&lt;Component&gt; | Function | Object,</span></span></span><br><span class="line"><span class="function"><span class="params">  data?: VNodeData,</span></span></span><br><span class="line"><span class="function"><span class="params">  children?: any,</span></span></span><br><span class="line"><span class="function"><span class="params">  normalizationType?: number,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">VNode</span> | <span class="title">Array</span>&lt;<span class="title">VNode</span>&gt; </span>&#123;</span><br><span class="line">  <span class="comment">// object syntax in v-bind</span></span><br><span class="line">  <span class="keyword">if</span> (isDef(data) &amp;&amp; isDef(data.is)) &#123;</span><br><span class="line">    tag = data.is;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!tag) &#123;</span><br><span class="line">    <span class="comment">// in case of component :is set to falsy value</span></span><br><span class="line">    <span class="keyword">return</span> createEmptyVNode();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// support single function children as default scoped slot</span></span><br><span class="line">  <span class="comment">// 如果子元素只有一个函数，则作为默认的slot。slot流程很长之后单独说。</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(children) &amp;&amp; <span class="keyword">typeof</span> children[<span class="number">0</span>] === <span class="string">'function'</span>) &#123;</span><br><span class="line">    data = data || &#123;&#125;;</span><br><span class="line">    data.scopedSlots = &#123; <span class="attr">default</span>: children[<span class="number">0</span>] &#125;;</span><br><span class="line">    children.length = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 处理children归一化</span></span><br><span class="line">  <span class="keyword">if</span> (normalizationType === ALWAYS_NORMALIZE) &#123;</span><br><span class="line">    children = normalizeChildren(children); <span class="comment">// 完全归一化为一层</span></span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (normalizationType === SIMPLE_NORMALIZE) &#123;</span><br><span class="line">    children = simpleNormalizeChildren(children); <span class="comment">// 只归一化第一层</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> vnode, ns;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> tag === <span class="string">'string'</span>) &#123;</span><br><span class="line">    <span class="keyword">let</span> Ctor;</span><br><span class="line">    ns = (context.$vnode &amp;&amp; context.$vnode.ns) || config.getTagNamespace(tag); <span class="comment">// 命名空间</span></span><br><span class="line">    <span class="keyword">if</span> (config.isReservedTag(tag)) &#123;</span><br><span class="line">      <span class="comment">// platform built-in elements，平台保留标签名</span></span><br><span class="line">      vnode = <span class="keyword">new</span> VNode(config.parsePlatformTagName(tag), data, children, <span class="literal">undefined</span>, <span class="literal">undefined</span>, context);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDef((Ctor = resolveAsset(context.$options, <span class="string">'components'</span>, tag)))) &#123;</span><br><span class="line">      <span class="comment">// resolveAsset在context.$options.components中查找key为tag的</span></span><br><span class="line">      <span class="comment">// component，处理自定义组件</span></span><br><span class="line">      vnode = createComponent(Ctor, data, context, children, tag);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// unknown or unlisted namespaced elements</span></span><br><span class="line">      <span class="comment">// check at runtime because it may get assigned a namespace when its</span></span><br><span class="line">      <span class="comment">// parent normalizes children</span></span><br><span class="line">      vnode = <span class="keyword">new</span> VNode(tag, data, children, <span class="literal">undefined</span>, <span class="literal">undefined</span>, context);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// direct component options / constructor</span></span><br><span class="line">    vnode = createComponent(tag, data, context, children);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(vnode)) &#123;</span><br><span class="line">    <span class="keyword">return</span> vnode;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDef(vnode)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(ns)) applyNS(vnode, ns);</span><br><span class="line">    <span class="keyword">if</span> (isDef(data)) registerDeepBindings(data);</span><br><span class="line">    <span class="keyword">return</span> vnode;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> createEmptyVNode();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>data</code>参数就是我们在<code>generate -&gt; genData</code>中的返回值。 归一化涉及到两个函数<code>normalizeChildren</code>和<code>simpleNormalizeChildren</code>，会单独用一篇文章来描述。</p>
+<p>后面判断了 tag 的类型，如果是字符串，那么分为 3 种情况：</p>
+<ol>
+<li><p>如果是平台保留标签名，则直接创建 vnode 对象</p>
+</li>
+<li><p>如果<code>resolveAsset(context.$options, &#39;components&#39;, tag)</code>能够拿到值，那么执行<code>createComponent</code>函数。<code>resolveAsset</code>其实就是在获取我们的自定义组件选项，同样<code>createComponent</code>也是在生成我们自定义组件的<code>vnode</code>。<code>resolveAsset</code>的逻辑比较简单，获取通过各种方式去尝试获取<code>vm.$options[&#39;components&#39;][tag]</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Resolve an asset.</span></span><br><span class="line"><span class="comment"> * This function is used because child instances need access</span></span><br><span class="line"><span class="comment"> * to assets defined in its ancestor chain.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">resolveAsset</span>(<span class="params">options: Object, type: string, id: string, warnMissing?: boolean</span>): <span class="title">any</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">typeof</span> id !== <span class="string">'string'</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> assets = options[type];</span><br><span class="line">  <span class="comment">// check local registration variations first</span></span><br><span class="line">  <span class="keyword">if</span> (hasOwn(assets, id)) <span class="keyword">return</span> assets[id];</span><br><span class="line">  <span class="keyword">const</span> camelizedId = camelize(id);</span><br><span class="line">  <span class="keyword">if</span> (hasOwn(assets, camelizedId)) <span class="keyword">return</span> assets[camelizedId];</span><br><span class="line">  <span class="keyword">const</span> PascalCaseId = capitalize(camelizedId);</span><br><span class="line">  <span class="keyword">if</span> (hasOwn(assets, PascalCaseId)) <span class="keyword">return</span> assets[PascalCaseId];</span><br><span class="line">  <span class="keyword">const</span> res = assets[id] || assets[camelizedId] || assets[PascalCaseId];</span><br><span class="line">  <span class="keyword">if</span> (process.env.NODE_ENV !== <span class="string">'production'</span> &amp;&amp; warnMissing &amp;&amp; !res) &#123;</span><br><span class="line">    warn(<span class="string">'Failed to resolve '</span> + type.slice(<span class="number">0</span>, <span class="number">-1</span>) + <span class="string">': '</span> + id, options);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>如果既不是平台保留标签也不是自定义组件标签，那么也是直接创建<code>vnode</code></p>
+</li>
+</ol>
+<p>如果<code>tag</code>的类型不是字符串，那么也是当做自定义组件来处理。最后返回我们的<code>vnode</code>。现在我们就是剩下<code>createComponent</code>这一种情况需要了解。</p>
+<h1 id="createComponent-生成自定义组件-vnode"><a href="#createComponent-生成自定义组件-vnode" class="headerlink" title="createComponent 生成自定义组件 vnode"></a>createComponent 生成自定义组件 vnode</h1><p>代码位于<code>src/core/vdom/create-component.js</code>，有点长：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> componentVNodeHooks = &#123;</span><br><span class="line">  init(vnode: VNodeWithData, <span class="attr">hydrating</span>: boolean): ?boolean &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">  prepatch(oldVnode: MountedComponentVNode, <span class="attr">vnode</span>: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">  insert(vnode: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">  destroy(vnode: MountedComponentVNode) &#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> hooksToMerge = <span class="built_in">Object</span>.keys(componentVNodeHooks);</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">createComponent</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  Ctor: Class&lt;Component&gt; | Function | Object | void,</span></span></span><br><span class="line"><span class="function"><span class="params">  data: ?VNodeData,</span></span></span><br><span class="line"><span class="function"><span class="params">  context: Component,</span></span></span><br><span class="line"><span class="function"><span class="params">  children: ?Array&lt;VNode&gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">  tag?: string,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">VNode</span> | <span class="title">Array</span>&lt;<span class="title">VNode</span>&gt; | <span class="title">void</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> baseCtor = context.$options._base; <span class="comment">// 也就是Vue构造函数</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// plain options object: turn it into a constructor</span></span><br><span class="line">  <span class="keyword">if</span> (isObject(Ctor)) &#123;</span><br><span class="line">    Ctor = baseCtor.extend(Ctor); <span class="comment">// Vue.extend</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// async component暂时略去。。。</span></span><br><span class="line"></span><br><span class="line">  data = data || &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// resolve constructor options in case global mixins are applied after</span></span><br><span class="line">  <span class="comment">// component constructor creation</span></span><br><span class="line">  <span class="comment">// 递归合并父构造器上的选项到Ctor.options上</span></span><br><span class="line">  resolveConstructorOptions(Ctor);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// transform component v-model data into props &amp; events</span></span><br><span class="line">  <span class="keyword">if</span> (isDef(data.model)) &#123;</span><br><span class="line">    transformModel(Ctor.options, data);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// extract props</span></span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">   * 在子组件中获取父组件的方法和数据时，是通过props来传递的。</span></span><br><span class="line"><span class="comment">   * 使用的时候需要在子组件中定义props属性，来指定使用父组件传递的哪些数据，</span></span><br><span class="line"><span class="comment">   * 以及每个属性的类型是什么。</span></span><br><span class="line"><span class="comment">   *</span></span><br><span class="line"><span class="comment">   * extractPropsFromVNodeData就是获取定义的props数据，它们的值是</span></span><br><span class="line"><span class="comment">   * 父组件的tempalte中定义在子组件的节点上，然后通过genData收集放到了这里的data参数上</span></span><br><span class="line"><span class="comment">   */</span></span><br><span class="line">  <span class="keyword">const</span> propsData = extractPropsFromVNodeData(data, Ctor, tag);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// functional component函数式组件暂时略去。。。</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// extract listeners, since these needs to be treated as</span></span><br><span class="line">  <span class="comment">// child component listeners instead of DOM listeners</span></span><br><span class="line">  <span class="comment">// 保存的是我们绑定在元素上的事件，且该事件没有加native修饰符</span></span><br><span class="line">  <span class="keyword">const</span> listeners = data.on;</span><br><span class="line">  <span class="comment">// replace with listeners with .native modifier</span></span><br><span class="line">  <span class="comment">// so it gets processed during parent component patch.</span></span><br><span class="line">  <span class="comment">// 保存的是添加了native修饰符的事件</span></span><br><span class="line">  data.on = data.nativeOn;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isTrue(Ctor.options.abstract)) &#123;</span><br><span class="line">    <span class="comment">// abstract components do not keep anything</span></span><br><span class="line">    <span class="comment">// other than props &amp; listeners &amp; slot</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// work around flow</span></span><br><span class="line">    <span class="keyword">const</span> slot = data.slot;</span><br><span class="line">    data = &#123;&#125;;</span><br><span class="line">    <span class="keyword">if</span> (slot) &#123;</span><br><span class="line">      data.slot = slot;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// install component management hooks onto the placeholder node</span></span><br><span class="line">  installComponentHooks(data);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// return a placeholder vnode</span></span><br><span class="line">  <span class="keyword">const</span> name = Ctor.options.name || tag;</span><br><span class="line">  <span class="keyword">const</span> vnode = <span class="keyword">new</span> VNode(</span><br><span class="line">    <span class="string">`vue-component-<span class="subst">$&#123;Ctor.cid&#125;</span><span class="subst">$&#123;name ? <span class="string">`-<span class="subst">$&#123;name&#125;</span>`</span> : <span class="string">''</span>&#125;</span>`</span>,</span><br><span class="line">    data,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    <span class="literal">undefined</span>,</span><br><span class="line">    context,</span><br><span class="line">    &#123; Ctor, propsData, listeners, tag, children &#125;,</span><br><span class="line">    asyncFactory,</span><br><span class="line">  );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> vnode;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>大部分代码都打了注释，专门看看一些帮助函数。</p>
+<h2 id="extractPropsFromVNodeData"><a href="#extractPropsFromVNodeData" class="headerlink" title="extractPropsFromVNodeData"></a>extractPropsFromVNodeData</h2><p>用于解析子组件定义的<code>props</code>的实际值，这些实际值都是在父组件的<code>template</code>中放到子组件标签上的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 从attrs或props中抽取props配置的数据</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @author liubin.frontend</span></span><br><span class="line"><span class="comment"> * @export</span></span><br><span class="line"><span class="comment"> * @param &#123;VNodeData&#125; data genData的返回值</span></span><br><span class="line"><span class="comment"> * @param &#123;Class&lt;Component&gt;&#125; Ctor</span></span><br><span class="line"><span class="comment"> * @param &#123;string&#125; [tag]</span></span><br><span class="line"><span class="comment"> * @returns &#123;?Object&#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">export</span> <span class="function"><span class="keyword">function</span> <span class="title">extractPropsFromVNodeData</span>(<span class="params">data: VNodeData, Ctor: Class&lt;Component&gt;, tag?: string</span>): ?<span class="title">Object</span> </span>&#123;</span><br><span class="line">  <span class="comment">// we are only extracting raw values here.</span></span><br><span class="line">  <span class="comment">// validation and default values are handled in the child</span></span><br><span class="line">  <span class="comment">// component itself.</span></span><br><span class="line">  <span class="keyword">const</span> propOptions = Ctor.options.props;</span><br><span class="line">  <span class="keyword">if</span> (isUndef(propOptions)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> res = &#123;&#125;;</span><br><span class="line">  <span class="keyword">const</span> &#123; attrs, props &#125; = data;</span><br><span class="line">  <span class="keyword">if</span> (isDef(attrs) || isDef(props)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">const</span> key <span class="keyword">in</span> propOptions) &#123;</span><br><span class="line">      <span class="keyword">const</span> altKey = hyphenate(key);</span><br><span class="line">      checkProp(res, props, key, altKey, <span class="literal">true</span>) || checkProp(res, attrs, key, altKey, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将找到的值放到res中</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">checkProp</span>(<span class="params">res: Object, hash: ?Object, key: string, altKey: string, preserve: boolean</span>): <span class="title">boolean</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isDef(hash)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (hasOwn(hash, key)) &#123;</span><br><span class="line">      res[key] = hash[key];</span><br><span class="line">      <span class="keyword">if</span> (!preserve) &#123;</span><br><span class="line">        <span class="keyword">delete</span> hash[key];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (hasOwn(hash, altKey)) &#123;</span><br><span class="line">      res[key] = hash[altKey];</span><br><span class="line">      <span class="keyword">if</span> (!preserve) &#123;</span><br><span class="line">        <span class="keyword">delete</span> hash[altKey];</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们看到解析<code>props</code>的值是从子组件标签的<code>props</code>或<code>attrs</code>上找，而且优先级是<code>props</code>&gt;<code>attrs</code>.并且在<code>checkProps</code>中可以看到，如果在<code>props</code>中找到了，还会从<code>props</code>中删掉它。</p>
+<p>另外一个小细节是<code>altKey</code>是烤串形式书写的，所以这就要求<code>props</code>和<code>attrs</code>中的名称也是烤串形式的。</p>
+<h2 id="installComponentHooks"><a href="#installComponentHooks" class="headerlink" title="installComponentHooks"></a>installComponentHooks</h2><p>用于将 data 上的钩子和默认钩子进行合并，合并后的钩子再放回 data 上。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">installComponentHooks</span>(<span class="params">data: VNodeData</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> hooks = data.hook || (data.hook = &#123;&#125;);</span><br><span class="line">  <span class="comment">// hooksToMerge: [ 'init', 'prepatch', 'insert','destroy']</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; hooksToMerge.length; i++) &#123;</span><br><span class="line">    <span class="keyword">const</span> key = hooksToMerge[i];</span><br><span class="line">    <span class="keyword">const</span> existing = hooks[key];</span><br><span class="line">    <span class="keyword">const</span> toMerge = componentVNodeHooks[key];</span><br><span class="line">    <span class="keyword">if</span> (existing !== toMerge &amp;&amp; !(existing &amp;&amp; existing._merged)) &#123;</span><br><span class="line">      hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mergeHook</span>(<span class="params">f1: any, f2: any</span>): <span class="title">Function</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> merged = <span class="function">(<span class="params">a, b</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// flow complains about extra args which is why we use any</span></span><br><span class="line">    f1(a, b);</span><br><span class="line">    f2(a, b);</span><br><span class="line">  &#125;;</span><br><span class="line">  merged._merged = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> merged;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有 4 种默认钩子<code>init</code>、<code>prepatch</code>、<code>insert</code>、<code>destroy</code>，它们分别会在<code>patch</code>过程中的<code>vnode</code>对象初始化、<code>patch</code>之前、插入到<code>dom</code>中、<code>vnode</code>销毁的时候调用。合并后的钩子会再调用时依次执行两个子钩子。</p>
+<p>最后<code>createComponent</code>函数执行完后就会调用<code>VNode</code>的构造函数，返回的<code>vnode</code>的<code>tag</code>格式为<code>vue-component-cid-name</code>。至此我们的<code>render</code>生成<code>vnode</code>流程就讲完了。可以看到花费篇幅最大的还是自定义组件的 vnode 生成。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/03/vue-sourcecode-7-ast-to-render/" rel="next" title="Vue源码解析7-生成render函数">
+                <i class="fa fa-chevron-left"></i> Vue源码解析7-生成render函数
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/04/vue-sourcecode-9-children-normalization/" rel="prev" title="Vue源码解析9-children归一化">
+                Vue源码解析9-children归一化 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#vnode"><span class="nav-number">1.</span> <span class="nav-text">vnode</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#createElement"><span class="nav-number">2.</span> <span class="nav-text">createElement</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#createComponent-生成自定义组件-vnode"><span class="nav-number">3.</span> <span class="nav-text">createComponent 生成自定义组件 vnode</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#extractPropsFromVNodeData"><span class="nav-number">3.1.</span> <span class="nav-text">extractPropsFromVNodeData</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#installComponentHooks"><span class="nav-number">3.2.</span> <span class="nav-text">installComponentHooks</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-8-render-to-vnode/';
+          this.page.identifier = '2018/11/04/vue-sourcecode-8-render-to-vnode/';
+          this.page.title = 'Vue源码解析8-render函数生成vnode';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

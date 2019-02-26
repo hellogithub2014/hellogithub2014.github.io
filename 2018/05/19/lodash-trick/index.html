@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="lodash,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="baseGetTag 获取变量类型以前获取变量类型主要有 3 种方法： typeoftypeof 主要用来判断变量是否为原生值类型，对于引用类型其均返回Object: 12345678typeof 1; // &apos;number&apos;typeof &apos;1&apos;; // &apos;string&apos;typeof null; // &apos;object&apos;typeof undefined; // &apos;undefined&apos;typeof &amp;">
+<meta name="keywords" content="lodash">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lodash源码学习之技巧篇">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/05/19/lodash-trick/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="baseGetTag 获取变量类型以前获取变量类型主要有 3 种方法： typeoftypeof 主要用来判断变量是否为原生值类型，对于引用类型其均返回Object: 12345678typeof 1; // &apos;number&apos;typeof &apos;1&apos;; // &apos;string&apos;typeof null; // &apos;object&apos;typeof undefined; // &apos;undefined&apos;typeof &amp;">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.727Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="lodash源码学习之技巧篇">
+<meta name="twitter:description" content="baseGetTag 获取变量类型以前获取变量类型主要有 3 种方法： typeoftypeof 主要用来判断变量是否为原生值类型，对于引用类型其均返回Object: 12345678typeof 1; // &apos;number&apos;typeof &apos;1&apos;; // &apos;string&apos;typeof null; // &apos;object&apos;typeof undefined; // &apos;undefined&apos;typeof &amp;">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/05/19/lodash-trick/">
+
+
+
+
+
+  <title>lodash源码学习之技巧篇 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/05/19/lodash-trick/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">lodash源码学习之技巧篇</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-05-19T11:30:00+08:00">
+                2018-05-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/05/19/lodash-trick/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/05/19/lodash-trick/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="baseGetTag-获取变量类型"><a href="#baseGetTag-获取变量类型" class="headerlink" title="baseGetTag 获取变量类型"></a>baseGetTag 获取变量类型</h1><p>以前获取变量类型主要有 3 种方法：</p>
+<h3 id="typeof"><a href="#typeof" class="headerlink" title="typeof"></a>typeof</h3><p><code>typeof</code> 主要用来判断变量是否为原生值类型，对于引用类型其均返回<code>Object</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typeof</span> <span class="number">1</span>; <span class="comment">// 'number'</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="string">'1'</span>; <span class="comment">// 'string'</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="literal">null</span>; <span class="comment">// 'object'</span></span><br><span class="line"><span class="keyword">typeof</span> <span class="literal">undefined</span>; <span class="comment">// 'undefined'</span></span><br><span class="line"><span class="keyword">typeof</span> &#123;&#125;; <span class="comment">// 'object'</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">T</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">typeof</span> <span class="keyword">new</span> T(); <span class="comment">// 'object'</span></span><br></pre></td></tr></table></figure>
+<h3 id="instanceof"><a href="#instanceof" class="headerlink" title="instanceof"></a>instanceof</h3><p><code>instanceof</code> 用来确定左操作数是否在右操作数的原型链上，并且在有多个<code>frame</code>时可能会出问题。具体机制可参见<a href="https://www.ibm.com/developerworks/cn/web/1306_jiangjj_jsinstanceof/index.html" target="_blank" rel="noopener">这篇博客</a>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">T</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">var</span> t = <span class="keyword">new</span> T();</span><br><span class="line">t <span class="keyword">instanceof</span> T; <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h3 id="Object-prototype-toString-call"><a href="#Object-prototype-toString-call" class="headerlink" title="Object.prototype.toString.call"></a>Object.prototype.toString.call</h3><p><code>Object.prototype.toString.call</code> 应当来说这个是推荐用法了。见<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/toString" target="_blank" rel="noopener">MDN</a>的描述：</p>
+<blockquote>
+<p>每个对象都有一个 toString()方法，当该对象被表示为一个文本值时，或者一个对象以预期的字符串方式引用时自动调用。默认情况下，toString()方法被每个 Object 对象继承。如果此方法在自定义对象中未被覆盖，toString()  返回  “[object type]”，其中 type 是对象的类型。</p>
+</blockquote>
+<p>由于<code>toString</code>方法可能会被对象覆盖，所有要用上述的形式调用，而不是简单的<code>obj.toString</code>.</p>
+<p><strong>toString 的具体工作机制如下</strong>(<a href="https://segmentfault.com/a/1190000014216304" target="_blank" rel="noopener">参考</a>)：</p>
+<blockquote>
+<pre><code>1.    如果 `this` 的值是 `undefined`, 返回 `[object Undefined]`.
+</code></pre></blockquote>
+<ol start="2">
+<li>如果 <code>this</code> 的值是 <code>null</code>, 返回 <code>[object Null]</code>.</li>
+<li>令 <code>O</code> 为以 <code>this</code> 作为参数调用 <code>ToObject</code> 的结果 .</li>
+<li>令 <code>class</code> 为 <code>O</code> 的 <code>[[Class]]</code> 内部属性的值 .</li>
+<li>返回三个字符串 <code>[object</code>, <code>class</code>, 和 <code>]</code> 连起来的字符串 .</li>
+</ol>
+<p>每个内置对象都定义了<code>[[Class]]</code>内部属性，有<code>&quot;Arguments&quot;, &quot;Array&quot;, &quot;Boolean&quot;, &quot;Date&quot;, &quot;Error&quot;, &quot;Function&quot;, &quot;JSON&quot;, &quot;Math&quot;, &quot;Number&quot;, &quot;Object&quot;, &quot;RegExp&quot;, &quot;String&quot;</code></p>
+<p>此方法在 ES5 中工作的很好，但在 ES6 中，添加了一种新的<code>Symbol</code>类型，以及一个内置的<code>Symbol</code>值<code>Symbol.toStringTag</code>，它拦截了<code>toString</code>的工作。<code>Symbol.toStringTag</code>应该被定义成一个<code>getter</code>，它的返回值代表变量的类型。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Normal</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> nor = <span class="keyword">new</span> Normal();</span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(nor); <span class="comment">// [object Object]</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TTT</span> </span>&#123;</span><br><span class="line">  get [<span class="built_in">Symbol</span>.toStringTag]() &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'TTT~~~~'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> t = <span class="keyword">new</span> TTT();</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(t); <span class="comment">// [object TTT~~~]</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>The Symbol.toStringTag well-known symbol is a string valued property that is used in the creation of the default string description of an object. It is accessed internally by the Object.prototype.toString() method.</p>
+</blockquote>
+<p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toStringTag" target="_blank" rel="noopener">MDN</a>上的描述说到<code>Symbol.toStringTag</code>其实在<code>toString</code>内部用到了。 具体流程如下：</p>
+<blockquote>
+</blockquote>
+<ol>
+<li>如果  this  是  undefined ，返回  ‘[object Undefined]’ ;</li>
+<li>如果  this  是  null , 返回  ‘[object Null]’ ；</li>
+<li>令  O  为以  this  作为参数调用  ToObject  的结果；</li>
+<li>令  isArray  为  IsArray(O) ；</li>
+<li>ReturnIfAbrupt(isArray) （如果  isArray  不是一个正常值，比如抛出一个错误，中断执行）；</li>
+<li>如果  isArray  为  true ， 令  builtinTag  为  ‘Array’ ;</li>
+<li>else ，如果  O is an exotic String object ， 令  builtinTag  为  ‘String’ ；</li>
+<li>else ，如果  O  含有  [[ParameterMap]] internal slot, ， 令  builtinTag  为  ‘Arguments’；</li>
+<li>else ，如果  O  含有  [[Call]] internal method ， 令  builtinTag  为  Function ；</li>
+<li>else ，如果  O  含有  [[ErrorData]] internal slot ， 令  builtinTag  为  Error ；</li>
+<li>else ，如果  O  含有  [[BooleanData]] internal slot ， 令  builtinTag  为  Boolean ；</li>
+<li>else ，如果  O  含有  [[NumberData]] internal slot ， 令  builtinTag  为  Number ；</li>
+<li>else ，如果  O  含有  [[DateValue]] internal slot ， 令  builtinTag  为  Date ；</li>
+<li>else ，如果  O  含有  [[RegExpMatcher]] internal slot ， 令  builtinTag  为  RegExp ；</li>
+<li>else ， 令  builtinTag  为  Object ；</li>
+<li>令  tag  为  Get(O, @@toStringTag)  的返回值（ Get(O, @@toStringTag)  方法，既是在  O  是一个对象，并且具有  @@toStringTag  属性时，返回  O[Symbol.toStringTag] ）；</li>
+<li>ReturnIfAbrupt(tag) ，如果  tag  是正常值，继续执行下一步；</li>
+<li>如果  Type(tag)  不是一个字符串，let tag be builtinTag ；</li>
+<li>返回由三个字符串  “[object”, tag, and “]”  拼接而成的一个字符串。</li>
+</ol>
+<p>前 15 步可以看成跟  es5  的作用一样，获取到数据的类型  <code>builtinTag</code> ，但是第 16 步调用了  <code>@@toStringTag</code>  的方法，其实就是<code>Symbol.toStringTag</code>对应的方法。 最终结果优先以这个方法返回值为准，不行的话再使用<code>builtinTag</code></p>
+<h2 id="baseGetTag"><a href="#baseGetTag" class="headerlink" title="baseGetTag"></a>baseGetTag</h2><p><code>lodash</code>中的<code>baseGetTag</code>为我们封装了上述所有逻辑：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> objectProto = <span class="built_in">Object</span>.prototype;</span><br><span class="line"><span class="keyword">const</span> hasOwnProperty = objectProto.hasOwnProperty;</span><br><span class="line"><span class="keyword">const</span> toString = objectProto.toString;</span><br><span class="line"><span class="keyword">const</span> symToStringTag = <span class="keyword">typeof</span> <span class="built_in">Symbol</span> != <span class="string">'undefined'</span> ? <span class="built_in">Symbol</span>.toStringTag : <span class="literal">undefined</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The base implementation of `getTag` without fallbacks for buggy environments.</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @private</span></span><br><span class="line"><span class="comment"> * @param &#123;*&#125; value The value to query.</span></span><br><span class="line"><span class="comment"> * @returns &#123;string&#125; Returns the `toStringTag`.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">baseGetTag</span>(<span class="params">value</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (value == <span class="literal">null</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> value === <span class="literal">undefined</span> ? <span class="string">'[object Undefined]'</span> : <span class="string">'[object Null]'</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!(symToStringTag &amp;&amp; symToStringTag <span class="keyword">in</span> <span class="built_in">Object</span>(value))) &#123;</span><br><span class="line">    <span class="keyword">return</span> toString.call(value);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> isOwn = hasOwnProperty.call(value, symToStringTag);</span><br><span class="line">  <span class="keyword">const</span> tag = value[symToStringTag];</span><br><span class="line">  <span class="keyword">let</span> unmasked = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    value[symToStringTag] = <span class="literal">undefined</span>;</span><br><span class="line">    unmasked = <span class="literal">true</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> (e) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> result = toString.call(value);</span><br><span class="line">  <span class="keyword">if</span> (unmasked) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isOwn) &#123;</span><br><span class="line">      value[symToStringTag] = tag;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">delete</span> value[symToStringTag];</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一段段来看下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (value == <span class="literal">null</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> value === <span class="literal">undefined</span> ? <span class="string">'[object Undefined]'</span> : <span class="string">'[object Null]'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是对入参为空时的判断，没什么好说的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!(symToStringTag &amp;&amp; symToStringTag <span class="keyword">in</span> <span class="built_in">Object</span>(value))) &#123;</span><br><span class="line">  <span class="keyword">return</span> toString.call(value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果环境不支持<code>Symbol.toStringTag</code>或者<code>Symbol.toStringTag</code>没有在对象上没有定义，那么都直接调用原始的<code>toString</code>即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> isOwn = hasOwnProperty.call(value, symToStringTag);</span><br><span class="line"><span class="keyword">const</span> tag = value[symToStringTag];</span><br><span class="line"><span class="keyword">let</span> unmasked = <span class="literal">false</span>;</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  value[symToStringTag] = <span class="literal">undefined</span>;</span><br><span class="line">  unmasked = <span class="literal">true</span>;</span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;&#125;</span><br></pre></td></tr></table></figure>
+<p><code>isOwn</code>判断<code>symToStringTag</code>是在自身还是原型链上；<code>tag</code>用来备份； 之后<code>try...catch</code>里的<code>value[symToStringTag] = undefined</code>困扰了我很久，不知道什么情况下会报错，后来突然想到<code>Object.defineProperty</code>，里面如果<code>writable</code>为<code>false</code>，或者只指定了<code>get</code>没有<code>set</code>，都会报错：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="keyword">var</span> o = &#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(o, <span class="string">'readonly'</span>, &#123;</span><br><span class="line">  value: <span class="string">'123'</span>,</span><br><span class="line">  writable: <span class="literal">false</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="built_in">Object</span>.defineProperty(o, <span class="string">'readonly2'</span>, &#123;</span><br><span class="line">  get: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'456'</span>;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">o.readonly = <span class="string">'222'</span>; <span class="comment">// Uncaught TypeError: Cannot assign to read only property 'readonly' of object '#&lt;Object&gt;'</span></span><br><span class="line"></span><br><span class="line">o.readonly2 = <span class="string">'222'</span>; <span class="comment">// Uncaught TypeError: Cannot set property readonly2 of #&lt;Object&gt; which has only a getter</span></span><br></pre></td></tr></table></figure>
+<p>最后一段</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> result = toString.call(value);</span><br><span class="line"><span class="keyword">if</span> (unmasked) &#123;</span><br><span class="line">  <span class="keyword">if</span> (isOwn) &#123;</span><br><span class="line">    value[symToStringTag] = tag;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">delete</span> value[symToStringTag];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果<code>symToStringTag</code>是对象自身的，那么还原回去。从<code>try...catch</code>到后面的<code>if</code>分支，主要是避免对象自身的<code>symToStringTag</code>对最终结果的影响。如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> o = &#123;</span><br><span class="line">  [<span class="built_in">Symbol</span>.toStringTag]: <span class="string">'OOOOOOO'</span>,</span><br><span class="line">&#125;;</span><br><span class="line">baseGetTag(o); <span class="comment">// [object Object],而不是OOOOOOO</span></span><br></pre></td></tr></table></figure>
+<h1 id="isFunction"><a href="#isFunction" class="headerlink" title="isFunction"></a>isFunction</h1><p>以前判断一个变量是否为函数可以很简单的用<code>typeof</code>就行：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">t</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="keyword">typeof</span> t === <span class="string">'function'</span>; <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>或者使用<code>Object.prototype.toString</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Object</span>.prototype.toString.call(t); <span class="comment">// ​​​​​[object Function]​​​​​</span></span><br></pre></td></tr></table></figure>
+<p>看看<code>Lodash</code>中是怎么实现的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isFunction</span>(<span class="params">value</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!isObject(value)) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// The use of `Object#toString` avoids issues with the `typeof` operator</span></span><br><span class="line">  <span class="comment">// in Safari 9 which returns 'object' for typed arrays and other constructors.</span></span><br><span class="line">  <span class="keyword">const</span> tag = baseGetTag(value);</span><br><span class="line">  <span class="keyword">return</span> tag == <span class="string">'[object Function]'</span> || tag == <span class="string">'[object AsyncFunction]'</span> || tag == <span class="string">'[object GeneratorFunction]'</span> || tag == <span class="string">'[object Proxy]'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>挨个做一下测试：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">normalFunc</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(normalFunc); <span class="comment">// [object Function]</span></span><br><span class="line"><span class="keyword">typeof</span> normalFunc; <span class="comment">// function</span></span><br><span class="line">_.isFunction(asyncFunc); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">asyncFunc</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(asyncFunc); <span class="comment">// [object AsyncFunction]</span></span><br><span class="line"><span class="keyword">typeof</span> asyncFunc; <span class="comment">// function</span></span><br><span class="line">_.isFunction(asyncFunc); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span>* <span class="title">generatorFunc</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(generatorFunc); <span class="comment">// [object GeneratorFunction]</span></span><br><span class="line"><span class="keyword">typeof</span> generatorFunc; <span class="comment">// function</span></span><br><span class="line">_.isFunction(asyncFunc); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p><code>[object Proxy]</code>的情况没有试出来，ES6 的<code>Proxy</code>不是函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> proxy = <span class="keyword">new</span> <span class="built_in">Proxy</span>(&#123;&#125;, &#123;&#125;);</span><br><span class="line"><span class="built_in">Object</span>.prototype.toString.call(proxy); <span class="comment">//[object Object]</span></span><br></pre></td></tr></table></figure>
+<p>但是在<a href="http://underscorejs.org/underscore.js" target="_blank" rel="noopener">underscore.js</a>中<code>isFunction</code>的实现就是直接利用的<code>typeof</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,</span></span><br><span class="line"><span class="comment">// IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).</span></span><br><span class="line"><span class="keyword">var</span> nodelist = root.document &amp;&amp; root.document.childNodes;</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">typeof</span> /./ != <span class="string">'function'</span> &amp;&amp; <span class="keyword">typeof</span> <span class="built_in">Int8Array</span> != <span class="string">'object'</span> &amp;&amp; <span class="keyword">typeof</span> nodelist != <span class="string">'function'</span>) &#123;</span><br><span class="line">  _.isFunction = <span class="function"><span class="keyword">function</span>(<span class="params">obj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">typeof</span> obj == <span class="string">'function'</span> || <span class="literal">false</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>综上，除了在一些『古董』上，使用<code>typeof</code>来判定函数是完全 ok 的。</p>
+<h1 id="gt-gt-gt-操作符"><a href="#gt-gt-gt-操作符" class="headerlink" title="&gt;&gt;&gt; 操作符"></a>&gt;&gt;&gt; 操作符</h1><p>在<code>lodash</code>中经常会看到这样的代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">length = start &gt; end ? <span class="number">0</span> : (end - start) &gt;&gt;&gt; <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> result = <span class="keyword">new</span> <span class="built_in">Array</span>(length);</span><br></pre></td></tr></table></figure>
+<p>这里的<code>&gt;&gt;&gt;</code>是干嘛的？</p>
+<p>在 js 中，<code>Array.length</code>需要是一个 0~2^31 -1 之间的无符号整数，参考<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank" rel="noopener">MDN</a>。而<code>&gt;&gt;&gt;</code>是一个<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Bitwise_Operators" target="_blank" rel="noopener">无符号右移运算符</a>，正好可以帮助我们做到这点。</p>
+<p><code>a &gt;&gt;&gt; b</code>的作用是将<code>a</code>的二进制表示向右移<code>b</code>(&lt;32)位，丢弃被移出的位，并使用 0 在左侧填充。于是操作结果就总是一个 0~2^31 -1 之间的无符号整数。搬运 MDN 上的例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">9</span> (base <span class="number">10</span>): <span class="number">00000000000000000000000000001001</span> (base <span class="number">2</span>)</span><br><span class="line"><span class="number">9</span> &gt;&gt;&gt; <span class="number">2</span> (base <span class="number">10</span>): <span class="number">00000000000000000000000000000010</span> (base <span class="number">2</span>) = <span class="number">2</span> (base <span class="number">10</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 对于负数</span></span><br><span class="line"><span class="number">-9</span> (base <span class="number">10</span>): <span class="number">11111111111111111111111111110111</span> (base <span class="number">2</span>)</span><br><span class="line"><span class="number">-9</span> &gt;&gt;&gt; <span class="number">2</span> (base <span class="number">10</span>): <span class="number">00111111111111111111111111111101</span> (base <span class="number">2</span>) = <span class="number">1073741821</span> (base <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>同时经测试它还能包容一些异常情况：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'1'</span> &gt;&gt;&gt; <span class="number">0</span>; <span class="comment">// 1</span></span><br><span class="line"><span class="string">'1x'</span> &gt;&gt;&gt; <span class="number">0</span>; <span class="comment">// 0</span></span><br><span class="line"><span class="literal">null</span> &gt;&gt;&gt; <span class="number">0</span>; <span class="comment">// 0</span></span><br></pre></td></tr></table></figure>
+<p>有另外一个<code>&gt;&gt;</code>操作符，对于<code>a &gt;&gt; b</code>，它的作用是将 a 的二进制表示向右移  b (&lt; 32) 位，丢弃被移出的位。如果 a 是一个非负数，那么<code>&gt;&gt;</code>和<code>&gt;&gt;&gt;</code>的作用是一样的，差别在于负数，它会在左侧填充 1，而不是 0：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">-9</span> (base <span class="number">10</span>): <span class="number">11111111111111111111111111110111</span> (base <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="number">-9</span> &gt;&gt; <span class="number">2</span> (base <span class="number">10</span>): <span class="number">11111111111111111111111111111101</span> (base <span class="number">2</span>) = <span class="number">-3</span> (base <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<p>因此如果有用到<code>Array.length</code>的地方，可以考虑用<code>&gt;&gt;&gt;</code>做一些防护。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lodash/" rel="tag"># lodash</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/05/19/lodash-array/" rel="next" title="lodash源码学习之Array篇">
+                <i class="fa fa-chevron-left"></i> lodash源码学习之Array篇
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/05/19/vue-comp-communication/" rel="prev" title="vue组件通信小结">
+                vue组件通信小结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#baseGetTag-获取变量类型"><span class="nav-number">1.</span> <span class="nav-text">baseGetTag 获取变量类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#typeof"><span class="nav-number">1.0.1.</span> <span class="nav-text">typeof</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#instanceof"><span class="nav-number">1.0.2.</span> <span class="nav-text">instanceof</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Object-prototype-toString-call"><span class="nav-number">1.0.3.</span> <span class="nav-text">Object.prototype.toString.call</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#baseGetTag"><span class="nav-number">1.1.</span> <span class="nav-text">baseGetTag</span></a></li></ol><li class="nav-item nav-level-1"><a class="nav-link" href="#isFunction"><span class="nav-number">2.</span> <span class="nav-text">isFunction</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#gt-gt-gt-操作符"><span class="nav-number">3.</span> <span class="nav-text">&gt;&gt;&gt; 操作符</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/05/19/lodash-trick/';
+          this.page.identifier = '2018/05/19/lodash-trick/';
+          this.page.title = 'lodash源码学习之技巧篇';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

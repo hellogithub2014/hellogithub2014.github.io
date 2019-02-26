@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Vue,javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上篇文章了解了patch的入口，这篇文章的目的是了解patch函数功能的一部分：创建 DOM。patch的功能大致分为 3 块：  有oldVnode无vnode，调用oldVnode的destroy流程 无oldVnode有vnode，调用创建dom流程 有oldVnode有vnode，调用diff流程  这块的代码是： 1234567891011121314151617181920212223">
+<meta name="keywords" content="Vue,javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Vue源码解析11-patch创建dom">
+<meta property="og:url" content="https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-11-patch-create-dom/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="上篇文章了解了patch的入口，这篇文章的目的是了解patch函数功能的一部分：创建 DOM。patch的功能大致分为 3 块：  有oldVnode无vnode，调用oldVnode的destroy流程 无oldVnode有vnode，调用创建dom流程 有oldVnode有vnode，调用diff流程  这块的代码是： 1234567891011121314151617181920212223">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-02-25T13:44:45.737Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Vue源码解析11-patch创建dom">
+<meta name="twitter:description" content="上篇文章了解了patch的入口，这篇文章的目的是了解patch函数功能的一部分：创建 DOM。patch的功能大致分为 3 块：  有oldVnode无vnode，调用oldVnode的destroy流程 无oldVnode有vnode，调用创建dom流程 有oldVnode有vnode，调用diff流程  这块的代码是： 1234567891011121314151617181920212223">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'WEVE9OXRX9',
+      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
+      indexName: 'orangeeee',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-11-patch-create-dom/">
+
+
+
+
+
+  <title>Vue源码解析11-patch创建dom | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-11-patch-create-dom/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Vue源码解析11-patch创建dom</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-10T17:20:00+08:00">
+                2018-11-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/10/vue-sourcecode-11-patch-create-dom/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/10/vue-sourcecode-11-patch-create-dom/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上篇文章了解了<code>patch</code>的入口，这篇文章的目的是了解<code>patch</code>函数功能的一部分：<strong>创建 DOM</strong>。<code>patch</code>的功能大致分为 3 块：</p>
+<ol>
+<li>有<code>oldVnode</code>无<code>vnode</code>，调用<code>oldVnode</code>的<code>destroy</code>流程</li>
+<li>无<code>oldVnode</code>有<code>vnode</code>，调用创建<code>dom</code>流程</li>
+<li>有<code>oldVnode</code>有<code>vnode</code>，调用<code>diff</code>流程</li>
+</ol>
+<p>这块的代码是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">patch</span>(<span class="params">oldVnode, vnode, hydrating, removeOnly</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isUndef(vnode)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(oldVnode)) invokeDestroyHook(oldVnode); <span class="comment">// 没有新vnode只有旧vnode，表明在destroy</span></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> isInitialPatch = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">const</span> insertedVnodeQueue = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isUndef(oldVnode)) &#123;</span><br><span class="line">    <span class="comment">// empty mount (likely as component), create new root element</span></span><br><span class="line">    isInitialPatch = <span class="literal">true</span>;</span><br><span class="line">    <span class="comment">// 没有旧vnode有新的vnode，表明在进行初始渲染</span></span><br><span class="line">    createElm(vnode, insertedVnodeQueue);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> isRealElement = isDef(oldVnode.nodeType); <span class="comment">// 是否为真实dom元素</span></span><br><span class="line">    <span class="comment">// sameVnode成立条件： key相同 &amp;&amp; tag相同 &amp;&amp; 都有data &amp;&amp; 相同的input type</span></span><br><span class="line">    <span class="keyword">if</span> (!isRealElement &amp;&amp; sameVnode(oldVnode, vnode)) &#123;</span><br><span class="line">      <span class="comment">// 有新vnode有旧vnode，同时oldVnode不是真实dom，需要执行diff逻辑</span></span><br><span class="line">      <span class="comment">// patch existing root node</span></span><br><span class="line">      patchVnode(oldVnode, vnode, insertedVnodeQueue, removeOnly);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// 有新vnode有旧vnode，同时oldVnode是真实dom，，执行创建元素流程</span></span><br><span class="line">      <span class="comment">// createElm创建元素流程....</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>patch</code>就会开始真正操作<code>dom</code>元素了，此前都是操作<code>vnode</code>。今天我们的重点就是最后的<code>createElm创建元素流程</code>. 有个细节，可以看到上面有 2 个分支会调用<code>createElm</code>，第一个是<code>isUndef(oldVnode)</code>成立的那个<code>if</code>，这个很好理解。 那最下面的那个<code>createElm</code>何时成立呢？</p>
+<p>在<code>Vue.prototype._update</code>中是这样调用<code>patch</code>的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!prevVnode) &#123;</span><br><span class="line">  vm.$el = vm.__patch__(vm.$el, vnode, hydrating, <span class="literal">false</span>); <span class="comment">//initial render</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">  vm.$el = vm.__patch__(prevVnode, vnode); <span class="comment">// update</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是说在初始化时传入的<code>oldVnode</code>实际上是<code>vm.$el</code>这个真实的<code>dom</code>元素，这时我们的<code>isRealElement</code>就会是<code>true</code>。 接下来就会描述具体创建流程。</p>
+<h1 id="创建-dom"><a href="#创建-dom" class="headerlink" title="创建 dom"></a>创建 dom</h1><p>此分支的具体代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (isRealElement) &#123;</span><br><span class="line">  oldVnode = emptyNodeAt(oldVnode); <span class="comment">// 创建一个空的vnode</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// replacing existing element</span></span><br><span class="line"><span class="keyword">const</span> oldElm = oldVnode.elm;</span><br><span class="line"><span class="keyword">const</span> parentElm = nodeOps.parentNode(oldElm); <span class="comment">// 通常我们的vm.$el的父元素是body</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// create new node</span></span><br><span class="line">createElm(</span><br><span class="line">  vnode,</span><br><span class="line">  insertedVnodeQueue,</span><br><span class="line">  <span class="comment">// extremely rare edge case: do not insert if old element is in a</span></span><br><span class="line">  <span class="comment">// leaving transition. Only happens when combining transition +</span></span><br><span class="line">  <span class="comment">// keep-alive + HOCs. (#4590)</span></span><br><span class="line">  oldElm._leaveCb ? <span class="literal">null</span> : parentElm,</span><br><span class="line">  nodeOps.nextSibling(oldElm), <span class="comment">// createElm的新创建元素的参照物锚点元素</span></span><br><span class="line">);</span><br><span class="line"><span class="comment">// update parent placeholder node element, recursively</span></span><br><span class="line"><span class="keyword">if</span> (isDef(vnode.parent)) &#123;</span><br><span class="line">  <span class="keyword">let</span> ancestor = vnode.parent;</span><br><span class="line">  <span class="keyword">const</span> patchable = isPatchable(vnode);</span><br><span class="line">  <span class="keyword">while</span> (ancestor) &#123;</span><br><span class="line">    <span class="comment">// 1. 调用子moudle的destroy钩子</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cbs.destroy.length; ++i) &#123;</span><br><span class="line">      cbs.destroy[i](ancestor);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 2. 更新elm</span></span><br><span class="line">    ancestor.elm = vnode.elm;</span><br><span class="line">    <span class="keyword">if</span> (patchable) &#123;</span><br><span class="line">      <span class="comment">// 3. 调用子moudle的create钩子</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cbs.create.length; ++i) &#123;</span><br><span class="line">        cbs.create[i](emptyNode, ancestor);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// #6513</span></span><br><span class="line">      <span class="comment">// invoke insert hooks that may have been merged by create hooks.</span></span><br><span class="line">      <span class="comment">// e.g. for directives that uses the "inserted" hook.</span></span><br><span class="line">      <span class="keyword">const</span> insert = ancestor.data.hook.insert;</span><br><span class="line">      <span class="keyword">if</span> (insert.merged) &#123;</span><br><span class="line">        <span class="comment">// start at index 1 to avoid re-invoking component mounted hook</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt; insert.fns.length; i++) &#123;</span><br><span class="line">          insert.fns[i]();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      registerRef(ancestor);</span><br><span class="line">    &#125;</span><br><span class="line">    ancestor = ancestor.parent;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// destroy old node</span></span><br><span class="line"><span class="keyword">if</span> (isDef(parentElm)) &#123;</span><br><span class="line">  removeVnodes(parentElm, [oldVnode], <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (isDef(oldVnode.tag)) &#123;</span><br><span class="line">  invokeDestroyHook(oldVnode);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到主要分为 3 块： <code>createElm</code>、更新父元素、删除<code>oldVnode</code>。</p>
+<h2 id="createElm"><a href="#createElm" class="headerlink" title="createElm"></a>createElm</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createElm</span>(<span class="params">vnode, insertedVnodeQueue, parentElm, refElm, nested, ownerArray, index</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isDef(vnode.elm) &amp;&amp; isDef(ownerArray)) &#123;</span><br><span class="line">    <span class="comment">// This vnode was used in a previous render!</span></span><br><span class="line">    <span class="comment">// now it's used as a new node, overwriting its elm would cause</span></span><br><span class="line">    <span class="comment">// potential patch errors down the road when it's used as an insertion</span></span><br><span class="line">    <span class="comment">// reference node. Instead, we clone the node on-demand before creating</span></span><br><span class="line">    <span class="comment">// associated DOM element for it.</span></span><br><span class="line">    vnode = ownerArray[index] = cloneVNode(vnode);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  vnode.isRootInsert = !nested; <span class="comment">// for transition enter check</span></span><br><span class="line">  <span class="keyword">if</span> (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> data = vnode.data;</span><br><span class="line">  <span class="keyword">const</span> children = vnode.children;</span><br><span class="line">  <span class="keyword">const</span> tag = vnode.tag;</span><br><span class="line">  <span class="keyword">if</span> (isDef(tag)) &#123;</span><br><span class="line">    <span class="comment">// nodeOps位于src/platforms/web/runtime/node-ops.js</span></span><br><span class="line">    <span class="comment">// createElement主要是document.createElement(tag)</span></span><br><span class="line">    <span class="comment">// 此时vnode.elm就是一个真正的DOM元素了！！</span></span><br><span class="line">    vnode.elm = vnode.ns ? nodeOps.createElementNS(vnode.ns, tag) : nodeOps.createElement(tag, vnode);</span><br><span class="line">    setScope(vnode); <span class="comment">// 尝试为vnode.elm添加scopeId attribute</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 为每个child生成child.elm，并以vnode.elm作为父节点</span></span><br><span class="line">    createChildren(vnode, children, insertedVnodeQueue);</span><br><span class="line">    <span class="keyword">if</span> (isDef(data)) &#123;</span><br><span class="line">      <span class="comment">// 调用8个子module的create钩子，为vnode.elm增加各种属性或事件处理</span></span><br><span class="line">      invokeCreateHooks(vnode, insertedVnodeQueue);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 将vnode.elm插入到parentElm的children中，这样到下次页面渲染时就可以绘制到页面了~</span></span><br><span class="line">    <span class="comment">// refElm是新创建元素的参照物锚点元素</span></span><br><span class="line">    insert(parentElm, vnode.elm, refElm);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isTrue(vnode.isComment)) &#123;</span><br><span class="line">    <span class="comment">// 创建注释dom</span></span><br><span class="line">    vnode.elm = nodeOps.createComment(vnode.text);</span><br><span class="line">    insert(parentElm, vnode.elm, refElm);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// 创建文本dom</span></span><br><span class="line">    vnode.elm = nodeOps.createTextNode(vnode.text);</span><br><span class="line">    insert(parentElm, vnode.elm, refElm);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中<code>createComponent</code>用于创建自定义组件这里先略过后续再说。那么剩下的其他代码就很好理解了，大致就是利用<code>vnode</code>的各种属性来创建真实的 dom，最后插入到父 dom 节点上，等到下次页面渲染我们就能看到更新了。</p>
+<p>参数上的<code>refElm</code>是新创建元素并插入父节点时的参照物锚点元素，在<code>insert</code>函数中：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">insert</span>(<span class="params">parent, elm, ref</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (isDef(parent)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(ref)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (nodeOps.parentNode(ref) === parent) &#123;</span><br><span class="line">        nodeOps.insertBefore(parent, elm, ref);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      nodeOps.appendChild(parent, elm);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果有<code>ref</code>则放到<code>ref</code>前面，如果没有则放到最后。</p>
+<p>接下来我们主要看看<code>createChildren</code>和<code>invokeCreateHooks</code>怎么实现的。</p>
+<h3 id="createChildren"><a href="#createChildren" class="headerlink" title="createChildren"></a>createChildren</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 为每个child生成child.elm，并以vnode.elm作为父节点</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createChildren</span>(<span class="params">vnode, children, insertedVnodeQueue</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(children)) &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; children.length; ++i) &#123;</span><br><span class="line">      <span class="comment">// 生成children[i].elm，并以vnode.elm作为父节点</span></span><br><span class="line">      createElm(children[i], insertedVnodeQueue, vnode.elm, <span class="literal">null</span>, <span class="literal">true</span>, children, i);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (isPrimitive(vnode.text)) &#123;</span><br><span class="line">    nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(<span class="built_in">String</span>(vnode.text)));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果<code>children</code>是数组，那么递归调用元素来<code>createElm</code>；如果是个普通文本，那么直接创建一个文本节点插入到父节点。这样我们就生成了一个 dom 子树。</p>
+<h3 id="invokeCreateHooks"><a href="#invokeCreateHooks" class="headerlink" title="invokeCreateHooks"></a>invokeCreateHooks</h3><p>主要调用各种子<code>module</code>的<code>create</code>钩子，虽然代码比较短，但是涉及的内容很多。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">invokeCreateHooks</span>(<span class="params">vnode, insertedVnodeQueue</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// 调用每个module的create钩子，一共8个module，见cbs定义处的注释</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; cbs.create.length; ++i) &#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 各个子module的create功能：</span></span><br><span class="line"><span class="comment">     * 1. attrs：将新增data.attrs放入vnode.elm，同时移除旧的data.attrs</span></span><br><span class="line"><span class="comment">     * 2. style: 将data.staticStyle/style放入vnode.elm.style，同时移除旧的style</span></span><br><span class="line"><span class="comment">     * 3. class: 将静态class和动态class结合，直接覆盖到vnode.elm.class</span></span><br><span class="line"><span class="comment">     * 4. events：利用新旧vnode的data.on更新vnode.elm的事件处理函数，使用addEventListener/removeEventListener</span></span><br><span class="line"><span class="comment">     * 5. domProps:处理原生dom属性，如textContent、innerHTML、value等，将新的dom属性加到vnode.elm，移除旧的dom属性</span></span><br><span class="line"><span class="comment">     * 6. transition: 略</span></span><br><span class="line"><span class="comment">     * 7. ref: 处理data.ref，令 vnode.context.refs[data.ref] = vnode.elm, 即指向的是原生dom</span></span><br><span class="line"><span class="comment">     * 8. directives: 处理指令，根据不同阶段调用指令的不同钩子，例如新建时调用bind钩子、更新时调用update钩子</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    cbs.create[i](emptyNode, vnode);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 经过上面的for循环，vnode.data.hook可能会增加各种钩子，如insert或postpatch等</span></span><br><span class="line">  i = vnode.data.hook; <span class="comment">// Reuse variable</span></span><br><span class="line">  <span class="keyword">if</span> (isDef(i)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(i.create)) i.create(emptyNode, vnode);</span><br><span class="line">    <span class="keyword">if</span> (isDef(i.insert)) insertedVnodeQueue.push(vnode);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我在注释里只说了每种<code>module</code>的<code>create</code>钩子干了什么，而没有说具体是怎么做的，这个留给大家自己去看，基本上代码都很不难。</p>
+<p><code>cbs</code>我们在上篇文章也有说过，这里再提下，它相当于一个钩子的分类汇总对象：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> cbs = &#123;&#125;;</span><br><span class="line"><span class="keyword">const</span> &#123; modules, nodeOps &#125; = backend;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 将每个modules中每个子moudle定义的各种钩子统一放到cbs中，最后cbs的结构示范</span></span><br><span class="line"><span class="comment"> * &#123;</span></span><br><span class="line"><span class="comment"> *    create: [module1Create, module2Create],</span></span><br><span class="line"><span class="comment"> *    update: [module1Update, module2Update],</span></span><br><span class="line"><span class="comment"> *    remove: [xxx],</span></span><br><span class="line"><span class="comment"> *    destroy: [xxx],</span></span><br><span class="line"><span class="comment"> *    activate: [xxx],</span></span><br><span class="line"><span class="comment"> * &#125;</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * 钩子分为两类：platformModules和baseModules</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * platformModules： 平台相关的一些属性的处理，包括attrs、class、domProps、events、style和transtion。</span></span><br><span class="line"><span class="comment"> * 代码位于src/platforms/web/runtime/modules/index.js，每个子module都会包含create和update两个钩子。</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * baseModules：是web和weex都有的处理，包括directives和ref属性的处理。</span></span><br><span class="line"><span class="comment"> * 代码位于src/core/vdom/modules/index.js，每个子module同样会包含create和update两个钩子。</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; hooks.length; ++i) &#123;</span><br><span class="line">  cbs[hooks[i]] = [];</span><br><span class="line">  <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; modules.length; ++j) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef(modules[j][hooks[i]])) &#123;</span><br><span class="line">      cbs[hooks[i]].push(modules[j][hooks[i]]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>backend</code>是调用<code>createPatchFunction</code>传入的参数，可以在<code>src/platforms/web/runtime/patch.js</code>找到。</p>
+<h2 id="removeVnodes、invokeDestroyHook"><a href="#removeVnodes、invokeDestroyHook" class="headerlink" title="removeVnodes、invokeDestroyHook"></a>removeVnodes、invokeDestroyHook</h2><p>用于删除一个<code>vnode</code>。</p>
+<h3 id="removeVnodes"><a href="#removeVnodes" class="headerlink" title="removeVnodes"></a>removeVnodes</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">removeVnodes</span>(<span class="params">parentElm, vnodes, startIdx, endIdx</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (; startIdx &lt;= endIdx; ++startIdx) &#123;</span><br><span class="line">    <span class="keyword">const</span> ch = vnodes[startIdx];</span><br><span class="line">    <span class="keyword">if</span> (isDef(ch)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (isDef(ch.tag)) &#123;</span><br><span class="line">        removeAndInvokeRemoveHook(ch); <span class="comment">// 调用remove钩子</span></span><br><span class="line">        invokeDestroyHook(ch); <span class="comment">// 调用自身及后代的destroy钩子</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// Text node</span></span><br><span class="line">        removeNode(ch.elm);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>主要就是调用<code>remove</code>和<code>destroy</code>两个钩子。</p>
+<h3 id="invokeDestroyHook"><a href="#invokeDestroyHook" class="headerlink" title="invokeDestroyHook"></a>invokeDestroyHook</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">invokeDestroyHook</span>(<span class="params">vnode</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> i, j;</span><br><span class="line">  <span class="keyword">const</span> data = vnode.data;</span><br><span class="line">  <span class="keyword">if</span> (isDef(data)) &#123;</span><br><span class="line">    <span class="keyword">if</span> (isDef((i = data.hook)) &amp;&amp; isDef((i = i.destroy))) i(vnode);</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; cbs.destroy.length; ++i) cbs.destroy[i](vnode);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (isDef((i = vnode.children))) &#123;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; vnode.children.length; ++j) &#123;</span><br><span class="line">      invokeDestroyHook(vnode.children[j]);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到和<code>invokeCreateHooks</code>逻辑非常类似，这里就交给大家自己看了。</p>
+<p>最后光看代码在一些细节上很容易蒙圈，最好拿着简单的<code>demo</code>逐步打断点调试，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;div id=<span class="string">"app"</span>&gt;</span><br><span class="line">    &lt;a :href=<span class="string">"url"</span> style=<span class="string">"color:red;"</span> <span class="class"><span class="keyword">class</span></span>=<span class="string">"aaa"</span>&gt;&#123;&#123;message&#125;&#125;&lt;<span class="regexp">/a&gt;</span></span><br><span class="line"><span class="regexp">    &lt;p&gt;静态根节点&lt;span&gt;静态内容&lt;/</span>span&gt;<span class="xml"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line">    &lt;button ref=<span class="string">"btn"</span> @click=<span class="string">"num += 1"</span>&gt;ceshi&lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">    &lt;input type="range" v-model="num" @blur="num+=123"&gt;</span></span><br><span class="line"><span class="regexp">  &lt;/</span>div&gt;</span><br></pre></td></tr></table></figure>
+<p>可以覆盖这里说的大部分的主要场景。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/11/04/vue-sourcecode-10-entry-of-patch/" rel="next" title="Vue源码解析10-patch函数入口">
+                <i class="fa fa-chevron-left"></i> Vue源码解析10-patch函数入口
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/10/vue-sourcecode-12-patch-diff/" rel="prev" title="Vue源码解析12-patch中的diff算法">
+                Vue源码解析12-patch中的diff算法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">72</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#创建-dom"><span class="nav-number">1.</span> <span class="nav-text">创建 dom</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#createElm"><span class="nav-number">1.1.</span> <span class="nav-text">createElm</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#createChildren"><span class="nav-number">1.1.1.</span> <span class="nav-text">createChildren</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#invokeCreateHooks"><span class="nav-number">1.1.2.</span> <span class="nav-text">invokeCreateHooks</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#removeVnodes、invokeDestroyHook"><span class="nav-number">1.2.</span> <span class="nav-text">removeVnodes、invokeDestroyHook</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#removeVnodes"><span class="nav-number">1.2.1.</span> <span class="nav-text">removeVnodes</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#invokeDestroyHook"><span class="nav-number">1.2.2.</span> <span class="nav-text">invokeDestroyHook</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-11-patch-create-dom/';
+          this.page.identifier = '2018/11/10/vue-sourcecode-11-patch-create-dom/';
+          this.page.title = 'Vue源码解析11-patch创建dom';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
