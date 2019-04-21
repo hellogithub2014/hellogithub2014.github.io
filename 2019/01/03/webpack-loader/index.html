@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="对于webpack loader相信大家都知道它是用于将一个模块转为js代码的，但估计不是每个人都知道webpack对于loader的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个loader，前一个loader的结果会传递给下一个loader。 loader有一些主要的特性：  同步、异步 pitch、normal execution context  本文会从源码角度解释webp">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-12T12:49:02.426Z">
+<meta property="og:updated_time" content="2019-02-03T07:32:18.358Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="webpack loader机制源码解析">
 <meta name="twitter:description" content="对于webpack loader相信大家都知道它是用于将一个模块转为js代码的，但估计不是每个人都知道webpack对于loader的内部处理流程。从大体上来说是遵循流水线机制的，即挨个处理每个loader，前一个loader的结果会传递给下一个loader。 loader有一些主要的特性：  同步、异步 pitch、normal execution context  本文会从源码角度解释webp">
@@ -411,11 +411,20 @@
 <p>例如<code>file-loader</code>就会将<code>raw</code>设置为<code>true</code>，具体原因<a href="https://github.com/lihongxun945/diving-into-webpack/blob/master/4-file-loader-and-url-loader.md" target="_blank" rel="noopener">参考这里</a></p>
 <p>以上就是整个<code>loader-runner</code>库的核心逻辑了，接下来举几个例子。</p>
 <h1 id="同步的-style-loader"><a href="#同步的-style-loader" class="headerlink" title="同步的 style-loader"></a>同步的 style-loader</h1><p>它的逻辑从整体上看比较简单，就是做了一些同步的处理并在最后<code>return</code>了一个<code>js</code>字符串。注意他只有<code>pitch</code>函数而没有<code>normal</code>函数。</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports.pitch = <span class="function"><span class="keyword">function</span>(<span class="params">request</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">//  一些数组元素...</span></span><br><span class="line">  ].join(<span class="string">'\n'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports.pitch = <span class="function"><span class="keyword">function</span>(<span class="params">request</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> [</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="string">'var content = require('</span> + loaderUtils.stringifyRequest(<span class="keyword">this</span>, <span class="string">'!!'</span> + request) + <span class="string">');'</span>,</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    <span class="string">'var update = require('</span> + loaderUtils.stringifyRequest(<span class="keyword">this</span>, <span class="string">'!'</span> + path.join(__dirname, <span class="string">'lib'</span>, <span class="string">'addStyles.js'</span>)) + <span class="string">')(content, options);'</span>,</span><br><span class="line">    <span class="comment">//  ...</span></span><br><span class="line">  ].join(<span class="string">'\n'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>为啥<code>style-loader</code>要有<code>pitch</code>呢？ 参考<a href="https://github.com/lihongxun945/diving-into-webpack/blob/master/3-style-loader-and-css-loader.md" target="_blank" rel="noopener"><code>这篇博客</code></a>的说法，是为了避免受到<code>css-loader</code>的影响：</p>
 <blockquote>
 <p>因为我们要把 CSS 文件的内容插入 DOM，所以我们要获取 CSS 文件的样式。如果按照默认的从右往左的顺序，我们使用 css-loader ，它返回的结果是一段 JS 字符串，这样我们就取不到 CSS 样式了。为了获取 CSS 样式，我们会在 style-loader 中直接通过 require 来获取，这样返回的 JS 就不是字符串而是一段代码了。也就是我们是先执行 style-loader，在它里面再执行 css-loader。</p>
 </blockquote>
+<p>从代码层面来看，</p>
+<ul>
+<li><code>Style-loader</code> 需要的是一个 <code>css</code> 文件路径, 而 <code>css-loader</code> 返回的是一个数组，这样就无法处理。 先用 <code>style-loader</code> 的 <code>pitch</code> 处理，其中会再次 <code>require</code> <code>css</code> 文件，这时才会用到 <code>css-loader</code>,此时 <code>css-loader</code> 的返回值会传递给 <code>addStyle.js</code>，就可以处理了</li>
+<li>路径前面的感叹号作用， <a href="https://github.com/webpack-contrib/sass-loader/issues/343" target="_blank" rel="noopener">参考 1</a>、<a href="https://stephenzhao.github.io/webpack-cn/docs/loaders.html#loader-order" target="_blank" rel="noopener">参考 2</a>：<ol>
+<li>1 个<code>！</code>用于禁用 <code>preloader</code>， <code>preloader</code> 是一个过时的东西，<a href="http://deshui.wang/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/2016/07/20/fullstack-webpack-preloaders" target="_blank" rel="noopener">参考这里</a></li>
+<li>2 个<code>！</code>用于禁用所有 <code>loader</code></li>
+</ol>
+</li>
+</ul>
 <h1 id="异步的-less-loader"><a href="#异步的-less-loader" class="headerlink" title="异步的 less-loader"></a>异步的 less-loader</h1><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 调用less第三方库来处理less代码，返回值为promise</span></span><br><span class="line"><span class="keyword">var</span> render = (<span class="number">0</span>, _pify2.default)(_less2.default.render.bind(_less2.default));</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">lessLoader</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> loaderContext = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">var</span> options = (<span class="number">0</span>, _getOptions2.default)(loaderContext);</span><br><span class="line">  <span class="comment">// loaderContext.async()告知webpack当前loader是异步的</span></span><br><span class="line">  <span class="keyword">var</span> done = loaderContext.async();</span><br><span class="line">  <span class="keyword">var</span> isSync = <span class="keyword">typeof</span> done !== <span class="string">'function'</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (isSync) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Synchronous compilation is not supported anymore. See https://github.com/webpack-contrib/less-loader/issues/84'</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 调用_processResult2</span></span><br><span class="line">  (<span class="number">0</span>, _processResult2.default)(loaderContext, render(source, options));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">exports.default = lessLoader;</span><br></pre></td></tr></table></figure>
 <p><code>less-loader</code>的核心是利用<code>less</code>这个库来解析<code>less</code>代码，<code>less</code>会返回一个<code>Promise</code>，所以<code>less-loader</code>是异步的。</p>
 <p>我们可以看到在开头就调用了<code>this.async()</code>方法，正好符合我们的预期，接下来如果猜的没错会在<code>_processResult2</code>里调用<code>this.callback</code>:</p>
@@ -590,7 +599,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">71</span>
+                  <span class="site-state-item-count">75</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -603,7 +612,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">54</span>
+                  <span class="site-state-item-count">59</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
