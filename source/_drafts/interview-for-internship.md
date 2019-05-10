@@ -18,8 +18,8 @@
 
 - 类型判断
 
-  - [ ] typeof
-  - [ ] Object.prototype.toString.call： "[object Undefined]"、"[object Null]"
+  - [ ] typeof 缺点
+  - [ ] Object.prototype.toString.call： "[object Undefined]"、"[object Null]" 为什么不能直接 obj.toString
   - [ ] instanceof
 
 - Object.keys、for-in、for-of、Object.getOwnPropertyNames 差别
@@ -43,7 +43,7 @@
 - 浏览器时间冒泡机制： 事件捕获、事件处理、事件冒泡
 - 同源策略、跨域解决
 
-  - [ ] jsonp
+  - [ ] jsonp(与 CORS 差别)
   - [ ] cors
     - [ ] 简单请求：
       - [ ] HEAD、GET、POST
@@ -76,12 +76,24 @@
 # css
 
 - flex 布局、具体属性
-
+  - [ ] 容器属性
+    1. flex-direction
+    2. justify-content
+    3. align-items
+    4. flex-wrap
+    5. align-content
+  - [ ] 项目属性
+    1. order
+    2. flex-grow
+    3. flex-shrink
+    4. flex-basis
+    5. align-self
 - position 属性
 
   - [ ] static、relative、absolute、fixed
   - [ ] 默认是哪个
   - [ ] relative、absolute、fixed 分别相对于谁定位
+  - [ ] z-index 对于哪些有效
 
 - 水平居中、垂直居中(仅考察 display: block 元素)
 
