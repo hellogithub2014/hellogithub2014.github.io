@@ -64,14 +64,14 @@
   - [ ] 宏任务：setTimeout 等
   - [ ] 微任务：Promise.then
 
-- document load 和 document DOMContentLoaded 两个事件的区别
-
-  - [ ] async、defer 差别
-
 - RequestAnimationFrame 与 settimeout 差别
 
   - [ ] settimeout 可能丢帧，若频幕刷新间隔 16.7ms，settimeout 间隔 10ms，那么每第三个 settimeout 所作出的改变是无法看到的；raf 的调用频率和浏览器刷新频率一致
   - [ ] settimeout 执行时间不确定，因为其真正的任务被放到任务队列里
+
+- document load 和 document DOMContentLoaded 两个事件的区别
+
+  - [ ] async、defer 差别
 
 # css
 
@@ -95,18 +95,18 @@
   - [ ] position + margin-left
   - [ ] flex
 
+- display
+
+  - [ ] none、inline、inline-block、block
+  - [ ] inline、inline-block 差别
+  - [ ] display: none 与 visibility: hidden 差别
+
 - 清除浮动
 
   - [ ] 结尾添加空元素标签
   - [ ] 利用 after 伪元素
 
 - box-sizing： content-box、border-box
-
-- display
-
-  - [ ] none、inline、inline-block、block
-  - [ ] inline、inline-block 差别
-  - [ ] display: none 与 visibility: hidden 差别
 
 - 浏览器匹配 CSS 选择器的顺序
 
@@ -150,6 +150,31 @@
 
 - 知道哪些响应码，301、302 差别
 - get、post 差别
+- keep alive
+- DNS： 哪一层协议、查找过程
+- tcp 3 次握手、4 次挥手
+- https
+
+  - [ ] 大致原理
+  - [ ] 证书
+  - [ ] 证书编号
+
+- 前端性能优化
+
+  - [ ] 减少资源请求数，合并多个 css/js 文件
+  - [ ] css 文件放置在 head，js 放置在文档尾部；并酌情使用 async、defer、pre-load。
+  - [ ] gzip 压缩
+  - [ ] 利用 HTTP 缓存 [浏览器缓存博客](https://hellogithub2014.github.io/browser-cache-summary/)
+  - [ ] 图片使用雪碧图，或合并到字体文件中
+  - [ ] 使用骨架屏优化用户体验（以 pc 端评论为例）
+  - [ ] cdn 托管
+  - [ ] 静态资源放在多个域名下，规避浏览器的最大同时请求数目
+
+# 数据结构
+
+- 数组去重（无序、有序）
+- 树遍历
+- 链表
 
 # 备选
 
