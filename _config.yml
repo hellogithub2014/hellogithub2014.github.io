@@ -87,9 +87,9 @@ deploy:
   branch: master
 
 algolia:
-  applicationID: WEVE9OXRX9
-  apiKey: df96fe02e563318c4ee22a2ae430820b
-  indexName: orangeeee
+  applicationID: Z5V8KL0XIZ
+  apiKey: 88610a56e4ab954825661f14975c6a43
+  indexName: hexo-blog
   chunkSize: 5000
 
 sitemap:
