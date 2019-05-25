@@ -20,7 +20,7 @@
 
   - [ ] typeof 缺点
   - [ ] Object.prototype.toString.call： "[object Undefined]"、"[object Null]" 为什么不能直接 obj.toString
-  - [ ] instanceof
+  - [ ] instanceof 判断右操作数是否在左操作数的原型链上
 
 - Object.keys、for-in、for-of、Object.getOwnPropertyNames 差别
 
@@ -37,6 +37,14 @@
   - [ ] 两个条件: 1. 即使创建它的上下文已经销毁，它仍然存在 2. 在代码中引用了它外部作用域的变量.
   - [ ] 作用: bind 绑定 this、偏函数、模块化
   - [ ] 缺点： 内存不释放
+  - [ ] bind 实现、注意new的处理
+
+- let、var区别
+  - [ ] 作用域
+  - [ ] 暂时性死区、变量提升
+  - [ ] 是否可以重复声明
+
+- 编程：一组按钮，每个按钮点击时打印索引：  闭包、let
 
 - async+await 与 promise+generator
 
@@ -187,6 +195,14 @@
 - 数组去重（无序、有序）
 - 树遍历
 - 链表
+
+# Vue
+
+- 双向绑定
+- 模板中的变量如何映射到组件的： render函数执行时被包裹了`with this`，`this`指向的是`vm`，这样render函数内的所有变量都是在vm上查找的
+- $emit、$on、涉及子组件的情况（addEventListener、观察者模式）
+- [数组继承](https://hellogithub2014.github.io/2018/05/19/vue-trick/)
+- [diff算法](https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-12-patch-diff/)
 
 # 备选
 
