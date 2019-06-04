@@ -71,6 +71,33 @@
 
   - [ ] 宏任务：setTimeout 等
   - [ ] 微任务：Promise.then
+  - [ ] 打印顺序
+
+  ```js
+  console.log('global macro task');
+
+  process.nextTick(function() {
+    console.log('nextTick1');
+  });
+
+  Promise.resolve().then(() => {
+    console.log('then1');
+    setTimeout(() => console.log('time1'));
+  });
+
+  process.nextTick(function() {
+    console.log('nextTick2');
+  });
+
+  Promise.resolve().then(() => console.log('then2'));
+
+  // 全局 macro task
+  // nextTick1
+  // nextTick2
+  // then1
+  // then2
+  // time1
+  ```
 
 - RequestAnimationFrame 与 settimeout 差别
 
