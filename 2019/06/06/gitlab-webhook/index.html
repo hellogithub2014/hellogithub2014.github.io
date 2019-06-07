@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="node,gitlab,webhook,serverless,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="公司团队是使用gitlab来管理源代码的，一直以来当提交了一个PR后，需要手动在内部IM群里贴出PR链接和摘要，然后@目标同事来帮忙review代码，之后就不时地手动刷新页面查看是否有足够的人review完了。这种方式比较原始费时，仔细想想其实大部分流程是可以自动化的。 一些做的好的IM可以实现自定义机器人，例如飞书(lark)，如果机器人可以知道有人发了PR，同时又知道具体有哪些人需要revie">
+<meta name="keywords" content="node,gitlab,webhook,serverless">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现gitlab PR自动流程处理机器人">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/06/06/gitlab-webhook/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="公司团队是使用gitlab来管理源代码的，一直以来当提交了一个PR后，需要手动在内部IM群里贴出PR链接和摘要，然后@目标同事来帮忙review代码，之后就不时地手动刷新页面查看是否有足够的人review完了。这种方式比较原始费时，仔细想想其实大部分流程是可以自动化的。 一些做的好的IM可以实现自定义机器人，例如飞书(lark)，如果机器人可以知道有人发了PR，同时又知道具体有哪些人需要revie">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/webhook.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/webhook-list.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/webhook-call-list.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/webhook-call-detail.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/private_token.png">
+<meta property="og:updated_time" content="2019-06-07T10:51:42.366Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现gitlab PR自动流程处理机器人">
+<meta name="twitter:description" content="公司团队是使用gitlab来管理源代码的，一直以来当提交了一个PR后，需要手动在内部IM群里贴出PR链接和摘要，然后@目标同事来帮忙review代码，之后就不时地手动刷新页面查看是否有足够的人review完了。这种方式比较原始费时，仔细想想其实大部分流程是可以自动化的。 一些做的好的IM可以实现自定义机器人，例如飞书(lark)，如果机器人可以知道有人发了PR，同时又知道具体有哪些人需要revie">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/gitlab-webhook/webhook.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/06/06/gitlab-webhook/">
+
+
+
+
+
+  <title>实现gitlab PR自动流程处理机器人 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/06/06/gitlab-webhook/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">实现gitlab PR自动流程处理机器人</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-06T17:06:09+08:00">
+                2019-06-06
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/06/06/gitlab-webhook/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/06/06/gitlab-webhook/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>公司团队是使用<code>gitlab</code>来管理源代码的，一直以来当提交了一个<code>PR</code>后，需要手动在内部<code>IM</code>群里贴出<code>PR</code>链接和摘要，然后<code>@</code>目标同事来帮忙review代码，之后就不时地手动刷新页面查看是否有足够的人<code>review</code>完了。这种方式比较原始费时，仔细想想其实大部分流程是可以自动化的。</p>
+<p>一些做的好的<code>IM</code>可以实现自定义机器人，例如<a href="https://itunes.apple.com/cn/app/%E9%A3%9E%E4%B9%A6-%E6%96%B0%E4%B8%80%E4%BB%A3%E4%BC%81%E4%B8%9A%E5%8A%9E%E5%85%AC%E5%A5%97%E4%BB%B6/id1401729613?mt=8" target="_blank" rel="noopener">飞书(lark)</a>，如果机器人可以知道有人发了<code>PR</code>，同时又知道具体有哪些人需要<code>review PR</code>，那么就可以自动在<code>IM</code>群里把这个<code>PR</code>的信息发出来，同时<code>@</code>对方。然后当机器人知道<code>PR</code>通过了后就可以给<code>PR</code>作者私聊发通知，就可以开开心心合并代码了。整理下具体流程：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">提交PR -&gt; 群里发通知+@对方 -&gt; PR通过 -&gt; 私聊发送通知 -&gt; 合并PR</span><br></pre></td></tr></table></figure>
+<p>全程只有第一步和最后一个需要<code>PR</code>作者操作，中间的步骤都可以由机器人完成。</p>
+<h1 id="如何知道有人发了PR"><a href="#如何知道有人发了PR" class="headerlink" title="如何知道有人发了PR"></a>如何知道有人发了PR</h1><p>这里的标题有一点误导，我们真正想知道的不是有没有人提交PR，而是那些需要被人<code>review</code>的<code>PR</code>。我们可以约定只有在<code>PR</code>的评论里@了同事，才认为这个<code>PR</code>需要<code>review</code>. 恰好<code>gitlab</code>提供了一种<code>webhook</code>机制,可以在发生了特定的事件时请求指定的<code>api</code>。 <code>webhook</code>的设置路径是<code>项目仓库 -&gt;  Settings -&gt; Integrations</code>,如图：</p>
+<p><img src="/images/gitlab-webhook/webhook.png" alt="webhook"></p>
+<p>其中的<code>URL</code>是自定义的，我们可以将它指向我们的一个后端<code>api</code>，<code>gitlab</code>会往这个<code>api</code>发送一个<code>POST</code>请求，携带事件的详细信息。<code>Trigger</code>我们设置为<code>Comments</code>，表示每次有人在<code>PR</code>里发表了评论都会触发<code>api</code>。</p>
+<p>在设置了<code>webhook</code>后，点击它的<code>Edit</code>按钮，可以看到在什么时候触发了<code>webhook</code>:</p>
+<p><img src="/images/gitlab-webhook/webhook-list.png" alt="webhook-list"></p>
+<p><img src="/images/gitlab-webhook/webhook-call-list.png" alt="webhook-call-list"></p>
+<p>还可以看到每次触发时传递的参数：</p>
+<p><img src="/images/gitlab-webhook/webhook-call-detail.png" alt="webhook-call-detail"></p>
+<p>里面的信息非常丰富，每次评论的内容也在其中，还可以根据已有的信息再次调用<code>gitlab openapi</code>来获取更多信息。</p>
+<p>以上，每次有人在<code>PR</code>里发表评论了，我们的后端<code>api</code>都会收到一个请求，接下来的问题是如何判断评论里是否含有有效的<code>@</code>.</p>
+<h1 id="提取-对象"><a href="#提取-对象" class="headerlink" title="提取@对象"></a>提取@对象</h1><p>首先评论的具体内容是放在了请求参数的<code>object_attributes.note</code>属性中，它是一个字符串例如<code>@xiaoming @zhangsan 来看看我的PR啊~</code>。什么是有效的@目标呢？ 就是@的对象确实是同事的名字，而不是随便写的，例如<code>@123</code>就不是有效的@。 我们把这件事拆分一下，首先无脑提取所有的@对象，可以用以下代码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> atReg = <span class="regexp">/@[^\s]+/g</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取单条note中@的列表</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getNoteAtList</span> (<span class="params"> note </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ( note.match( atReg ) || [] )</span><br><span class="line">    .map( <span class="function"><span class="params">at</span> =&gt;</span> at.slice( <span class="number">1</span> ) ); <span class="comment">//去除前面的@符号</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>它会返回形如<code>[&#39;xiaoming&#39;, &#39;zhangsan&#39;]</code>的数组，接下来就是判断每个元素是否有效的目标。这里可能不同公司的业务不一样，我的思路是判断目标是否为<code>gitlab</code>里的注册用户，可以用<code>gitlab</code>的<a href="https://docs.gitlab.com/ee/api/users.html" target="_blank" rel="noopener"><code>users api</code></a>,可以查询用户名匹配指定字符串的所有用户。我们利用这个<code>api</code>看返回的数组是否为空，不为空取第一个。则整个过滤逻辑如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 过滤@列表，只留下真实存在的gitlab用户, privateToken为gitlab openapi需要的鉴权token</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">filterAtList</span> (<span class="params"> atList = [], privateToken </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> distinctList = [ ...new <span class="built_in">Set</span>( atList ) ]; <span class="comment">// 去重</span></span><br><span class="line">  <span class="keyword">const</span> result = <span class="keyword">await</span> <span class="built_in">Promise</span>.all( distinctList.map( <span class="function"><span class="params">username</span> =&gt;</span> getGitlabUser( username, privateToken ) ) );</span><br><span class="line">  <span class="keyword">return</span> result.filter( <span class="built_in">Boolean</span> ); <span class="comment">// 去除空值</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 根据username在查找User信息</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">getGitlabUser</span> (<span class="params"> userName, privateToken </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> users = <span class="keyword">await</span> getUser( &#123;</span><br><span class="line">    userName,</span><br><span class="line">    privateToken,</span><br><span class="line">  &#125; )</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ( !users || !users.length )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> target = users[ <span class="number">0</span> ];</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    username: userName,</span><br><span class="line">    name: target.name,</span><br><span class="line">    id: target.id,</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">getUser</span> (<span class="params"> params </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; userName, privateToken &#125; = params;</span><br><span class="line">  <span class="keyword">const</span> request = <span class="keyword">await</span> getGitlabRequest( privateToken ); <span class="comment">// 基于axios进行的封装，设置了baseURL及鉴权header</span></span><br><span class="line">  <span class="keyword">try</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">const</span> result = <span class="keyword">await</span> request.get( <span class="string">`/users`</span>, &#123;</span><br><span class="line">      params: &#123;</span><br><span class="line">        username: userName,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result.data || [];</span><br><span class="line">  &#125; <span class="keyword">catch</span> ( e )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">console</span>.error( <span class="string">'get_gitlab_user_info'</span>, e );</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>调用<code>gitlab openapi</code>需要鉴权的<code>private_token</code>，获取步骤： 进入<code>gitlab</code> -&gt; 右上角个人头像 -&gt; <code>Settings</code> -&gt; <code>Access Tokens</code>，然后就可以增加一个<code>token</code>了，注意<code>token</code>的<code>scopes</code>全选.</p>
+<p><img src="/images/gitlab-webhook/private_token.png" alt="private_token"></p>
+<p>以上，这样我们就拿到了所有有效的<code>@</code>目标，接下来就是如何在<code>IM</code>群里利用机器人<code>@</code>他们。</p>
+<h1 id="机器人自动-目标"><a href="#机器人自动-目标" class="headerlink" title="机器人自动@目标"></a>机器人自动@目标</h1><p>这个基本就是调用各<code>IM</code>工具的<code>open api</code>了，举一个<code>飞书</code>的例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> atText = atList.map( <span class="function"><span class="params">at</span> =&gt;</span> <span class="string">`&lt;at user_id="<span class="subst">$&#123; at.userId &#125;</span>"&gt;@<span class="subst">$&#123; at.name &#125;</span>&lt;/at&gt;`</span> );</span><br><span class="line"><span class="keyword">const</span> textMsgConfig = &#123;</span><br><span class="line">  open_chat_id, <span class="comment">// 群id</span></span><br><span class="line">  msg_type: <span class="string">'text'</span>,</span><br><span class="line">  content: &#123;</span><br><span class="line">    text: atText,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">await</span> request.post( <span class="string">'/send/message/'</span>, textMsgConfig ); <span class="comment">// 在群里发送通知</span></span><br></pre></td></tr></table></figure>
+<p>只需提供@目标的<code>userId</code>和<code>name</code>即可，可以同时@多人。同时需要额外再提供群的id，这样机器人才知道该把消息往哪里发送。</p>
+<p>置于怎么申请<code>IM</code>机器人，这个也是不同<code>IM</code>不一样，这里不赘述。</p>
+<p>以上，我们就能做到当在<code>PR</code>里@了一些目标同事后，机器人自动在群里@同事了。</p>
+<h1 id="通知merge-PR"><a href="#通知merge-PR" class="headerlink" title="通知merge PR"></a>通知merge PR</h1><p>接下来要解决的问题是当有足够多的人觉得PR是ok的，实时通知PR作者来<code>merge</code> <code>PR</code>。这里涉及到2个问题：</p>
+<ol>
+<li>怎么判断一个PR是ok的</li>
+<li>怎么判断有足够多的人觉得PR是ok的</li>
+</ol>
+<p>第一个问题可以约定一个暗号：当在PR中评论了<code>LGTM（Look Good To Me）</code>即认为PR是ok的，当然也可以用其他暗号。</p>
+<p>第二个问题的核心是： 判断一个PR的所有评论中是否有足够的指定字符串。首先需要获取所有评论，这个依然可以通过<code>gitlab</code> <code>openapi</code>来获取，然后就依次对每条评论的内容做字符串匹配即可。核心代码示范：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 此PR所有的评论</span></span><br><span class="line"><span class="keyword">const</span> discussions = <span class="keyword">await</span> getPrDiscussions( &#123;</span><br><span class="line">  pid,</span><br><span class="line">  mrId,</span><br><span class="line">  privateToken</span><br><span class="line">&#125; );</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> lgtmList = getLgtmList( discussions, author ) || []; <span class="comment">// 回复了LGTM的评论列表</span></span><br><span class="line"><span class="comment">// 如果还没有到阈值则不回复消息</span></span><br><span class="line"><span class="keyword">if</span> ( lgtmList.length &lt; lgtmThreshold )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 文本消息</span></span><br><span class="line"><span class="keyword">const</span> nameList = lgtmList.map( <span class="function"><span class="params">note</span> =&gt;</span> note.author.name );</span><br><span class="line"><span class="keyword">const</span> lgtmSummary = <span class="string">`<span class="subst">$&#123; nameList.slice(<span class="number">0</span>,<span class="number">3</span>).join( <span class="string">'、'</span> ) &#125;</span><span class="subst">$&#123; nameList.length &gt; <span class="number">3</span> ? <span class="string">`等<span class="subst">$&#123;nameList.length&#125;</span>人`</span> : <span class="string">''</span> &#125;</span>对你的PR回复了LGTM， 你可以Merge此PR了`</span>;</span><br><span class="line"><span class="keyword">const</span> textMsgConfig = &#123;</span><br><span class="line">  email, <span class="comment">// PR作者的邮箱</span></span><br><span class="line">  msg_type: <span class="string">'text'</span>,</span><br><span class="line">  content: &#123;</span><br><span class="line">    text: lgtmSummary,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">await</span> request.post( <span class="string">'/send/message/'</span>, textMsgConfig ); <span class="comment">// 发送私聊通知</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 筛选出非PR作者写的note， discussion 与 note是一对多的关系</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getNonAuthorNotes</span> (<span class="params"> discus, authorId </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ( discus.notes || [] ).filter( <span class="function"><span class="params">note</span> =&gt;</span></span><br><span class="line">    <span class="string">`<span class="subst">$&#123; note.author.id &#125;</span>`</span> !== <span class="string">`<span class="subst">$&#123; authorId &#125;</span>`</span> &amp;&amp; <span class="comment">// 非作者的PR</span></span><br><span class="line">    !note.system &amp;&amp; <span class="comment">// 不是系统发的</span></span><br><span class="line">    !note.resolved <span class="comment">// 没有resolve</span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取回复了LGTM的评论列表</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getLgtmList</span> (<span class="params"> discussions, author </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> distinctMap = &#123;&#125;; <span class="comment">// 去重，同一个人的多次lgtm只算一次</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 获取所有非作者的评论</span></span><br><span class="line">  <span class="keyword">const</span> noteList = discussions.reduce( <span class="function">(<span class="params"> noteList, discus </span>) =&gt;</span> noteList.concat( getNonAuthorNotes( discus, author.id ) ), [] );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> noteList</span><br><span class="line">    .filter( <span class="function"><span class="params">note</span> =&gt;</span> note.body.trim().toUpperCase() === <span class="string">'LGTM'</span> ) <span class="comment">// 过滤出评论了LGTM的</span></span><br><span class="line">    .filter( <span class="function"><span class="params">note</span> =&gt;</span> &#123; <span class="comment">// 去重</span></span><br><span class="line">      <span class="keyword">const</span> &#123; id &#125; = note.author;</span><br><span class="line">      <span class="keyword">if</span> ( !distinctMap[ id ] )</span><br><span class="line">      &#123;</span><br><span class="line">        distinctMap[ id ] = <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125; )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上我们就可以及时给PR作者发送merge通知了。</p>
+<h1 id="merge-PR"><a href="#merge-PR" class="headerlink" title="merge PR"></a>merge PR</h1><p>最后一件锦上添花的事情，当收到<code>merge</code>通知后，当然可以手动打开PR连接然后点击<code>merge</code>按钮，不过这样显得不够极致，能不能让作者直接在<code>IM</code>工具内点击某个按钮或链接，然后由机器人自动帮助其合并呢？这样就更方便好用了！</p>
+<p>当然这么做的前提是<code>IM</code>工具支持富文本类型消息，或者可交互的消息，只要最终可以往指定链接发送<code>GET</code>或<code>POST</code>请求即可。</p>
+<p><code>gitlab</code>提供了<a href="https://docs.gitlab.com/ee/api/merge_requests.html#accept-mr" target="_blank" rel="noopener">直接<code>merge PR</code>的<code>openapi</code></a>,不过其只支持<code>PUT</code>类型请求，同时需要携带<code>PR</code>的关键信息。如果<code>IM</code>工具不支持在消息内再发送<code>PUT</code>类型请求，那么只能做一次中转：先发送一个普通的<code>get</code>/<code>post</code>请求到我们自己的某个后端<code>api</code>，然后在这个<code>api</code>内再发送最后的<code>PUT</code>请求。核心代码示范如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 发送支持交互的消息</span></span><br><span class="line"><span class="keyword">const</span> interacriveMsgConfig = &#123;</span><br><span class="line">  <span class="comment">// ... 其他相关配置</span></span><br><span class="line">  method: <span class="string">"post"</span>,</span><br><span class="line">  url: <span class="string">'xxx'</span>, <span class="comment">// 中转后端api</span></span><br><span class="line">  parameter: &#123;</span><br><span class="line">    pid,</span><br><span class="line">    mrId,</span><br><span class="line">    privateToken,</span><br><span class="line">    squash, <span class="comment">// 是否squash commit</span></span><br><span class="line">    removeSource, <span class="comment">// 是否删除源分支</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送交互类型消息</span></span><br><span class="line"><span class="keyword">await</span> request.post( <span class="string">'/send/message/'</span>, &#123;</span><br><span class="line">  email,</span><br><span class="line">  msg_type: <span class="string">'interactive'</span>,</span><br><span class="line">  content: &#123;</span><br><span class="line">    card: interacriveMsgConfig,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>然后在后端<code>api</code>发送<code>PUT</code>请求：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 合并PR</span></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="keyword">async</span> <span class="function"><span class="keyword">function</span> (<span class="params"> params, context </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> &#123;</span><br><span class="line">    pid,</span><br><span class="line">    mrId,</span><br><span class="line">    privateToken,</span><br><span class="line">    squash,</span><br><span class="line">    removeSource,</span><br><span class="line">  &#125; = params;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> gitlabRequest = <span class="keyword">await</span> getGitlabRequest( privateToken );</span><br><span class="line"></span><br><span class="line">  <span class="keyword">let</span> msg = <span class="string">''</span>;</span><br><span class="line">  <span class="keyword">let</span> status = <span class="number">200</span>;</span><br><span class="line">  <span class="keyword">try</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// 发送PUT请求</span></span><br><span class="line">    <span class="keyword">const</span> result = <span class="keyword">await</span> gitlabRequest.put( <span class="string">`/projects/<span class="subst">$&#123; pid &#125;</span>/merge_requests/<span class="subst">$&#123; mrId &#125;</span>/merge`</span>, &#123;</span><br><span class="line">      id: pid,</span><br><span class="line">      merge_request_iid: mrId,</span><br><span class="line">      squash,</span><br><span class="line">      should_remove_source_branch: removeSource</span><br><span class="line">    &#125; );</span><br><span class="line">    <span class="built_in">console</span>.log( <span class="string">'SUCCESS merge pr, result =&gt; '</span>, result );</span><br><span class="line">    msg = <span class="string">`【 SUCCESS 】: PR is merged!`</span>;</span><br><span class="line">  &#125; <span class="keyword">catch</span> ( error )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">console</span>.error( <span class="string">'FAIL merge pr, error =&gt; '</span>, error.response );</span><br><span class="line">    ( &#123; status, statusText &#125; = error.response );</span><br><span class="line">    msg = <span class="string">`【 FAILED 】: <span class="subst">$&#123; statusText &#125;</span>, <span class="subst">$&#123; errorMap[ status ] &#125;</span>`</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">console</span>.log( <span class="string">'merge pr ,final function return =&gt; '</span>, &#123; status, msg &#125; );</span><br><span class="line">  context.status( status ); <span class="comment">// 设置响应状态码</span></span><br><span class="line">  <span class="keyword">return</span> &#123; status, msg &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上我们就做到了<code>PR</code>的全程自动化！ 整个机器人的代码其实就是一个<code>node</code>服务，找个服务器部署起来即可。</p>
+<p>完整的源码可以参照<a href="https://github.com/hellogithub2014/gitlab_bot" target="_blank" rel="noopener"><code>github</code></a>.</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/node/" rel="tag"># node</a>
+          
+            <a href="/tags/gitlab/" rel="tag"># gitlab</a>
+          
+            <a href="/tags/webhook/" rel="tag"># webhook</a>
+          
+            <a href="/tags/serverless/" rel="tag"># serverless</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/01/koa-source-code/" rel="next" title="koa源码解析">
+                <i class="fa fa-chevron-left"></i> koa源码解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">76</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">60</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#如何知道有人发了PR"><span class="nav-number">1.</span> <span class="nav-text">如何知道有人发了PR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#提取-对象"><span class="nav-number">2.</span> <span class="nav-text">提取@对象</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#机器人自动-目标"><span class="nav-number">3.</span> <span class="nav-text">机器人自动@目标</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通知merge-PR"><span class="nav-number">4.</span> <span class="nav-text">通知merge PR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#merge-PR"><span class="nav-number">5.</span> <span class="nav-text">merge PR</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/06/06/gitlab-webhook/';
+          this.page.identifier = '2019/06/06/gitlab-webhook/';
+          this.page.title = '实现gitlab PR自动流程处理机器人';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

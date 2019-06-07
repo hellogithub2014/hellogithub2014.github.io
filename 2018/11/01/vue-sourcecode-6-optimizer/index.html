@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-01-12T12:49:02.419Z">
+<meta property="og:updated_time" content="2019-05-25T10:11:19.537Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Vue源码解析6-静态AST优化">
 <meta name="twitter:description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
@@ -111,9 +111,9 @@
       author: '博主'
     },
     algolia: {
-      applicationID: 'WEVE9OXRX9',
-      apiKey: 'df96fe02e563318c4ee22a2ae430820b',
-      indexName: 'orangeeee',
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
       hits: {"per_page":10},
       labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
     }
@@ -535,7 +535,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">75</span>
+                  <span class="site-state-item-count">76</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -548,7 +548,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">59</span>
+                  <span class="site-state-item-count">60</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
