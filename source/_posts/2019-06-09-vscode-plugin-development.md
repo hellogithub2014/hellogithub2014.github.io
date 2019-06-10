@@ -373,9 +373,49 @@ vscode.window.showErrorMessage(`与starling的远程交互依赖vscode-starling.
 
 ## input box
 
-## quickInput
+在编辑器顶部展示一个`input`输入框，使用`vscode.window.showInputBox`,会返回一个`Promise`:
 
-## staus bar
+```js
+const text: string | undefined = await vscode.window.showInputBox({
+  '我是输入框placeholder'
+})
+```
+
+![input box](input-box.png)
+
+## quick pick
+
+用于从一组选项中选择一个，类似于`select`组件。使用`vscode.window.showQuickPick`，同样返回一个`Promise`，`resolve`时得到被选中的选项或`undefined`：
+
+```js
+const lang: string | undefined = await vscode.window.showQuickPick(['en', 'zh', 'ja'], {
+  placeHolder: '第一步：选择语言',
+});
+```
+
+![quick pick](quick-pick.png)
+
+每个选项也可以是对象类型：
+
+```js
+const option: Object | undefined = await vscode.window.showQuickPick([{ id: 1, name: 'a' }, { id: 2, name: 'b' }, { id: 3, name: 'c' }], {
+  placeHolder: 'select an option',
+});
+```
+
+## output channel
+
+在利用`Control + ~`打开控制台后，会出现 4 个`tab`，从左到右依次是`问题`、`输出`、`调试控制台`、`终端`。`output channel`就是用于控制`输出` `tab`的内容，可以往其中追加文本、追加行、清空，可以将其看成一个简单的文件。`output channel`适用于一次展示大量信息.
+
+使用`vscode.window.createOutputChannel`创建`output channel`实例，然后就可以操作上面的各种`api`了。
+
+```js
+const opc = vscode.window.createOutputChannel('textSearch'); // 可以有多个OutputChannel共存，使用参数名区分
+
+opc.clear(); // 清空
+opc.appendLine('水电费'); // 追加一行
+opc.show(); // 打开控制台并切换到OutputChannel tab
+```
 
 ## file selector
 
