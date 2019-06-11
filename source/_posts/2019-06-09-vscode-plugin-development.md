@@ -243,7 +243,7 @@ vsce publish
 当插件内容发生变更时，重新发布时最好更新版本号，`vsce`可以遵循语义化版本指定升级大(`major`)/小(`minor`)/补丁(`patch`)版本，也可以直接指定版本号。例如只升级小版本：
 
 ```sh
-vsce publish
+vsce publish minor
 ```
 
 如果插件代码在`gitlab`上，因为仓库在内网，需要事先将`README`里的图片替换为公网`cdn`上的路径。
@@ -345,7 +345,7 @@ vscode.workspace.onDidChangeConfiguration(function(event) {
 
 # 常见编辑器 api
 
-所有`vscode`相关`api`都可以在官网文档查找，`vscode`内部也集成了`.d.ts`文件，直接跳转定义即可。这里只列举一些常见的`api`.
+所有`vscode`相关`api`都可以在[官网文档](https://code.visualstudio.com/api)查找，`vscode`内部也集成了`.d.ts`文件，编辑器内直接跳转定义即可。这里只列举一些常见的`api`.
 
 ## messgae
 
@@ -369,7 +369,7 @@ vscode.window.showErrorMessage(`与starling的远程交互依赖vscode-starling.
 });
 ```
 
-![message-interactive](message-interactive.png)
+![message-interactive](/images/vscode-plugin/message-interactive.png)
 
 ## input box
 
@@ -377,11 +377,11 @@ vscode.window.showErrorMessage(`与starling的远程交互依赖vscode-starling.
 
 ```js
 const text: string | undefined = await vscode.window.showInputBox({
-  '我是输入框placeholder'
+  '最后一步，输入文案'
 })
 ```
 
-![input box](input-box.png)
+![input box](/images/vscode-plugin/input-box.png)
 
 ## quick pick
 
@@ -393,7 +393,7 @@ const lang: string | undefined = await vscode.window.showQuickPick(['en', 'zh', 
 });
 ```
 
-![quick pick](quick-pick.png)
+![quick pick](/images/vscode-plugin/quick-pick.png)
 
 每个选项也可以是对象类型：
 
@@ -407,7 +407,7 @@ const option: Object | undefined = await vscode.window.showQuickPick([{ id: 1, n
 
 在利用`Control + ~`打开控制台后，会出现 4 个`tab`，从左到右依次是`问题`、`输出`、`调试控制台`、`终端`。`output channel`就是用于控制`输出` `tab`的内容，可以往其中追加文本、追加行、清空，可以将其看成一个简单的文件。`output channel`适用于一次展示大量信息.
 
-使用`vscode.window.createOutputChannel`创建`output channel`实例，然后就可以操作上面的各种`api`了。
+使用`vscode.window.createOutputChannel`创建`output channel`实例，然后就可以操作各种`api`了。
 
 ```js
 const opc = vscode.window.createOutputChannel('textSearch'); // 可以有多个OutputChannel共存，使用参数名区分
@@ -417,17 +417,128 @@ opc.appendLine('水电费'); // 追加一行
 opc.show(); // 打开控制台并切换到OutputChannel tab
 ```
 
+一个例子：
+
+![output-channel](/images/vscode-plugin/output-channel.png)
+
 ## file selector
+
+有些时候需要操作本地文件系统，例如选择某个文件、将文件保存到指定位置等。
+
+### 保存文件到指定位置
+
+使用`showSaveDialog`，它会打开文件选择器弹窗，选择了保存路径后点击确定会返回选中的路径，如果点击取消会返回`undefined`。
+
+```js
+// 让用户手动选择文件的的存储路径
+const uri = await vscode.window.showSaveDialog({
+  filters: {
+    zip: ['zip'], // 文件类型过滤
+  },
+});
+if (!uri) {
+  return false;
+}
+
+writeFile(uri.fsPath); // 写入文件
+```
+
+### 文件选择
+
+`showOpenDialog`同样会打开文件选择器弹窗，不过这次是用于选择文件,如果有选择文件会返回选中的文件路径，反之返回`undefined`。
+
+```js
+// showOpenDialog返回的是文件路径数组
+const uris = await window.showOpenDialog({
+  canSelectFolders: false, // 是否可以选择文件夹
+  canSelectMany: false, // 是否可以选择多个文件
+  filters: {
+    json: ['json'], // 文件类型过滤
+  },
+});
+
+if (!uris || !uris.length) {
+  return;
+}
+
+handleFiles(uris);
+```
+
+![file-open-dialog](/images/vscode-plugin/file-open-dialog.png)
 
 ## hover
 
+有时候需要在`hover`到文本上时展示一些提示信息，例如`eslint`插件在`hover`到不合规的代码上时会展示具体违反了哪些规则：
+
+![eslint-hover](/images/vscode-plugin/eslint-hover.png)
+
+处理`hover`需要注册一个`hover`处理器，`vscode`会在`hover`到文本上时自动调用处理器，同时传递`hover`相关的信息。例如一个展示光标所在的单词`hover`处理器：
+
+```js
+/**
+ * document: 打开的文本
+ * position： hover的位置
+ * token： 用于取消hover处理器作用
+ */
+async function hover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) {
+  const line = document.lineAt(position).text; // 光标所在的行
+  // getWordRangeAtPosition获取光标所在单词的行列号范围；getText获取指定范围的文本
+  const positionWord = document.getText(document.getWordRangeAtPosition(position));
+
+  console.log('光标所在位置的单词是：', positionWord);
+}
+
+// registerHoverProvider的第一个参数数组表明此处理器的作用范围
+const hoverDisposable = vscode.languages.registerHoverProvider(['javascript', 'vue'], {
+  provideHover: hover,
+});
+
+context.subscriptions.push(hoverDisposable);
+```
+
 ## selection
 
+与`hover`类似，有时候需要处理选中的文本，获取它是通过`vscode.TextEditor`实例上的属性，有两个相关属性
+
+- `selections`：所有被选中的文本信息
+- `selection`：第一个被选中的文本信息， 等同于`selections[0]`
+
+获取`TextEditor`的一个方法是通过注册`textEditorCommand`,会在回调函数里提供`TextEditor`实例，例如展示选中文本：
+
+```js
+let command = vscode.commands.registerTextEditorCommand('extension.selection', function(textEditor, edit) {
+  const text = textEditor.document.getText(textEditor.selection);
+  console.log('选中的文本是:', text);
+});
+
+context.subscriptions.push(command);
+```
+
 ## FileSystemWatcher
+
+用于监听文件是否发生了变化，可以监听到新建、更新、删除这 3 种事件,也可以选择忽略其中某个类型事件。创建`watcher`是利用`vscode.workspace.createFileSystemWatcher`：
+
+```js
+function createFileSystemWatcher(globPattern: GlobPattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean): FileSystemWatcher;
+```
+
+例如监听所有`js`文件的变动：
+
+```js
+const watcher = vscode.workspace.createFileSystemWatcher('*.js', false, false, false);
+watcher.onDidChange(e => { // 文件发生更新
+  console.log('js changed,' e.fsPath);
+});
+watcher.onDidCreate(e => { // 新建了js文件
+  console.log('js created,' e.fsPath);
+});
+watcher.onDidDelete(e => { // 删除了js文件
+  console.log('js deleted,' e.fsPath);
+});
+```
 
 # 参考文章
 
 1. [VSCode 插件开发急速入门](https://juejin.im/entry/5b50509d5188251967307780)
 2. [VSCode 插件开发全攻略系列](https://www.cnblogs.com/liuxianan/p/vscode-plugin-overview.html)
 3. [vscode api](https://code.visualstudio.com/api)
-4.
