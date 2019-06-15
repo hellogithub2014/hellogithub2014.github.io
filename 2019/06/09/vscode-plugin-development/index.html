@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="vscode,plugin,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文的目的是总结vscode的插件开发入门，之前一直以为开发插件是一件很难的事情，后来工作上需要搞一个效率小工具，就试着找了些资料来入门，发现其实就入门和开发一些简单功能的插件来说难度还是很低的。因为vscode本身是基于electron开发的，所以总体来说开发插件就是在写node代码，额外再加一些编辑器api，插件发布的过程和npm包的发布很类似。vscode官方提供的脚手架还帮忙加上了调试配置">
+<meta name="keywords" content="vscode,plugin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vscode插件开发">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/06/09/vscode-plugin-development/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="本文的目的是总结vscode的插件开发入门，之前一直以为开发插件是一件很难的事情，后来工作上需要搞一个效率小工具，就试着找了些资料来入门，发现其实就入门和开发一些简单功能的插件来说难度还是很低的。因为vscode本身是基于electron开发的，所以总体来说开发插件就是在写node代码，额外再加一些编辑器api，插件发布的过程和npm包的发布很类似。vscode官方提供的脚手架还帮忙加上了调试配置">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/helloworld-command.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/helloworld-message.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/debug.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/menu_cmd.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/install-from-vsix.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/snippets.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/message-interactive.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/input-box.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/quick-pick.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/output-channel.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/file-open-dialog.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/vscode-plugin/eslint-hover.png">
+<meta property="og:updated_time" content="2019-06-15T12:48:19.963Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="vscode插件开发">
+<meta name="twitter:description" content="本文的目的是总结vscode的插件开发入门，之前一直以为开发插件是一件很难的事情，后来工作上需要搞一个效率小工具，就试着找了些资料来入门，发现其实就入门和开发一些简单功能的插件来说难度还是很低的。因为vscode本身是基于electron开发的，所以总体来说开发插件就是在写node代码，额外再加一些编辑器api，插件发布的过程和npm包的发布很类似。vscode官方提供的脚手架还帮忙加上了调试配置">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/vscode-plugin/helloworld-command.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/06/09/vscode-plugin-development/">
+
+
+
+
+
+  <title>vscode插件开发 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/06/09/vscode-plugin-development/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">vscode插件开发</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-09T22:04:31+08:00">
+                2019-06-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/06/09/vscode-plugin-development/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/06/09/vscode-plugin-development/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文的目的是总结<code>vscode</code>的插件开发入门，之前一直以为开发插件是一件很难的事情，后来工作上需要搞一个效率小工具，就试着找了些资料来入门，发现其实就入门和开发一些简单功能的插件来说难度还是很低的。因为<code>vscode</code>本身是基于<code>electron</code>开发的，所以总体来说开发插件就是在写<code>node</code>代码，额外再加一些编辑器<code>api</code>，插件发布的过程和<code>npm</code>包的发布很类似。<code>vscode</code>官方提供的脚手架还帮忙加上了调试配置，调试非常方便。下面就来说下具体步骤，在学习的过程中参考了一些博客，放在了最后面。</p>
+<h1 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h1><p>这个很简单，我就直接拷贝过来了。</p>
+<ul>
+<li><code>nodejs</code>: 建议使用 <code>LTS</code> 版本</li>
+<li><code>npm</code>: 建议最新版本</li>
+<li><code>yeoman</code> : <code>npm install -g yo</code></li>
+<li><code>generator-code</code> : <code>npm install -g generator-code</code></li>
+</ul>
+<p>另外小<code>TIPS</code>，我们平时直接安装的插件所在目录是<code>~/.vscode/extensions</code>，有兴趣的可以看看这些插件是怎么实现的。</p>
+<h1 id="脚手架"><a href="#脚手架" class="headerlink" title="脚手架"></a>脚手架</h1><p>安装的<code>yo</code>可以直接生成一个<code>Hello World</code>版本的插件目录。执行</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">yo code</span><br></pre></td></tr></table></figure>
+<p>即会提示一些问题，按照个人喜好填写即可，最后会生成样板代码:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── CHANGELOG.md 插件变更记录</span><br><span class="line">├── README.md</span><br><span class="line">├── extension.js 插件入口文件</span><br><span class="line">├── jsconfig.json 编辑器关于js的配置</span><br><span class="line">├── package.json 全局配置</span><br><span class="line">├── <span class="built_in">test</span> 测试代码文件夹</span><br><span class="line">│   ├── extension.test.js</span><br><span class="line">│   └── index.js</span><br><span class="line">├── vsc-extension-quickstart.md 新手介绍</span><br><span class="line">└── yarn.lock</span><br></pre></td></tr></table></figure>
+<p>其中的<code>quickstart.md</code>是新手引导，里面包含了对文件的作用解析、如何运行插件、测试插等等，推荐去看一看，我们在下面也会介绍一些。除此之外在<code>package.json</code>里也包含了很多非常重要的信息：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  "name": "hello-world", // 插件名</span><br><span class="line">  "displayName": "hello-world",</span><br><span class="line">  "description": "hello world", // 插件描述</span><br><span class="line">  "version": "0.0.1",</span><br><span class="line">  "engines": &#123;</span><br><span class="line">    "vscode": "^1.35.0" // 运行插件需要vscode最低版本</span><br><span class="line">  &#125;,</span><br><span class="line">  "categories": ["Other"],</span><br><span class="line">  "activationEvents": ["onCommand:extension.helloWorld"], // 如何激活插件:在命令面板(Command+Shift+P吊起)输入helloWorld. 注意command名需要在contributes.commands中有配置</span><br><span class="line">  "main": "./extension.js", // 插件入口</span><br><span class="line">  "contributes": &#123;</span><br><span class="line">    "commands": [</span><br><span class="line">      // 此数组表示插件支持的所有命令</span><br><span class="line">      &#123;</span><br><span class="line">        "command": "extension.helloWorld", // 命令对应的Command，需要和代码里保持一致</span><br><span class="line">        "title": "Hello World" // 命令的显示名称</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  "scripts": &#123;</span><br><span class="line">    // 正常的npm script</span><br><span class="line">    "postinstall": "node ./node_modules/vscode/bin/install",</span><br><span class="line">    "test": "node ./node_modules/vscode/bin/test"</span><br><span class="line">  &#125;,</span><br><span class="line">  "devDependencies": &#123;</span><br><span class="line">    // 依赖包</span><br><span class="line">    "typescript": "^3.3.1",</span><br><span class="line">    "vscode": "^1.1.28",</span><br><span class="line">    "eslint": "^5.13.0",</span><br><span class="line">    "@types/node": "^10.12.21",</span><br><span class="line">    "@types/mocha": "^2.2.42"</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="启动、调试插件"><a href="#启动、调试插件" class="headerlink" title="启动、调试插件"></a>启动、调试插件</h1><h2 id="启动运行"><a href="#启动运行" class="headerlink" title="启动运行"></a>启动运行</h2><p>脚手架生成的其实就是一个<code>node</code>应用，直接按<code>F5</code>即可运行。对配置感兴趣的也可以查看根目录下的<code>.vscode/launch.json</code>。</p>
+<p>跑起来以后默认会新开一个<code>vscode</code>窗口，然后会发现什么都没有发生，这是由插件的启动方式决定的，配置于<code>package.json</code>里的<code>activationEvents</code>项。常用的有：</p>
+<ul>
+<li><code>onLanguage</code> 在打开特定语言类型的文件后激活</li>
+<li><code>onCommand</code> 在执行特定命令后激活</li>
+</ul>
+<p>由于我们的插件是配置的<code>onCommand</code>启动，并且指定的命令名是<code>Hello World</code>，所以我们在<strong>新开</strong>的<code>vscode</code>窗口中按下快捷键<code>Command+Shift+P</code>后再找到<code>Hello World</code>,选中并执行即可。</p>
+<p><img src="/images/vscode-plugin/helloworld-command.png" alt="helloworld-command"></p>
+<p>最后顺利的话，编辑器右下角会弹出<code>Hello World!</code>。</p>
+<p><img src="/images/vscode-plugin/helloworld-message.png" alt="helloworld-message"></p>
+<p>如果细心的话，还会在源窗口的控制台的<code>调试控制台</code>tab 中看到如下输出：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Congratulations, your extension <span class="string">"hello-world"</span> is now active!</span><br></pre></td></tr></table></figure>
+<p>这个就是由插件的真正代码部分输出的了。我们接下来看看<code>extension.js</code>的内容：</p>
+<h2 id="extension-js"><a href="#extension-js" class="headerlink" title="extension.js"></a>extension.js</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// vscode编辑器api入口</span></span><br><span class="line"><span class="keyword">const</span> vscode = <span class="built_in">require</span>(<span class="string">'vscode'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 此生命周期方法在插件激活时执行</span></span><br><span class="line"><span class="comment"> * @param &#123;vscode.ExtensionContext&#125; context</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">activate</span>(<span class="params">context</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// console的各种方法都是输出在`调试控制台`tab下</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Congratulations, your extension "hello-world" is now active!'</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// registerCommand用于注册命令并提供具体逻辑，命令名需要和package.json里写的一致。</span></span><br><span class="line">  <span class="comment">// 回调函数在命令被触发时执行。</span></span><br><span class="line">  <span class="keyword">let</span> disposable = vscode.commands.registerCommand(<span class="string">'extension.helloWorld'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 在编辑器右下角展示一个message box</span></span><br><span class="line">    vscode.window.showInformationMessage(<span class="string">'Hello World!'</span>);</span><br><span class="line">  &#125;);</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 将registerCommand的返回值放入subscriptions可以自动执行内存回收逻辑。</span></span><br><span class="line">  context.subscriptions.push(disposable);</span><br><span class="line">&#125;</span><br><span class="line">exports.activate = activate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 当插件被设置为无效时执行此生命周期钩子</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">deactivate</span>(<span class="params"></span>) </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  activate,</span><br><span class="line">  deactivate,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>以上就是此插件的完整逻辑了，配置注释是很简单的。可以看到主要就是两个生命周期函数，另外搭配一些编辑器<code>api</code>就完成了。</p>
+<h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>脚手架已经贴心的帮我们加了调试配置，我们只用添加断点即可：</p>
+<p><img src="/images/vscode-plugin/debug.png" alt="debug"></p>
+<h1 id="Command-配置"><a href="#Command-配置" class="headerlink" title="Command 配置"></a>Command 配置</h1><p>上面提到了生成一个<code>command</code>只需要 2 步，先是利用<code>vscode.commands.registerCommand</code>注册一个，然后再到<code>package.json</code>里的<code>contributes.commands</code>中配置即可。围绕<code>command</code>还可以做一些其他事情，最常见的就是配置右键菜单和快捷键。</p>
+<h2 id="右键菜单"><a href="#右键菜单" class="headerlink" title="右键菜单"></a>右键菜单</h2><p>表示右键的菜单里出现指定<code>command</code>，配置方法：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"contributes"</span>:&#123;</span><br><span class="line">  <span class="string">"menus"</span>: &#123;</span><br><span class="line">    <span class="string">"editor/context"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="string">"when"</span>: <span class="string">"editorHasSelection &amp;&amp; resourceFilename =~ /.js|.vue|.ts/"</span>, <span class="comment">// 出现时机，当编辑器中有选中文本同时文件名后缀是js/vue/ts</span></span><br><span class="line">        <span class="string">"command"</span>: <span class="string">"extension.starling_textSearch"</span>, <span class="comment">// 需要在`contributes.commands`存在此命令</span></span><br><span class="line">        <span class="string">"group"</span>: <span class="string">"6_Starling"</span> <span class="comment">// 命令所在的组，右键菜单可以分组，组与组之间存在分隔线</span></span><br><span class="line">      &#125;,</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/vscode-plugin/menu_cmd.png" alt="右键菜单"></p>
+<h2 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h2><p>有了快捷键后，就不用每次在命令面板里查找并运行命令了，同样是在<code>package.json</code>中配置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"contributes"</span>: &#123;</span><br><span class="line">  <span class="string">"keybindings"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"command"</span>: <span class="string">"extension.starling_textSearch"</span>,</span><br><span class="line">      <span class="string">"key"</span>: <span class="string">"ctrl+f11"</span>, <span class="comment">// 在Windows上的快捷键</span></span><br><span class="line">      <span class="string">"mac"</span>: <span class="string">"cmd+f11"</span>, <span class="comment">// 在mac上的快捷键</span></span><br><span class="line">      <span class="string">"when"</span>: <span class="string">"editorTextFocus"</span> <span class="comment">// 出现时机， 当编辑器焦点在某个文本中</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="发布"><a href="#发布" class="headerlink" title="发布"></a>发布</h1><p>主要参考的是<a href="https://code.visualstudio.com/api/working-with-extensions/publishing-extension" target="_blank" rel="noopener">官方文档</a></p>
+<p>首先需要安装<code>vsce</code>工具：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install -g vsce</span><br></pre></td></tr></table></figure>
+<h2 id="本地打包"><a href="#本地打包" class="headerlink" title="本地打包"></a>本地打包</h2><p>将插件打包成<code>.vsix</code>文件。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vsce package</span><br></pre></td></tr></table></figure>
+<p>会在项目根目录生成<code>hello-world-0.0.1.vsix</code>，然后在编辑器的插件面板选择<code>从VSIX安装</code>即可：</p>
+<p><img src="/images/vscode-plugin/install-from-vsix.png" alt="install-from-vsix"></p>
+<h2 id="发布到插件市场"><a href="#发布到插件市场" class="headerlink" title="发布到插件市场"></a>发布到插件市场</h2><ol>
+<li><p>需要获取一个<code>token</code>，参考<a href="https://code.visualstudio.com/api/working-with-extensions/publishing-extension" target="_blank" rel="noopener">官方文档</a></p>
+</li>
+<li><p>利用<code>token</code>创建一个<code>publisher</code>，这是在插件市场的用户</p>
+</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vsce create-publisher (publisher name)</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>本地登录此用户</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vsce login (publisher name)</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>发布插件</li>
+</ol>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vsce publish</span><br></pre></td></tr></table></figure>
+<p>顺利的话在控制台会提示发布成功，然后过几分钟就可以在插件市场搜到自己的插件啦！😄</p>
+<h2 id="版本升级"><a href="#版本升级" class="headerlink" title="版本升级"></a>版本升级</h2><p>当插件内容发生变更时，重新发布时最好更新版本号，<code>vsce</code>可以遵循语义化版本指定升级大(<code>major</code>)/小(<code>minor</code>)/补丁(<code>patch</code>)版本，也可以直接指定版本号。例如只升级小版本：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vsce publish minor</span><br></pre></td></tr></table></figure>
+<p>如果插件代码在<code>gitlab</code>上，因为仓库在内网，需要事先将<code>README</code>里的图片替换为公网<code>cdn</code>上的路径。</p>
+<h1 id="snippets"><a href="#snippets" class="headerlink" title="snippets"></a>snippets</h1><p><code>snippets</code>是代码片段，可以理解为代码快捷键，在输入很少量触发代码后即可联想出一大坨关联代码，非常方便。对于<code>js</code>、<code>ts</code>、<code>vue</code>都可以在插件市场找到非常多的<code>snippets</code>插件。</p>
+<p>开发<code>snippets</code>只用两步：</p>
+<ol>
+<li>编写<code>snippets</code>映射文件，它是一个<code>json</code>，例如<code>javascript.json</code>：</li>
+</ol>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"this$t"</span>: &#123;</span><br><span class="line">    "prefix": "tt'", // 触发代码</span><br><span class="line">    "body": [</span><br><span class="line">      // 联想出来的关联代码</span><br><span class="line">      "this.\\$t('$&#123;1:key&#125;')" // $&#123;1: key&#125; 是占位符，联想出来后会自动聚焦在这里</span><br><span class="line">    ],</span><br><span class="line">    "description": "this.$t" // snippets描述，当有多个匹配的代码片段时，可以用来识别</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>在<code>package.json</code>中配置</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"contributes"</span>: &#123;</span><br><span class="line">  <span class="string">"snippets"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"language"</span>: <span class="string">"javascript"</span>, <span class="comment">// 代码片段起作用的语言类型</span></span><br><span class="line">      <span class="string">"path"</span>: <span class="string">"./src/snippets/javascript.json"</span> <span class="comment">// 对应的映射文件</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后就可以在编辑器看到效果了：</p>
+<p><img src="/images/vscode-plugin/snippets.gif" alt="snippets"></p>
+<p>更多细节参考<a href="https://code.visualstudio.com/docs/editor/userdefinedsnippets#_snippet-syntax" target="_blank" rel="noopener">snippets-syntax</a></p>
+<h1 id="插件默认配置"><a href="#插件默认配置" class="headerlink" title="插件默认配置"></a>插件默认配置</h1><p>很多插件是需要一些额外配置才能工作的，设置默认配置同样在<code>package.json</code>里：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">"contributes": &#123;</span><br><span class="line">  "configuration": &#123; // 默认配置</span><br><span class="line">    "type": "object",</span><br><span class="line">    "title": "",</span><br><span class="line">    "required": [</span><br><span class="line">      <span class="string">"sid"</span></span><br><span class="line">    ],</span><br><span class="line">    "properties": &#123;</span><br><span class="line">      "includes": &#123;</span><br><span class="line">        "type": "Array",</span><br><span class="line">        "default": [</span><br><span class="line">          <span class="string">"json"</span></span><br><span class="line">        ],</span><br><span class="line">        "description": "文件类型过滤器"</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>默认配置是<code>json schema</code>格式，在覆盖默认配置时如果校验出错会有提示。</p>
+<p>插件中使用<code>getConfiguration</code>来读取配置：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getConfig</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> config = vscode.workspace.getConfiguration();</span><br><span class="line">  <span class="keyword">const</span> includes: string[] | <span class="literal">undefined</span> = config.get(<span class="string">'includes'</span>); <span class="comment">// 获取指定配置项</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    includes: includes || [],</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="监听配置项修改"><a href="#监听配置项修改" class="headerlink" title="监听配置项修改"></a>监听配置项修改</h2><p>在用户安装了插件后，可能会修改配置，如何实时监听配置项的修改呢？ <code>vscode</code>提供了<code>onDidChangeConfiguration</code>事件监听。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vscode.workspace.onDidChangeConfiguration(<span class="function"><span class="keyword">function</span>(<span class="params">event</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> configList = [<span class="string">'includes'</span>];</span><br><span class="line">  <span class="comment">// affectsConfiguration: 判断是否变更了指定配置项</span></span><br><span class="line">  <span class="keyword">const</span> affected = configList.some(<span class="function"><span class="params">item</span> =&gt;</span> event.affectsConfiguration(item));</span><br><span class="line">  <span class="keyword">if</span> (affected) &#123;</span><br><span class="line">    <span class="comment">// do some thing ...</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h1 id="常见编辑器-api"><a href="#常见编辑器-api" class="headerlink" title="常见编辑器 api"></a>常见编辑器 api</h1><p>所有<code>vscode</code>相关<code>api</code>都可以在<a href="https://code.visualstudio.com/api" target="_blank" rel="noopener">官网文档</a>查找，<code>vscode</code>内部也集成了<code>.d.ts</code>文件，编辑器内直接跳转定义即可。这里只列举一些常见的<code>api</code>.</p>
+<h2 id="messgae"><a href="#messgae" class="headerlink" title="messgae"></a>messgae</h2><p>用于展示提示性消息，出现在编辑器右下角，而不是顶部或右上角。</p>
+<p>和<code>console</code>类似，提供了普通消息、警告消息、错误消息。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vscode.window.showInformationMessage(<span class="string">'普通消息'</span>);</span><br><span class="line">vscode.window.showWarningMessage(<span class="string">'警告消息'</span>);</span><br><span class="line">vscode.window.showErrorMessage(<span class="string">'错误消息'</span>);</span><br></pre></td></tr></table></figure>
+<p>消息也支持交互按钮，当选中按钮时返回的是按钮本身：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vscode.window.showErrorMessage(<span class="string">`与starling的远程交互依赖vscode-starling.sid配置项`</span>, <span class="string">'打开配置项'</span>).then(<span class="function"><span class="params">selection</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (selection === <span class="string">'打开配置项'</span>) &#123;</span><br><span class="line">    vscode.commands.executeCommand(<span class="string">'workbench.action.openSettings'</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/vscode-plugin/message-interactive.png" alt="message-interactive"></p>
+<h2 id="input-box"><a href="#input-box" class="headerlink" title="input box"></a>input box</h2><p>在编辑器顶部展示一个<code>input</code>输入框，使用<code>vscode.window.showInputBox</code>,会返回一个<code>Promise</code>:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> text: string | <span class="literal">undefined</span> = <span class="keyword">await</span> vscode.window.showInputBox(&#123;</span><br><span class="line">  <span class="string">'最后一步，输入文案'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><img src="/images/vscode-plugin/input-box.png" alt="input box"></p>
+<h2 id="quick-pick"><a href="#quick-pick" class="headerlink" title="quick pick"></a>quick pick</h2><p>用于从一组选项中选择一个，类似于<code>select</code>组件。使用<code>vscode.window.showQuickPick</code>，同样返回一个<code>Promise</code>，<code>resolve</code>时得到被选中的选项或<code>undefined</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> lang: string | <span class="literal">undefined</span> = <span class="keyword">await</span> vscode.window.showQuickPick([<span class="string">'en'</span>, <span class="string">'zh'</span>, <span class="string">'ja'</span>], &#123;</span><br><span class="line">  placeHolder: <span class="string">'第一步：选择语言'</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/vscode-plugin/quick-pick.png" alt="quick pick"></p>
+<p>每个选项也可以是对象类型：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> option: <span class="built_in">Object</span> | <span class="literal">undefined</span> = <span class="keyword">await</span> vscode.window.showQuickPick([&#123; <span class="attr">id</span>: <span class="number">1</span>, <span class="attr">name</span>: <span class="string">'a'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">2</span>, <span class="attr">name</span>: <span class="string">'b'</span> &#125;, &#123; <span class="attr">id</span>: <span class="number">3</span>, <span class="attr">name</span>: <span class="string">'c'</span> &#125;], &#123;</span><br><span class="line">  placeHolder: <span class="string">'select an option'</span>,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h2 id="output-channel"><a href="#output-channel" class="headerlink" title="output channel"></a>output channel</h2><p>在利用<code>Control + ~</code>打开控制台后，会出现 4 个<code>tab</code>，从左到右依次是<code>问题</code>、<code>输出</code>、<code>调试控制台</code>、<code>终端</code>。<code>output channel</code>就是用于控制<code>输出</code> <code>tab</code>的内容，可以往其中追加文本、追加行、清空，可以将其看成一个简单的文件。<code>output channel</code>适用于一次展示大量信息.</p>
+<p>使用<code>vscode.window.createOutputChannel</code>创建<code>output channel</code>实例，然后就可以操作各种<code>api</code>了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> opc = vscode.window.createOutputChannel(<span class="string">'textSearch'</span>); <span class="comment">// 可以有多个OutputChannel共存，使用参数名区分</span></span><br><span class="line"></span><br><span class="line">opc.clear(); <span class="comment">// 清空</span></span><br><span class="line">opc.appendLine(<span class="string">'水电费'</span>); <span class="comment">// 追加一行</span></span><br><span class="line">opc.show(); <span class="comment">// 打开控制台并切换到OutputChannel tab</span></span><br></pre></td></tr></table></figure>
+<p>一个例子：</p>
+<p><img src="/images/vscode-plugin/output-channel.png" alt="output-channel"></p>
+<h2 id="file-selector"><a href="#file-selector" class="headerlink" title="file selector"></a>file selector</h2><p>有些时候需要操作本地文件系统，例如选择某个文件、将文件保存到指定位置等。</p>
+<h3 id="保存文件到指定位置"><a href="#保存文件到指定位置" class="headerlink" title="保存文件到指定位置"></a>保存文件到指定位置</h3><p>使用<code>showSaveDialog</code>，它会打开文件选择器弹窗，选择了保存路径后点击确定会返回选中的路径，如果点击取消会返回<code>undefined</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 让用户手动选择文件的的存储路径</span></span><br><span class="line"><span class="keyword">const</span> uri = <span class="keyword">await</span> vscode.window.showSaveDialog(&#123;</span><br><span class="line">  filters: &#123;</span><br><span class="line">    zip: [<span class="string">'zip'</span>], <span class="comment">// 文件类型过滤</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"><span class="keyword">if</span> (!uri) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">writeFile(uri.fsPath); <span class="comment">// 写入文件</span></span><br></pre></td></tr></table></figure>
+<h3 id="文件选择"><a href="#文件选择" class="headerlink" title="文件选择"></a>文件选择</h3><p><code>showOpenDialog</code>同样会打开文件选择器弹窗，不过这次是用于选择文件,如果有选择文件会返回选中的文件路径，反之返回<code>undefined</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// showOpenDialog返回的是文件路径数组</span></span><br><span class="line"><span class="keyword">const</span> uris = <span class="keyword">await</span> <span class="built_in">window</span>.showOpenDialog(&#123;</span><br><span class="line">  canSelectFolders: <span class="literal">false</span>, <span class="comment">// 是否可以选择文件夹</span></span><br><span class="line">  canSelectMany: <span class="literal">false</span>, <span class="comment">// 是否可以选择多个文件</span></span><br><span class="line">  filters: &#123;</span><br><span class="line">    json: [<span class="string">'json'</span>], <span class="comment">// 文件类型过滤</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (!uris || !uris.length) &#123;</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">handleFiles(uris);</span><br></pre></td></tr></table></figure>
+<p><img src="/images/vscode-plugin/file-open-dialog.png" alt="file-open-dialog"></p>
+<h2 id="hover"><a href="#hover" class="headerlink" title="hover"></a>hover</h2><p>有时候需要在<code>hover</code>到文本上时展示一些提示信息，例如<code>eslint</code>插件在<code>hover</code>到不合规的代码上时会展示具体违反了哪些规则：</p>
+<p><img src="/images/vscode-plugin/eslint-hover.png" alt="eslint-hover"></p>
+<p>处理<code>hover</code>需要注册一个<code>hover</code>处理器，<code>vscode</code>会在<code>hover</code>到文本上时自动调用处理器，同时传递<code>hover</code>相关的信息。例如一个展示光标所在的单词<code>hover</code>处理器：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * document: 打开的文本</span></span><br><span class="line"><span class="comment"> * position： hover的位置</span></span><br><span class="line"><span class="comment"> * token： 用于取消hover处理器作用</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">hover</span>(<span class="params">document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> line = <span class="built_in">document</span>.lineAt(position).text; <span class="comment">// 光标所在的行</span></span><br><span class="line">  <span class="comment">// getWordRangeAtPosition获取光标所在单词的行列号范围；getText获取指定范围的文本</span></span><br><span class="line">  <span class="keyword">const</span> positionWord = <span class="built_in">document</span>.getText(<span class="built_in">document</span>.getWordRangeAtPosition(position));</span><br><span class="line"></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'光标所在位置的单词是：'</span>, positionWord);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// registerHoverProvider的第一个参数数组表明此处理器的作用范围</span></span><br><span class="line"><span class="keyword">const</span> hoverDisposable = vscode.languages.registerHoverProvider([<span class="string">'javascript'</span>, <span class="string">'vue'</span>], &#123;</span><br><span class="line">  provideHover: hover,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">context.subscriptions.push(hoverDisposable);</span><br></pre></td></tr></table></figure>
+<h2 id="selection"><a href="#selection" class="headerlink" title="selection"></a>selection</h2><p>与<code>hover</code>类似，有时候需要处理选中的文本，获取它是通过<code>vscode.TextEditor</code>实例上的属性，有两个相关属性</p>
+<ul>
+<li><code>selections</code>：所有被选中的文本信息</li>
+<li><code>selection</code>：第一个被选中的文本信息， 等同于<code>selections[0]</code></li>
+</ul>
+<p>获取<code>TextEditor</code>的一个方法是通过注册<code>textEditorCommand</code>,会在回调函数里提供<code>TextEditor</code>实例，例如展示选中文本：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> command = vscode.commands.registerTextEditorCommand(<span class="string">'extension.selection'</span>, <span class="function"><span class="keyword">function</span>(<span class="params">textEditor, edit</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> text = textEditor.document.getText(textEditor.selection);</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'选中的文本是:'</span>, text);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">context.subscriptions.push(command);</span><br></pre></td></tr></table></figure>
+<h2 id="FileSystemWatcher"><a href="#FileSystemWatcher" class="headerlink" title="FileSystemWatcher"></a>FileSystemWatcher</h2><p>用于监听文件是否发生了变化，可以监听到新建、更新、删除这 3 种事件,也可以选择忽略其中某个类型事件。创建<code>watcher</code>是利用<code>vscode.workspace.createFileSystemWatcher</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">createFileSystemWatcher</span>(<span class="params">globPattern: GlobPattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean</span>): <span class="title">FileSystemWatcher</span>;</span></span><br></pre></td></tr></table></figure>
+<p>例如监听所有<code>js</code>文件的变动：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> watcher = vscode.workspace.createFileSystemWatcher(<span class="string">'*.js'</span>, <span class="literal">false</span>, <span class="literal">false</span>, <span class="literal">false</span>);</span><br><span class="line">watcher.onDidChange(<span class="function"><span class="params">e</span> =&gt;</span> &#123; <span class="comment">// 文件发生更新</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'js changed,'</span> e.fsPath);</span><br><span class="line">&#125;);</span><br><span class="line">watcher.onDidCreate(<span class="function"><span class="params">e</span> =&gt;</span> &#123; <span class="comment">// 新建了js文件</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'js created,'</span> e.fsPath);</span><br><span class="line">&#125;);</span><br><span class="line">watcher.onDidDelete(<span class="function"><span class="params">e</span> =&gt;</span> &#123; <span class="comment">// 删除了js文件</span></span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'js deleted,'</span> e.fsPath);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h1 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h1><ol>
+<li><a href="https://juejin.im/entry/5b50509d5188251967307780" target="_blank" rel="noopener">VSCode 插件开发急速入门</a></li>
+<li><a href="https://www.cnblogs.com/liuxianan/p/vscode-plugin-overview.html" target="_blank" rel="noopener">VSCode 插件开发全攻略系列</a></li>
+<li><a href="https://code.visualstudio.com/api" target="_blank" rel="noopener">vscode api</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vscode/" rel="tag"># vscode</a>
+          
+            <a href="/tags/plugin/" rel="tag"># plugin</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/06/gitlab-webhook/" rel="next" title="实现gitlab PR自动流程处理机器人">
+                <i class="fa fa-chevron-left"></i> 实现gitlab PR自动流程处理机器人
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/06/13/the-modularity-of-complicated-form/" rel="prev" title="复杂表单的模块化处理">
+                复杂表单的模块化处理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#环境准备"><span class="nav-number">1.</span> <span class="nav-text">环境准备</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#脚手架"><span class="nav-number">2.</span> <span class="nav-text">脚手架</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#启动、调试插件"><span class="nav-number">3.</span> <span class="nav-text">启动、调试插件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#启动运行"><span class="nav-number">3.1.</span> <span class="nav-text">启动运行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#extension-js"><span class="nav-number">3.2.</span> <span class="nav-text">extension.js</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调试"><span class="nav-number">3.3.</span> <span class="nav-text">调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Command-配置"><span class="nav-number">4.</span> <span class="nav-text">Command 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#右键菜单"><span class="nav-number">4.1.</span> <span class="nav-text">右键菜单</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快捷键"><span class="nav-number">4.2.</span> <span class="nav-text">快捷键</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#发布"><span class="nav-number">5.</span> <span class="nav-text">发布</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#本地打包"><span class="nav-number">5.1.</span> <span class="nav-text">本地打包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#发布到插件市场"><span class="nav-number">5.2.</span> <span class="nav-text">发布到插件市场</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#版本升级"><span class="nav-number">5.3.</span> <span class="nav-text">版本升级</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#snippets"><span class="nav-number">6.</span> <span class="nav-text">snippets</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#插件默认配置"><span class="nav-number">7.</span> <span class="nav-text">插件默认配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#监听配置项修改"><span class="nav-number">7.1.</span> <span class="nav-text">监听配置项修改</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#常见编辑器-api"><span class="nav-number">8.</span> <span class="nav-text">常见编辑器 api</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#messgae"><span class="nav-number">8.1.</span> <span class="nav-text">messgae</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#input-box"><span class="nav-number">8.2.</span> <span class="nav-text">input box</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#quick-pick"><span class="nav-number">8.3.</span> <span class="nav-text">quick pick</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#output-channel"><span class="nav-number">8.4.</span> <span class="nav-text">output channel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#file-selector"><span class="nav-number">8.5.</span> <span class="nav-text">file selector</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#保存文件到指定位置"><span class="nav-number">8.5.1.</span> <span class="nav-text">保存文件到指定位置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件选择"><span class="nav-number">8.5.2.</span> <span class="nav-text">文件选择</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#hover"><span class="nav-number">8.6.</span> <span class="nav-text">hover</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#selection"><span class="nav-number">8.7.</span> <span class="nav-text">selection</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#FileSystemWatcher"><span class="nav-number">8.8.</span> <span class="nav-text">FileSystemWatcher</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考文章"><span class="nav-number">9.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/06/09/vscode-plugin-development/';
+          this.page.identifier = '2019/06/09/vscode-plugin-development/';
+          this.page.title = 'vscode插件开发';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="js,architecture,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：  将每个表单项封装成独立组件 在业务上将表单项分类，功能内聚的一组表单项放到一个form group下，这样整个表单被拆分为多个form group，同时每个form group也">
+<meta name="keywords" content="js,architecture">
+<meta property="og:type" content="article">
+<meta property="og:title" content="复杂表单的模块化处理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/06/13/the-modularity-of-complicated-form/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：  将每个表单项封装成独立组件 在业务上将表单项分类，功能内聚的一组表单项放到一个form group下，这样整个表单被拆分为多个form group，同时每个form group也">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/simple-modularity.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/compTree-moduleTree.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-data-collect.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-data-example.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/affect-of-hide-show--for-form-data.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/hidden-form-item-afftection-demo.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-model-collect.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-model-example.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-validate-example.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-item-module-sync.jpg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/module-fixed-property.jpg">
+<meta property="og:updated_time" content="2019-06-15T13:57:03.058Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="复杂表单的模块化处理">
+<meta name="twitter:description" content="工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：  将每个表单项封装成独立组件 在业务上将表单项分类，功能内聚的一组表单项放到一个form group下，这样整个表单被拆分为多个form group，同时每个form group也">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/modulaized-form/simple-modularity.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/06/13/the-modularity-of-complicated-form/">
+
+
+
+
+
+  <title>复杂表单的模块化处理 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/06/13/the-modularity-of-complicated-form/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">复杂表单的模块化处理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-13T15:54:37+08:00">
+                2019-06-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/06/13/the-modularity-of-complicated-form/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/06/13/the-modularity-of-complicated-form/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：</p>
+<ul>
+<li>将每个表单项封装成独立组件</li>
+<li>在业务上将表单项分类，功能内聚的一组表单项放到一个<code>form group</code>下，这样整个表单被拆分为多个<code>form group</code>，同时每个<code>form group</code>也封装成组件：</li>
+</ul>
+<p><img src="/images/modulaized-form/simple-modularity.jpg" alt="simple-modularity"></p>
+<ul>
+<li><code>form</code>汇集下属所有<code>form group</code>的互操作和业务逻辑，同时<code>form group</code>汇集下属所有<code>form item</code>的互操作和业务逻辑。例如收集表单提交时的接口数据，表单项显隐的控制</li>
+<li>统一数据流管理，放到<code>vuex</code>中，但不够彻底，组件内部仍然有维护小部分数据</li>
+</ul>
+<p>上面这样做在表单复杂度不是那么高时可以很好应对，但随着业务越来越复杂，遇到了新的问题：</p>
+<ul>
+<li><code>form</code>和<code>form group</code>由于需要汇集下属所有组件的互操作和业务逻辑，导致组件变的非常大，代码可以很轻易的增长到上千行</li>
+<li>每个表单项的逻辑散落在多处，难以整理出其具体是怎么工作的</li>
+<li>维护困难，虽然可能单独一个表单项的逻辑只有几百行，但是混杂在了父组件上千行的代码中，轻易不敢乱动</li>
+</ul>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>仔细思考了困境，发现其实<code>form</code>和<code>form group</code>并不需要维护具体的业务逻辑，它们应当只是做一些简单的汇总工作。如果将业务逻辑全部内聚到单独的表单项，那么维护起来将会非常方便。表单项的核心逻辑有：</p>
+<ul>
+<li>为了能够工作，需要从完整的<code>form data</code>中获取哪些数据</li>
+<li>当表单提交时，自身需要贡献哪些数据到<code>form data</code></li>
+<li>是否展示、隐藏的控制逻辑，一个表单项的显隐通常是受到某些其他表单项、上层<code>form</code>、<code>form group</code>组件的状态影响</li>
+<li>所有数据完全由<code>vuex</code>托管，不再散落多处</li>
+<li>每个表单项独立的<code>module</code>，<code>form group</code>也有独立<code>module</code>，与组件树一一对应形成<code>module tree</code></li>
+</ul>
+<p>表单项完全自治内聚，<code>form</code>只用在初始化时将后端拉取的完整<code>form data</code>传递给表单项，由表单项自行关心的字段；在表单提交时，由于表单项内部已经准备好需要贡献哪些数据，<code>form</code>只用直接拿过来即可。</p>
+<p>基于以上思路，势必有很多通用逻辑，提取出来后就可以方便的复用了。<code>demo</code>代码放在最后，下面具体说说实现细节。</p>
+<h1 id="总体架构"><a href="#总体架构" class="headerlink" title="总体架构"></a>总体架构</h1><p><img src="/images/modulaized-form/compTree-moduleTree.jpg" alt="compTree-moduleTree"></p>
+<p>如上，组件树与<code>vuex module</code>树一一对应，<code>form</code>、<code>form group</code>、<code>form item</code>都有各自的<code>module</code>。</p>
+<p><code>vuex</code>中涉及多层次<code>module</code>时上下层通信不是很方便，必须知道<code>namespace</code>才行， 蛋疼的是<code>vuex</code>并没有提供很好的机制方便上层<code>module</code>了解其下属<code>module</code>的情况。</p>
+<p>为此参考组件注册的做法做了一个约定，<strong>子<code>module</code>在<code>state</code>中以<code>_moduleKey</code>作为注册时的<code>namespace</code>，父<code>module</code>将所有子<code>module</code>的<code>namespace</code>放入自身的<code>state</code>属性中</strong>。例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form item module</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  state: &#123;</span><br><span class="line">    _moduleKey: <span class="string">'form-item-id'</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form group module</span></span><br><span class="line"><span class="keyword">import</span> formItemId <span class="keyword">from</span> <span class="string">'./form-item-id'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  state () &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      _moduleKey: <span class="string">'form-group-1'</span>,</span><br><span class="line">      _formItems: [formItemId.state._moduleKey], <span class="comment">// 记录所有子module的namespace</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  modules: &#123;</span><br><span class="line">    [formItemId.state._moduleKey]: formItemId, <span class="comment">// 注册module时的key设置为子module的namespace</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form module</span></span><br><span class="line"><span class="keyword">import</span> formGroup1 <span class="keyword">from</span> <span class="string">'./form-group-1'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  state () &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      _moduleKey: <span class="string">'form-demo'</span>,</span><br><span class="line">      _formGroups: [formGroup1.state._moduleKey], <span class="comment">// 记录所有子module的namespace</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  modules: &#123;</span><br><span class="line">    [formGroup1.state._moduleKey]: formGroup1, <span class="comment">// 注册module时的key设置为子module的namespace</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// vuex store</span></span><br><span class="line"><span class="keyword">import</span> formDemo <span class="keyword">from</span> <span class="string">'./form-demo'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Vuex.Store( &#123;</span><br><span class="line">  modules: &#123;</span><br><span class="line">    [formDemo.state._moduleKey]: formDemo, <span class="comment">// 注册module时的key设置为子module的namespace</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>通过这种约定，父<code>module</code>就能非常方便的与子<code>module</code>通信了,例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">state._formItems.forEach( <span class="function">(<span class="params"> formItemModuleKey </span>) =&gt;</span> &#123;</span><br><span class="line">  commit( <span class="string">`<span class="subst">$&#123; formItemModuleKey &#125;</span>/mutation1`</span> );</span><br><span class="line">  dispatch( <span class="string">`<span class="subst">$&#123; formItemModuleKey &#125;</span>/action1`</span> );</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>但是受制于<code>vuex</code>，子<code>module</code>仍然无法与父<code>module</code>通信，因为此时<code>vuex</code>需要提供完整的<code>namespace</code>路径才能定位父<code>module</code>具体的<code>mutaion/action</code>。</p>
+<h1 id="上层数据收集"><a href="#上层数据收集" class="headerlink" title="上层数据收集"></a>上层数据收集</h1><p>通过上述架构，所有具体的业务数据都分散在每个表单项<code>module</code>里，一些“宏观”数据就需要一个收集过程，例如表单提交时传递给后端接口的数据、表单校验时传递给<code>form</code>组件的<code>model</code>属性。借助上面的架构，这一项工作比较简单。</p>
+<h2 id="form-data"><a href="#form-data" class="headerlink" title="form data"></a><code>form data</code></h2><p>这是表单提交时传递给后端接口的数据，大体思路是每个表单项都会贡献自己的一小份数据，最后汇总到一起。</p>
+<p><img src="/images/modulaized-form/form-data-collect.jpg" alt="form-data-collect"></p>
+<p>每个表单项都有自己的<code>formItemData</code>，最后打平汇总到一起。</p>
+<p>一个示范：</p>
+<p><img src="/images/modulaized-form/form-data-example.png" alt="form-data-example"></p>
+<h3 id="表单项、form-group显隐的影响"><a href="#表单项、form-group显隐的影响" class="headerlink" title="表单项、form group显隐的影响"></a>表单项、<code>form group</code>显隐的影响</h3><p>在很多时候，如果某个表单项或者<code>form group</code>是隐藏的，那么即使其内部状态已经发生变化，也只能贡献初始状态的数据到<code>form data</code>。因此<strong>表单项内部的<code>formItemData</code>实际上需要区分成两份，一份<code>formItemData4Show</code>用于在展示时贡献给<code>form data</code>，另一份<code>formItemData4Hide</code>用于在隐藏时贡献。</strong></p>
+<p><img src="/images/modulaized-form/affect-of-hide-show--for-form-data.jpg" alt="affect-of-hide-show--for-form-data"></p>
+<p>在上面的例子里，如果贡献<code>id</code>属性的表单项在被隐藏时贡献的<code>id</code>是空串的话，</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">formItemData4Hide () &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    id: <span class="string">''</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br><span class="line">formItemData4Show ( state ) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    id: +state.id</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>那么最终的<code>form data</code>就是：</p>
+<p><img src="/images/modulaized-form/hidden-form-item-afftection-demo.png" alt="hidden-form-item-afftection-demo"></p>
+<h2 id="form-model"><a href="#form-model" class="headerlink" title="form model"></a><code>form model</code></h2><p>此数据通常用于表单校验，表单校验情况比较复杂，因为校验时可能不仅仅需要用表单控件自身的值，也可能获取组件内部数据，父组件数据等等，最好的办法是<code>form model</code>获取一份非常全的数据。</p>
+<p>为此<code>form model</code>是收集各个表单项的<code>state</code>，同时避免为<code>state</code>内同名属性的影响，最终不打平数据而是以子<code>module</code>的<code>namespace</code>作为<code>key</code>：</p>
+<p><img src="/images/modulaized-form/form-model-collect.jpg" alt="form-model-collect"></p>
+<p>一个示范：</p>
+<p><img src="/images/modulaized-form/form-model-example.png" alt="form-model-example"></p>
+<p>那么表单项校验时如何获取数据呢？ 通常需要两步</p>
+<ol>
+<li><p><code>form</code>组件声明<code>model</code>属性为<code>formModel</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">el-form</span> <span class="attr">:model</span>=<span class="string">"formModel"</span>&gt;</span></span><br><span class="line">  xxx</span><br><span class="line"><span class="tag">&lt;/<span class="name">el-form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>表单项组件声明<code>prop</code>为对应的<code>namespace</code>，也就是上面定义的<code>_moduleKey</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">el-form-item</span> <span class="attr">prop</span>=<span class="string">"form-item-id"</span> <span class="attr">label</span>=<span class="string">"id"</span>&gt;</span></span><br><span class="line">  xxx</span><br><span class="line"><span class="tag">&lt;/<span class="name">el-form-item</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>这样在校验函数里，拿到的就是<code>formModel</code>中对应<code>namespace</code>的数据</p>
+<p><img src="/images/modulaized-form/form-validate-example.png" alt="form-validate-example"></p>
+<h1 id="数据初始化与同步"><a href="#数据初始化与同步" class="headerlink" title="数据初始化与同步"></a>数据初始化与同步</h1><h2 id="module数据初始化"><a href="#module数据初始化" class="headerlink" title="module数据初始化"></a><code>module</code>数据初始化</h2><p>上面也有提到所有具体的业务数据都分散在每个表单项<code>module</code>里，那么当在编辑已有表单时势必有一个拉取后端数据并回填页面的过程。数据获取是由顶层表单组件来做的，需要在<code>vuex</code>中与所有下层表单项<code>module</code>通信传递数据。借助上面的<code>namespace</code>，这一步简单了很多：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form module</span></span><br><span class="line"></span><br><span class="line">fillForm ( &#123; dispatch, getters &#125;, backendData ) &#123;</span><br><span class="line">  <span class="comment">// 利用后端数据回填表单，分发到每个form group来做</span></span><br><span class="line">  getters.formGroups.forEach( <span class="function">(<span class="params"> formGroupModuleKey </span>) =&gt;</span></span><br><span class="line">    dispatch( <span class="string">`<span class="subst">$&#123; formGroupModuleKey &#125;</span>/fillFormGroup`</span>, backendData</span><br><span class="line">  ) )</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form group module</span></span><br><span class="line"></span><br><span class="line">fillFormGroup ( &#123; dispatch, getters &#125;, formData ) &#123;</span><br><span class="line">  <span class="comment">// 每个form item自身决定取哪些数据</span></span><br><span class="line">  getters.formItems.forEach( <span class="function">(<span class="params"> formItemModuleKey </span>) =&gt;</span> &#123;</span><br><span class="line">    dispatch( <span class="string">`<span class="subst">$&#123; formItemModuleKey &#125;</span>/data2State`</span>, formData );</span><br><span class="line">  &#125; );</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 某个form item module</span></span><br><span class="line">&#123;</span><br><span class="line">  mutations: &#123;</span><br><span class="line">    update ( state, newState ) &#123;</span><br><span class="line">      <span class="built_in">Object</span>.keys( newState ).forEach( <span class="function"><span class="params">key</span> =&gt;</span> &#123;</span><br><span class="line">        state[ key ] = newState[ key ];</span><br><span class="line">      &#125; )</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  actions: &#123;</span><br><span class="line">    data2State ( &#123; commit &#125;, formData ) &#123;</span><br><span class="line">      commit( <span class="string">'update'</span>, &#123; <span class="comment">// 只取自己关心的数据字段</span></span><br><span class="line">        id: formData.id,</span><br><span class="line">        name: formData.name,</span><br><span class="line">      &#125; )</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如上，每个表单项组件只需取自己关心的数据字段，对于可维护性有大大提高，因为<strong>只要看<code>data2State</code>函数就能明白此表单项的数据依赖</strong>。</p>
+<p>最后只需在顶层表单组件中触发<code>fillForm</code>即可,如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  mounted() &#123;</span><br><span class="line">    <span class="comment">// 模拟数据拉取</span></span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.fillForm(&#123;</span><br><span class="line">        id: <span class="number">1</span>,</span><br><span class="line">        name: <span class="number">2</span>,</span><br><span class="line">        desc: <span class="number">3</span>,</span><br><span class="line">        text: <span class="number">4</span></span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;, <span class="number">2000</span>);</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    ...mapActions(<span class="string">"demo"</span>, [<span class="string">"fillForm"</span>]),</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="module数据同步"><a href="#module数据同步" class="headerlink" title="module数据同步"></a><code>module</code>数据同步</h2><p>因为各个表单项的<code>module state</code>是在初始化时通过<code>data2State</code>一次性值拷贝过来的，所以当全局性的<code>formData</code>有变更时，表单项的<code>module state</code>不能响应式同步。这会带来一些问题，比如表单项<code>A</code>改变了<code>formData</code>中表单项<code>B</code>关心的某个属性，表单项<code>B</code>是不知道的。</p>
+<p><strong>需要有一种机制在数据改变时将最新数据同步到各个<code>module</code></strong>，借助<code>vuex</code>提供的<code>plugin</code>机制可以做到这点：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 同步表单项module。 namespace是form module的_moduleKey</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">createSyncPlugin</span> (<span class="params"> namespace </span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">store</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> dispatched = <span class="literal">false</span>; <span class="comment">// 避免无限循环</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// formItemModulePaths： 各表单项module的namespace路径</span></span><br><span class="line">    <span class="keyword">const</span> formItemModulePaths = store.getters[ <span class="string">`<span class="subst">$&#123; namespace &#125;</span>/formItemModulePaths`</span> ];</span><br><span class="line">    <span class="keyword">const</span> moniteTypes = formItemModulePaths.map( <span class="function"><span class="params">key</span> =&gt;</span> <span class="string">`/<span class="subst">$&#123; key &#125;</span>/`</span> );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 监听所有表单项module的mutation, 更新所有module到最新状态</span></span><br><span class="line">    store.subscribe( <span class="function">(<span class="params"> mutation </span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">const</span> &#123; type = <span class="string">''</span> &#125; = mutation; <span class="comment">// 触发的mutation名</span></span><br><span class="line">      <span class="keyword">const</span> index = moniteTypes.findIndex( <span class="function"><span class="params">moniteType</span> =&gt;</span> type.includes( moniteType ) );</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 每次有某个module触发update的mutation时，联动其他module的state更新到最新，因为可能有互相依赖</span></span><br><span class="line">      <span class="keyword">if</span> ( index &gt; <span class="number">-1</span> &amp;&amp; !dispatched )</span><br><span class="line">      &#123;</span><br><span class="line">        dispatched = <span class="literal">true</span>;</span><br><span class="line">        moniteTypes.forEach( <span class="function">(<span class="params"> _, curIndex </span>) =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">if</span> ( curIndex !== index )</span><br><span class="line">          &#123;</span><br><span class="line">            store.dispatch( <span class="string">`<span class="subst">$&#123; namespace &#125;</span>/<span class="subst">$&#123; formItemModulePaths[ curIndex ] &#125;</span>/data2State`</span>, store.getters[ <span class="string">`<span class="subst">$&#123; namespace &#125;</span>/formData4View`</span> ] )</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; )</span><br><span class="line">        dispatched = <span class="literal">false</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; );</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">new</span> Vuex.Store( &#123;</span><br><span class="line">  modules,</span><br><span class="line">  plugins: [ createSyncPlugin( <span class="string">'demo'</span> ) ],</span><br><span class="line">&#125; );</span><br></pre></td></tr></table></figure>
+<p>上面的逻辑可以用下图表示：</p>
+<p><img src="/images/modulaized-form/form-item-module-sync.jpg" alt="form-item-module-sync"></p>
+<p>注意传给<code>data2State</code>的是<code>formData4View</code>而不是<code>formData</code>，二者很类似，只不过前者是所有表单项的<code>formItemData4Show</code>合集。</p>
+<h1 id="组件渲染"><a href="#组件渲染" class="headerlink" title="组件渲染"></a>组件渲染</h1><p>由于<code>vuex</code>掌控着数据，组件显隐的判断最好也放在<code>vuex</code>中，如:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form item module</span></span><br><span class="line">&#123;</span><br><span class="line">  getters: &#123;</span><br><span class="line">    isVisible ( state ) &#123;</span><br><span class="line">      <span class="keyword">return</span> state.id !== <span class="number">10</span>;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么上层组件在<code>template</code>中渲染时，就需要知道下层组件是否展示，得益于组件树与<code>module</code>树的一一对应关系，只需获取下层<code>module</code>里的<code>isVisible</code>属性即可。如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// form group module</span></span><br><span class="line"></span><br><span class="line">&#123;</span><br><span class="line">  getters: &#123;</span><br><span class="line">    <span class="comment">// 下属某个表单项是否可见</span></span><br><span class="line">    isFormItemVisible ( state, getters ) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="function"><span class="params">formItemName</span> =&gt;</span> getters[ <span class="string">`<span class="subst">$&#123; formItemName &#125;</span>/isVisible`</span> ];</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这样我们在<code>vue template</code>里只要调用<code>isFormItemVisible</code>并传入表单项<code>module</code>的<code>_moduleKey</code>:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- form group template --&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form-item-text</span> <span class="attr">v-show</span>=<span class="string">"isFormItemVisible('form-item-text')"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p><strong>如果约定组件的<code>name</code>和<code>_moduleKey</code>一致，那么直接用<code>v-for</code>就能完成渲染逻辑</strong>：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- form group template --&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">template</span>&gt;</span></span><br><span class="line">  <span class="comment">&lt;!-- formItem是_moduleKey，同时与组件name相同 --&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">component</span></span></span><br><span class="line"><span class="tag">    <span class="attr">v-for</span>=<span class="string">"formItem in formItems"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">v-show</span>=<span class="string">"isFormItemVisible(formItem)"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:key</span>=<span class="string">"formItem"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">:is</span>=<span class="string">"formItem"</span></span></span><br><span class="line"><span class="tag">  /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">template</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span></span><br><span class="line"><span class="javascript">  name: <span class="string">"form-group-2"</span>,</span></span><br><span class="line"><span class="undefined">  computed: &#123;</span></span><br><span class="line"><span class="javascript">    ...mapGetters(<span class="string">"demo/form-group-2"</span>, [<span class="string">"formItems"</span>, <span class="string">"isFormItemVisible"</span>])</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h1 id="module固定属性"><a href="#module固定属性" class="headerlink" title="module固定属性"></a>module固定属性</h1><p>以上就是整个表单模块化的思路了，<code>module</code>层涉及到很多特有属性，在此做个总结：</p>
+<p><img src="/images/modulaized-form/module-fixed-property.jpg" alt="module-fixed-property"></p>
+<p>加粗的部分属性值需要各<code>module</code>自行设置，其余部分均可以抽取成公共逻辑，这样每个表单就可以很方便复用了。</p>
+<p>最后附上<code>demo</code>仓库：<a href="https://github.com/hellogithub2014/modulized-form" target="_blank" rel="noopener">modulize-form</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/js/" rel="tag"># js</a>
+          
+            <a href="/tags/architecture/" rel="tag"># architecture</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/09/vscode-plugin-development/" rel="next" title="vscode插件开发">
+                <i class="fa fa-chevron-left"></i> vscode插件开发
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">62</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#思路"><span class="nav-number">1.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总体架构"><span class="nav-number">2.</span> <span class="nav-text">总体架构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#上层数据收集"><span class="nav-number">3.</span> <span class="nav-text">上层数据收集</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#form-data"><span class="nav-number">3.1.</span> <span class="nav-text">form data</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#表单项、form-group显隐的影响"><span class="nav-number">3.1.1.</span> <span class="nav-text">表单项、form group显隐的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#form-model"><span class="nav-number">3.2.</span> <span class="nav-text">form model</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据初始化与同步"><span class="nav-number">4.</span> <span class="nav-text">数据初始化与同步</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#module数据初始化"><span class="nav-number">4.1.</span> <span class="nav-text">module数据初始化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#module数据同步"><span class="nav-number">4.2.</span> <span class="nav-text">module数据同步</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#组件渲染"><span class="nav-number">5.</span> <span class="nav-text">组件渲染</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#module固定属性"><span class="nav-number">6.</span> <span class="nav-text">module固定属性</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/06/13/the-modularity-of-complicated-form/';
+          this.page.identifier = '2019/06/13/the-modularity-of-complicated-form/';
+          this.page.title = '复杂表单的模块化处理';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
