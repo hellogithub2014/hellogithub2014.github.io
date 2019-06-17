@@ -5,12 +5,12 @@ summary_img: /images/bora-bora.jpg
 tags: [js, architecture]
 ---
 
-工作中或多或少都会遇到表单，而我遇到的表单逻辑都非常复杂😭。 通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码，如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，之前做过一些封装和拆分：
+工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：
 
 * 将每个表单项封装成独立组件
 * 在业务上将表单项分类，功能内聚的一组表单项放到一个`form group`下，这样整个表单被拆分为多个`form group`，同时每个`form group`也封装成组件：
 
-![form-group-split](form-group-split.png)
+![simple-modularity](/images/modulaized-form/simple-modularity.jpg)
 
 * `form`汇集下属所有`form group`的互操作和业务逻辑，同时`form group`汇集下属所有`form item`的互操作和业务逻辑。例如收集表单提交时的接口数据，表单项显隐的控制
 * 统一数据流管理，放到`vuex`中，但不够彻底，组件内部仍然有维护小部分数据
@@ -33,11 +33,11 @@ tags: [js, architecture]
 
 表单项完全自治内聚，`form`只用在初始化时将后端拉取的完整`form data`传递给表单项，由表单项自行关心的字段；在表单提交时，由于表单项内部已经准备好需要贡献哪些数据，`form`只用直接拿过来即可。
 
-基于以上思路，势必有很多通用逻辑，提取出来后就可以方便的复用了。`demo`代码放在最后，下面具体说说实现细节。
+基于以上思路，势必有很多通用逻辑，提取出来后就可以方便的复用了, `demo`代码放在最后，下面具体说说实现细节。
 
 # 总体架构
 
-![compTree-moduleTree](compTree-moduleTree.png)
+![compTree-moduleTree](/images/modulaized-form/compTree-moduleTree.jpg)
 
 如上，组件树与`vuex module`树一一对应，`form`、`form group`、`form item`都有各自的`module`。
 
@@ -118,19 +118,19 @@ state._formItems.forEach( ( formItemModuleKey ) => {
 
 这是表单提交时传递给后端接口的数据，大体思路是每个表单项都会贡献自己的一小份数据，最后汇总到一起。
 
-![form-data-collect](form-data-collect.png)
+![form-data-collect](/images/modulaized-form/form-data-collect.jpg)
 
 每个表单项都有自己的`formItemData`，最后打平汇总到一起。
 
 一个示范：
 
-![form-data-example](form-data-example.png)
+![form-data-example](/images/modulaized-form/form-data-example.png)
 
 ### 表单项、`form group`显隐的影响
 
 在很多时候，如果某个表单项或者`form group`是隐藏的，那么即使其内部状态已经发生变化，也只能贡献初始状态的数据到`form data`。因此**表单项内部的`formItemData`实际上需要区分成两份，一份`formItemData4Show`用于在展示时贡献给`form data`，另一份`formItemData4Hide`用于在隐藏时贡献。**
 
-![affect-of-hide-show--for-form-data](affect-of-hide-show--for-form-data.png)
+![affect-of-hide-show--for-form-data](/images/modulaized-form/affect-of-hide-show--for-form-data.jpg)
 
 在上面的例子里，如果贡献`id`属性的表单项在被隐藏时贡献的`id`是空串的话，
 
@@ -149,7 +149,7 @@ formItemData4Show ( state ) {
 
 那么最终的`form data`就是：
 
-![hidden-form-item-afftection-demo](hidden-form-item-afftection-demo.png)
+![hidden-form-item-afftection-demo](/images/modulaized-form/hidden-form-item-afftection-demo.png)
 
 ## `form model`
 
@@ -157,11 +157,11 @@ formItemData4Show ( state ) {
 
 为此`form model`是收集各个表单项的`state`，同时避免为`state`内同名属性的影响，最终不打平数据而是以子`module`的`namespace`作为`key`：
 
-![form-model-collect](form-model-collect.png)
+![form-model-collect](/images/modulaized-form/form-model-collect.jpg)
 
 一个示范：
 
-![form-model-example](form-model-example.png)
+![form-model-example](/images/modulaized-form/form-model-example.png)
 
 那么表单项校验时如何获取数据呢？ 通常需要两步
 
@@ -183,7 +183,7 @@ formItemData4Show ( state ) {
 
 这样在校验函数里，拿到的就是`formModel`中对应`namespace`的数据
 
-![form-validate-example](form-validate-example.png)
+![form-validate-example](/images/modulaized-form/form-validate-example.png)
 
 # 数据初始化与同步
 
@@ -259,14 +259,121 @@ fillFormGroup ( { dispatch, getters }, formData ) {
 
 ## `module`数据同步
 
-### 表单项、`form group`显隐的影响
+因为各个表单项的`module state`是在初始化时通过`data2State`一次性值拷贝过来的，所以当全局性的`formData`有变更时，表单项的`module state`不能响应式同步。这会带来一些问题，比如表单项`A`改变了`formData`中表单项`B`关心的某个属性，表单项`B`是不知道的。
 
-在很多时候，如果某个表单项或者`form group`是隐藏的，那么即使其内部状态已经发生变化，也只能贡献初始状态的数据到`form data`。因此**表单项内部的`formItemData`实际上需要区分成两份，一份`formItemData4Show`用于在展示时贡献给`form data`，另一份`formItemData4Hide`用于在隐藏时贡献。**
+**需要有一种机制在数据改变时将最新数据同步到各个`module`**，借助`vuex`提供的`plugin`机制可以做到这点：
 
-# 表单项、`form group` 显隐控制
+```js
+// 同步表单项module。 namespace是form module的_moduleKey
+export default function createSyncPlugin ( namespace ) {
+  return store => {
+    let dispatched = false; // 避免无限循环
+
+    // formItemModulePaths： 各表单项module的namespace路径
+    const formItemModulePaths = store.getters[ `${ namespace }/formItemModulePaths` ];
+    const moniteTypes = formItemModulePaths.map( key => `/${ key }/` );
+
+    // 监听所有表单项module的mutation, 更新所有module到最新状态
+    store.subscribe( ( mutation ) => {
+      const { type = '' } = mutation; // 触发的mutation名
+      const index = moniteTypes.findIndex( moniteType => type.includes( moniteType ) );
+
+      // 每次有某个module触发update的mutation时，联动其他module的state更新到最新，因为可能有互相依赖
+      if ( index > -1 && !dispatched )
+      {
+        dispatched = true;
+        moniteTypes.forEach( ( _, curIndex ) => {
+          if ( curIndex !== index )
+          {
+            store.dispatch( `${ namespace }/${ formItemModulePaths[ curIndex ] }/data2State`, store.getters[ `${ namespace }/formData4View` ] )
+          }
+        } )
+        dispatched = false;
+      }
+    } );
+  };
+}
+
+new Vuex.Store( {
+  modules,
+  plugins: [ createSyncPlugin( 'demo' ) ],
+} );
+```
+
+上面的逻辑可以用下图表示：
+
+![form-item-module-sync](/images/modulaized-form/form-item-module-sync.jpg)
+
+注意传给`data2State`的是`formData4View`而不是`formData`，二者很类似，只不过前者是所有表单项的`formItemData4Show`合集。
 
 # 组件渲染
 
-那么组件如何知道下属有哪些`form group`、`form item`呢？ 这里同样是**通过约定：`module`里设置的`_moduleKey`就是对应组件的`name`**。
+由于`vuex`掌控着数据，组件显隐的判断最好也放在`vuex`中，如:
+
+```js
+// form item module
+{
+  getters: {
+    isVisible ( state ) {
+      return state.id !== 10;
+    },
+  }
+}
+```
+
+那么上层组件在`template`中渲染时，就需要知道下层组件是否展示，得益于组件树与`module`树的一一对应关系，只需获取下层`module`里的`isVisible`属性即可。如：
+
+```js
+// form group module
+
+{
+  getters: {
+    // 下属某个表单项是否可见
+    isFormItemVisible ( state, getters ) {
+      return formItemName => getters[ `${ formItemName }/isVisible` ];
+    },
+  }
+}
+```
+
+这样我们在`vue template`里只要调用`isFormItemVisible`并传入表单项`module`的`_moduleKey`:
+
+```html
+<!-- form group template -->
+
+<form-item-text v-show="isFormItemVisible('form-item-text')"/>
+```
+
+**如果约定组件的`name`和`_moduleKey`一致，那么直接用`v-for`就能完成渲染逻辑**：
+
+```html
+<!-- form group template -->
+
+<template>
+  <!-- formItem是_moduleKey，同时与组件name相同 -->
+  <component
+    v-for="formItem in formItems"
+    v-show="isFormItemVisible(formItem)"
+    :key="formItem"
+    :is="formItem"
+  />
+</template>
+<script>
+export default {
+  name: "form-group-2",
+  computed: {
+    ...mapGetters("demo/form-group-2", ["formItems", "isFormItemVisible"])
+  }
+};
+</script>
+```
 
 # module固定属性
+
+以上就是整个表单模块化的思路了，`module`层涉及到很多特有属性，在此做个总结：
+
+![module-fixed-property](/images/modulaized-form/module-fixed-property.jpg)
+
+加粗的部分属性值需要各`module`自行设置，其余部分均可以抽取成公共逻辑，这样每个表单就可以很方便复用了。
+
+最后附上`demo`仓库：[modulize-form](https://github.com/hellogithub2014/modulized-form)
