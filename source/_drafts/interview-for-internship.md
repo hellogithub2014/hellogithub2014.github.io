@@ -37,7 +37,6 @@
   - [ ] 两个条件: 1. 即使创建它的上下文已经销毁，它仍然存在 2. 在代码中引用了它外部作用域的变量.
   - [ ] 作用: bind 绑定 this、偏函数、模块化
   - [ ] 缺点： 内存不释放
-  - [ ] bind 实现、注意new的处理
 
 - let、var区别
   - [ ] 作用域
@@ -104,9 +103,7 @@
   - [ ] settimeout 可能丢帧，若频幕刷新间隔 16.7ms，settimeout 间隔 10ms，那么每第三个 settimeout 所作出的改变是无法看到的；raf 的调用频率和浏览器刷新频率一致
   - [ ] settimeout 执行时间不确定，因为其真正的任务被放到任务队列里
 
-- document load 和 document DOMContentLoaded 两个事件的区别
-
-  - [ ] async、defer 差别
+- 为什么 `0.1 + 0.2 !== 0.3`
 
 # css
 
@@ -217,22 +214,12 @@
   - [ ] cdn 托管
   - [ ] 静态资源放在多个域名下，规避浏览器的最大同时请求数目
 
-# 数据结构
+# 代码
 
+- bind 实现、注意new的处理
 - 数组去重（无序、有序）
 - 树遍历
-- 链表
-
-# Vue
-
-- 双向绑定
-- 模板中的变量如何映射到组件的： render函数执行时被包裹了`with this`，`this`指向的是`vm`，这样render函数内的所有变量都是在vm上查找的
-- $emit、$on、涉及子组件的情况（addEventListener、观察者模式）
-- [数组继承](https://hellogithub2014.github.io/2018/05/19/vue-trick/)
-- [diff算法](https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-12-patch-diff/)
-
-# 备选
-
+- [闭包、定时器、ES6、ES7综合](https://mp.weixin.qq.com/s/QdZpzI-8D9NCrkx1GFmLiQ)
 - 上传超大文件
   - [ ] 上传图片预览: FileReader + img
   - [ ] 上传进度: xhr progress 事件
@@ -241,3 +228,11 @@
   - [ ] 断点续传： 浏览器丢失了正在上传的文件的所有相关数据：文件路径，正在上传的分片索引，上传进度等信息
   - [ ] 多线程: 并行多个 xhr 上传
   - [ ] 失败重试
+
+# Vue
+
+- 双向绑定
+- 模板中的变量如何映射到组件的： render函数执行时被包裹了`with this`，`this`指向的是`vm`，这样render函数内的所有变量都是在vm上查找的
+- $emit、$on、涉及子组件的情况（addEventListener、观察者模式）
+- [数组继承](https://hellogithub2014.github.io/2018/05/19/vue-trick/)
+- [diff算法](https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-12-patch-diff/)
