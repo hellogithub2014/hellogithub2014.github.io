@@ -7,64 +7,12 @@ tags: [js, unicode]
 
 业务中通常有很多界面的输入框需要限定长度，如果输入的全部是英文字符那么计算长度非常简单，直接利用`String.prototype.length`就行。可是现实很骨感，经常还允许输入中文，甚至在国际化业务中涉及到的语种更多，比如日语韩语西班牙语等。同时`PM`还会要求不同语言字符的长度不同，例如一个汉字/韩文长度是 2、一个英文/日文字符长度是 1、全角字符长度是 2、半角字符是 1。这就要求我们能够判断一个字符是否属于特定的自然语言，或者更理想一点直接能够检测字符所属的自然语言。
 
-# 技术调研
-
-最初的想法是寻找能够检测字符串所属语言的库，为此搜了一些相关的工具。
-
-1. [jschardet](https://www.npmjs.com/package/jschardet) 给定一串二进制，判断是由何种编码转换而来的,如`UTF-8`、`BIG5`等等。[背后原理](https://www-archive.mozilla.org/projects/intl/UniversalCharsetDetection.html)。
-
-   ```js
-   var jschardet = require('jschardet');
-
-   // "àíàçã" in UTF-8
-   jschardet.detect('\xc3\xa0\xc3\xad\xc3\xa0\xc3\xa7\xc3\xa3');
-   // { encoding: "UTF-8", confidence: 0.9690625 }
-
-   // "次常用國字標準字體表" in Big5
-   jschardet.detect('\xa6\xb8\xb1\x60\xa5\xce\xb0\xea\xa6\x72\xbc\xd0\xb7\xc7\xa6\x72\xc5\xe9\xaa\xed');
-   // { encoding: "Big5", confidence: 0.99 }
-   ```
-
-   但是编码与自然语言之间并不存在一一对应的关系，这个库不符合我们的需求。
-
-2. [langdetect](https://www.npmjs.com/package/langdetect) 检测一段字符串可能的自然语言，返回的每条结果带有概率：
-
-   ```js
-   var langdetect = require('langdetect');
-
-   console.log(langdetect.detect("Questo a che ora comincia? I don't know"));
-
-   /**
-    * [ { lang: 'it', prob: 0.5714266536058858 }, { lang: 'en', prob: 0.42857225563212514 } ]
-    */
-   ```
-
-   原理：内部有一个非常大的概率映射，存储常见的字符、单词在各种语言中出现的频率，迭代每个字符来不断更新每种语言的概率判断，最后返回概率最大的那些语言。
-
-   缺点：比较依赖内部的概率映射，通常检测单个字符结果不大准：
-
-   ```js
-   langdetect.detect('P'); // [{lang: "en", prob: 0.9999933792301934}]
-   ```
-
-   另外多语言混排时计算的概率也不大准,因为每个字符都会参与最后的概率排序：
-
-   ```js
-   langdetect.detect('我是谁 who am i'); // [{lang: "en", prob: 0.9999983325842828}]
-   ```
-
-   性能问题：在内部它会首先针对每个字符，遍历所有`Unicode Block`(大约 270+个)来进行一些过滤操作，对于稍微长一些的字符串就比较耗费性能。
-
-3. [node-cld](https://www.npmjs.com/package/cld) 基于`google`的`cld2`(`Compact Language Detector`)库实现的自然语言检测库。 在谷歌翻译中有用到（添加配图），安装比较困难，单个字符无法提示。 头条的评论系统利用了`cld2`。 TODO: 尝试安装并测试
-
-4. [node-language-detect](https://github.com/FGRibreau/node-language-detect)
-
 # 思路
 
-看来市面上已有的这些库都不能很好满足我们的需求，又必要重新捋一捋思路。首先为了能够处理语言混排的情况，就不能用整个字符串去判断语言，只能逐个字符来看；然后利用单个字符直接检测所属自然语言是不大现实的，存在一些困难：
+在例如文章标题的输入框中，很有可能整个字符串都是同一个语言。但在输入框字符统计这样的需求里，就必须考虑语言混排的情况，不能用整个字符串去判断语言，只能逐个字符来看。利用单个字符直接检测所属自然语言是不大现实的，存在一些困难：
 
 1. 很多字符如`p`在多种语言中都有用到
-2. 如何判断单个字符直接检测所属自然语言呢？
+2. 如何利用单个字符直接检测所属自然语言呢？
 
 问题 1 这个不是很难，可以设置一个语言的检测优先级，第一个检测到的语言直接返回；问题 2 看起来是有办法的，因为只要找到自然语言的范围，然后看目标字符是否在此范围内即可。下面的篇幅重点都在问题 2 的讨论。
 
@@ -103,7 +51,7 @@ tags: [js, unicode]
 
 遇到的第一个问题就是：**怎么收集一个`script`对应的码点范围？** 有两个办法：
 
-1. 在[这里](https://unicode.org/charts/)手动查阅然后放到代码里。。。 例如`go`语言的[内置包](https://golang.org/pkg/unicode/)
+1. 在[这里](https://unicode.org/charts/)查阅然后放到代码里
 2. 利用第三方库生成： [`node-unicode-data`](https://github.com/mathiasbynens/node-unicode-data)可以生成各版本`Unicode`规范的`Script`集合，例如`12.1.0`版本的[检测`Han`的正则表达式](https://github.com/mathiasbynens/unicode-12.1.0/blob/master/Script/Han/regex.js)
 
 随后的工作就容易很多了，此处给出一种简单的实现示范：
@@ -171,7 +119,11 @@ stringLength('abc字符规则テスト'); // 14
 
 ## 全角、半角
 
-在[这里](https://unicode.org/charts/PDF/UFF00.pdf)可以查看到全角/半角字符与标点的范围，发现一些需要注意的：
+在[这里](https://unicode.org/charts/PDF/UFF00.pdf)可以查看到全角/半角字符与标点的范围，
+
+![Halfwidth_and_ Fullwidth_Forms.png](/images/string-length/Halfwidth*and* Fullwidth_Forms.png)
+
+发现一些需要注意的：
 
 1. 部分全宽`Latin`字母和`Latin Script`的范围是重合的，如`\uFF21`是全宽的`Ａ`，也被放到`Latin Script`里了
 2. 标点符合、数字是不属于任何`script`的
@@ -261,6 +213,8 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
 
 ![babeled_combining_marks_regexp.png](/images/string-length/babeled_combining_marks_regexp.png)
 
+上面的结果就是各个`script`中的`Combining character`范围汇总。
+
 这种方法也存在一个缺点，例如一个组合字符由 3 个子字符组成，但只有一个`Combining character`，那么即使处理后也会被认为是 2 个子字符。例如[印地语的`त्र`](https://codepoints.net/search?q=%E0%A4%A4%E0%A5%8D%E0%A4%B0&na=&int=&Bidi_M=&Bidi_C=&CE=&Comp_Ex=&XO_NFC=&XO_NFD=&XO_NFKC=&XO_NFKD=&Join_C=&Upper=&Lower=&OUpper=&OLower=&CI=&Cased=&CWCF=&CWCM=&CWL=&CWKCF=&CWT=&CWU=&IDS=&OIDS=&XIDS=&IDC=&OIDC=&XIDC=&Pat_Syn=&Pat_WS=&Dash=&Hyphen=&QMark=&Term=&STerm=&Dia=&Ext=&SD=&Alpha=&OAlpha=&Math=&OMath=&Hex=&AHex=&DI=&ODI=&LOE=&WSpace=&Gr_Base=&Gr_Ext=&OGr_Ext=&Gr_Link=&Ideo=&UIdeo=&IDSB=&IDST=&Radical=&Dep=&VS=&NChar=):
 
 ![hindi_example.png](/images/string-length/hindi_example.png)
@@ -270,3 +224,84 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
 后续 TODO： 完善`LANG_SCRIPT_LENGTH`映射，包括`script`列表的收集和更多自然语言的处理。
 
 最后的代码放在了[这里](https://github.com/hellogithub2014/string-length/blob/master/string-length.js)
+
+# 技术调研
+
+最后提供一些类似功能的库，他们都致力于直接检测字符串所属语言，不会考虑全角半角。
+
+1. [jschardet](https://www.npmjs.com/package/jschardet) 给定一串二进制，判断是由何种编码转换而来的,如`UTF-8`、`BIG5`等等。[背后原理](https://www-archive.mozilla.org/projects/intl/UniversalCharsetDetection.html)。
+
+   ```js
+   var jschardet = require('jschardet');
+
+   // "àíàçã" in UTF-8
+   jschardet.detect('\xc3\xa0\xc3\xad\xc3\xa0\xc3\xa7\xc3\xa3');
+   // { encoding: "UTF-8", confidence: 0.9690625 }
+
+   // "次常用國字標準字體表" in Big5
+   jschardet.detect('\xa6\xb8\xb1\x60\xa5\xce\xb0\xea\xa6\x72\xbc\xd0\xb7\xc7\xa6\x72\xc5\xe9\xaa\xed');
+   // { encoding: "Big5", confidence: 0.99 }
+   ```
+
+   但是编码与自然语言之间并不存在一一对应的关系，这个库不符合我们的需求。
+
+2. [langdetect](https://www.npmjs.com/package/langdetect) 检测一段字符串可能的自然语言，返回的每条结果带有概率：
+
+   ```js
+   var langdetect = require('langdetect');
+
+   console.log(langdetect.detect("Questo a che ora comincia? I don't know"));
+
+   /**
+    * [ { lang: 'it', prob: 0.5714266536058858 }, { lang: 'en', prob: 0.42857225563212514 } ]
+    */
+   ```
+
+   原理：内部有一个非常大的概率映射，存储常见的字符、单词在各种语言中出现的频率，迭代每个字符来不断更新每种语言的概率判断，最后返回概率最大的那些语言。
+
+   缺点：在内部它会首先针对每个字符，遍历所有`Unicode Block`(大约 270+个)来进行一些过滤操作，对于稍微长一些的字符串就比较耗费性能。另外概率映射很大，比较吃内存。
+
+3. [node-cld](https://www.npmjs.com/package/cld) 基于`google`的`cld2`(`Compact Language Detector`)库实现的自然语言检测库。 在谷歌翻译中有用到，安装比较困难，单个字符无法提示。
+
+   ![cld.png](/images/string-length/cld.png)
+
+4. [node-language-detect](https://github.com/FGRibreau/node-language-detect)同样是检测字符串的语言：
+
+   ```js
+   const LanguageDetect = require('languagedetect');
+   const lngDetector = new LanguageDetect();
+   console.log(lngDetector.detect('This is a test.'));
+
+   /*
+     [ [ 'english', 0.5969230769230769 ],
+     [ 'hungarian', 0.407948717948718 ],
+     [ 'latin', 0.39205128205128204 ],
+     [ 'french', 0.367948717948718 ],
+     [ 'portuguese', 0.3669230769230769 ],
+     [ 'estonian', 0.3507692307692307 ],
+     [ 'latvian', 0.2615384615384615 ],
+     [ 'spanish', 0.2597435897435898 ],
+     [ 'slovak', 0.25051282051282053 ],
+     [ 'dutch', 0.2482051282051282 ],
+     [ 'lithuanian', 0.2466666666666667 ],
+     ... ]
+   */
+   ```
+
+   缺点： 检测单个字符的结果不准
+
+   ```js
+   console.log(lngDetector.detect('我')); // []
+   console.log(lngDetector.detect('w')); // []
+   ```
+
+5. [franc](https://npm.runkit.com/franc) : Detect the language of text
+
+   ```js
+   var franc = require('franc');
+
+   franc('Alle menslike wesens word vry'); // => 'afr'
+   franc('এটি একটি ভাষা একক IBM স্ক্রিপ্ট'); // => 'ben'
+   franc('Alle menneske er fødde til fridom'); // => 'nno'
+   franc('我', { minLength: 1 }); // => 'cmn'
+   ```
