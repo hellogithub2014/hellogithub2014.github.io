@@ -13,53 +13,51 @@ tags: [js, unicode]
 
 1. [jschardet](https://www.npmjs.com/package/jschardet) 给定一串二进制，判断是由何种编码转换而来的,如`UTF-8`、`BIG5`等等。[背后原理](https://www-archive.mozilla.org/projects/intl/UniversalCharsetDetection.html)。
 
-```js
-var jschardet = require('jschardet');
+   ```js
+   var jschardet = require('jschardet');
 
-// "àíàçã" in UTF-8
-jschardet.detect('\xc3\xa0\xc3\xad\xc3\xa0\xc3\xa7\xc3\xa3');
-// { encoding: "UTF-8", confidence: 0.9690625 }
+   // "àíàçã" in UTF-8
+   jschardet.detect('\xc3\xa0\xc3\xad\xc3\xa0\xc3\xa7\xc3\xa3');
+   // { encoding: "UTF-8", confidence: 0.9690625 }
 
-// "次常用國字標準字體表" in Big5
-jschardet.detect('\xa6\xb8\xb1\x60\xa5\xce\xb0\xea\xa6\x72\xbc\xd0\xb7\xc7\xa6\x72\xc5\xe9\xaa\xed');
-// { encoding: "Big5", confidence: 0.99 }
-```
+   // "次常用國字標準字體表" in Big5
+   jschardet.detect('\xa6\xb8\xb1\x60\xa5\xce\xb0\xea\xa6\x72\xbc\xd0\xb7\xc7\xa6\x72\xc5\xe9\xaa\xed');
+   // { encoding: "Big5", confidence: 0.99 }
+   ```
 
-但是编码与自然语言之间并不存在一一对应的关系，这个库不符合我们的需求。
+   但是编码与自然语言之间并不存在一一对应的关系，这个库不符合我们的需求。
 
 2. [langdetect](https://www.npmjs.com/package/langdetect) 检测一段字符串可能的自然语言，返回的每条结果带有概率：
 
-```js
-var langdetect = require('langdetect');
+   ```js
+   var langdetect = require('langdetect');
 
-console.log(langdetect.detect("Questo a che ora comincia? I don't know"));
+   console.log(langdetect.detect("Questo a che ora comincia? I don't know"));
 
-/**
- * [ { lang: 'it', prob: 0.5714266536058858 }, { lang: 'en', prob: 0.42857225563212514 } ]
- */
-```
+   /**
+    * [ { lang: 'it', prob: 0.5714266536058858 }, { lang: 'en', prob: 0.42857225563212514 } ]
+    */
+   ```
 
-原理：内部有一个非常大的概率映射，存储常见的字符、单词在各种语言中出现的频率，迭代每个字符来不断更新每种语言的概率判断，最后返回概率最大的那些语言。
+   原理：内部有一个非常大的概率映射，存储常见的字符、单词在各种语言中出现的频率，迭代每个字符来不断更新每种语言的概率判断，最后返回概率最大的那些语言。
 
-缺点：比较依赖内部的概率映射，通常检测单个字符结果不大准：
+   缺点：比较依赖内部的概率映射，通常检测单个字符结果不大准：
 
-```js
-langdetect.detect('P'); // [{lang: "en", prob: 0.9999933792301934}]
-```
+   ```js
+   langdetect.detect('P'); // [{lang: "en", prob: 0.9999933792301934}]
+   ```
 
-另外多语言混排时计算的概率也不大准,因为每个字符都会参与最后的概率排序：
+   另外多语言混排时计算的概率也不大准,因为每个字符都会参与最后的概率排序：
 
-```js
-langdetect.detect('我是谁 who am i'); // [{lang: "en", prob: 0.9999983325842828}]
-```
+   ```js
+   langdetect.detect('我是谁 who am i'); // [{lang: "en", prob: 0.9999983325842828}]
+   ```
 
-性能问题：在内部它会首先针对每个字符，遍历所有`Unicode Block`(大约 270+个)来进行一些过滤操作，对于稍微长一些的字符串就比较耗费性能。
+   性能问题：在内部它会首先针对每个字符，遍历所有`Unicode Block`(大约 270+个)来进行一些过滤操作，对于稍微长一些的字符串就比较耗费性能。
 
 3. [node-cld](https://www.npmjs.com/package/cld) 基于`google`的`cld2`(`Compact Language Detector`)库实现的自然语言检测库。 在谷歌翻译中有用到（添加配图），安装比较困难，单个字符无法提示。 头条的评论系统利用了`cld2`。 TODO: 尝试安装并测试
 
-TODO: 增加一些第三方库的调研
-
-4.
+4. [node-language-detect](https://github.com/FGRibreau/node-language-detect)
 
 # 思路
 
@@ -235,13 +233,13 @@ for (char of 'ณี') console.log(char); // ณ  ี
 
 1. 如果想要合成的目标字符并不在`Unicode`中，那么`normalize`还是会返回原样的`N`个子字符，而不是一个字符。例如上面的`ณี`就是一个例子，它并不存在于`Unicode`字符集中，只是展示时看起来是一个字符：
 
-```js
-const nor = '\u0e13\u0e35'.normalize();
-nor.codePointAt(0).toString(16); // 0x0e13
-nor.codePointAt(1).toString(16); // 0x0e35  如果normalize成功了，那么此处的输出必然会不一样
-```
+   ```js
+   const nor = '\u0e13\u0e35'.normalize();
+   nor.codePointAt(0).toString(16); // 0x0e13
+   nor.codePointAt(1).toString(16); // 0x0e35  如果normalize成功了，那么此处的输出必然会不一样
+   ```
 
-1. 只能处理 2 个子字符的合成，对于 3 个或三个以上字符的合成无能为力。
+2. 只能处理 2 个子字符的合成，对于 3 个或三个以上字符的合成无能为力。
 
 ### 正则替换
 
