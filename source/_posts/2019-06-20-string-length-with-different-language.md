@@ -271,4 +271,4 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
 
 后续 TODO： 完善`LANG_SCRIPT_LENGTH`映射，包括`script`列表的收集和更多自然语言的处理。
 
-最后的代码放在了[这里](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/pre-cache/unicodeUtil.js)
+最后的代码放在了[这里](https://github.com/hellogithub2014/string-length/blob/master/string-length.js)
