@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-validate-example.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/form-item-module-sync.jpg">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/modulaized-form/module-fixed-property.jpg">
-<meta property="og:updated_time" content="2019-06-15T13:57:03.058Z">
+<meta property="og:updated_time" content="2019-06-17T04:56:47.397Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="复杂表单的模块化处理">
 <meta name="twitter:description" content="工作中或多或少都会遇到一些很复杂的表单，通常的特点是每个表单项自身都有一大坨逻辑，好几百行代码。如果将所有表单项都放到一个文件里，那么没人能看得懂它，维护起来是一个噩梦。为了解决这个问题，小组内之前做过一些封装和拆分：  将每个表单项封装成独立组件 在业务上将表单项分类，功能内聚的一组表单项放到一个form group下，这样整个表单被拆分为多个form group，同时每个form group也">
@@ -404,7 +404,7 @@
 <li>每个表单项独立的<code>module</code>，<code>form group</code>也有独立<code>module</code>，与组件树一一对应形成<code>module tree</code></li>
 </ul>
 <p>表单项完全自治内聚，<code>form</code>只用在初始化时将后端拉取的完整<code>form data</code>传递给表单项，由表单项自行关心的字段；在表单提交时，由于表单项内部已经准备好需要贡献哪些数据，<code>form</code>只用直接拿过来即可。</p>
-<p>基于以上思路，势必有很多通用逻辑，提取出来后就可以方便的复用了。<code>demo</code>代码放在最后，下面具体说说实现细节。</p>
+<p>基于以上思路，势必有很多通用逻辑，提取出来后就可以方便的复用了, <code>demo</code>代码放在最后，下面具体说说实现细节。</p>
 <h1 id="总体架构"><a href="#总体架构" class="headerlink" title="总体架构"></a>总体架构</h1><p><img src="/images/modulaized-form/compTree-moduleTree.jpg" alt="compTree-moduleTree"></p>
 <p>如上，组件树与<code>vuex module</code>树一一对应，<code>form</code>、<code>form group</code>、<code>form item</code>都有各自的<code>module</code>。</p>
 <p><code>vuex</code>中涉及多层次<code>module</code>时上下层通信不是很方便，必须知道<code>namespace</code>才行， 蛋疼的是<code>vuex</code>并没有提供很好的机制方便上层<code>module</code>了解其下属<code>module</code>的情况。</p>
@@ -511,6 +511,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2019/06/20/string-length-with-different-language/" rel="prev" title="混合多语种的字符长度计算">
+                混合多语种的字符长度计算 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -604,7 +608,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">78</span>
+                  <span class="site-state-item-count">79</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
