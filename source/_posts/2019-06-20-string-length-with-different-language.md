@@ -5,16 +5,13 @@ summary_img: /images/canyon.jpg
 tags: [js, unicode]
 ---
 
-业务中通常有很多界面的输入框需要限定长度，如果输入的全部是英文字符那么计算长度非常简单，直接利用`String.prototype.length`就行。可是现实很骨感，经常还允许输入中文，甚至在国际化业务中涉及到的语种更多，比如日语韩语西班牙语等。同时`PM`还会要求不同语言字符的长度不同，例如一个汉字/韩文长度是 2、一个英文/日文字符长度是 1、全角字符长度是 2、半角字符是 1。这就要求我们能够判断一个字符是否属于特定的自然语言，或者更理想一点直接能够检测字符所属的自然语言。
+业务中通常有很多输入框需要限定长度，如果输入的全部是英文字符那么计算长度非常简单，直接利用`String.prototype.length`就行。可是现实很骨感，经常还允许输入中文，甚至在国际化业务中涉及到的语种更多，比如日语韩语西班牙语等。同时`PM`还会要求不同语言字符的长度不同，例如一个汉字/韩文长度是 2、一个英文/日文字符长度是 1、全角字符长度是 2、半角字符是 1。这就要求我们能够判断一个字符是否属于特定的自然语言，或者更理想一点直接能够获取字符所属的自然语言。
 
 # 思路
 
-在例如文章标题的输入框中，很有可能整个字符串都是同一个语言。但在输入框字符统计这样的需求里，就必须考虑语言混排的情况，不能用整个字符串去判断语言，只能逐个字符来看。利用单个字符直接检测所属自然语言是不大现实的，存在一些困难：
+在形如文章标题的输入框中，很有可能整个字符串都是同一个语言。但在输入框字符统计这样的需求里，就必须考虑语言混排的情况，不能用整个字符串去判断语言，只能逐个字符来看。利用单个字符直接获取所属自然语言存在一些困难，很多字符如`p`在多种语言中都有用到。
 
-1. 很多字符如`p`在多种语言中都有用到
-2. 如何利用单个字符直接检测所属自然语言呢？
-
-问题 1 这个不是很难，可以设置一个语言的检测优先级，第一个检测到的语言直接返回；问题 2 看起来是有办法的，因为只要找到自然语言的范围，然后看目标字符是否在此范围内即可。下面的篇幅重点都在问题 2 的讨论。
+那么如何判断字符是否属于特定自然语言呢？这个看起来是有办法的，因为只要找到这个自然语言的范围，然后看目标字符是否在此范围内即可，之后的篇幅重点都是讨论这个问题。
 
 # `Unicode Script`
 
@@ -23,11 +20,13 @@ tags: [js, unicode]
 注：涉及到多种语言的字符，就得小心在`js`中处理`Unicode`字符的注意事项，参考[以前写的文章](https://hellogithub2014.github.io/2018/08/22/unicode/)。
 
 1. 首先在[stackoverflow](https://stackoverflow.com/questions/6432926/how-can-i-relate-unicode-blocks-to-languages-scripts)上搜到一个相关的讨论，发现在`unicode`中并不存在自然语言与码点范围的直接映射关系
-2. 一个自然语言可能对应了很多`unicode script`，如日语会用到`CJK`中文、`Hiragana`平假名、`Katakana`片假名这 3 个；并且而一个`unicode script`也可能被多种自然语言使用，如`Latin`会在英语、法语、德语、意大利语种使用。简而言之，自然语言和`unicode script`是多对多的关系
+2. 一个自然语言可能对应了很多`unicode script`，如日语会用到`CJK`中文、`Hiragana`平假名、`Katakana`片假名这 3 个；并且一个`unicode script`也可能被多种自然语言使用，如`Latin`会在英语、法语、德语、意大利语种使用。简而言之，**自然语言和`unicode script`是多对多的关系**
 
-`unicode script`是什么？参考[`wiki`](<https://en.wikipedia.org/wiki/Script_(Unicode)>)的说法，它是`Unicode`中一组字母、标点符号、变音符的集合，例如`Latin`、`Greek`等等。 可以在[这里](https://unicode.org/charts/)查阅所有的`script`，点击每个`script`会展示其内部的字符：
+`unicode script`是什么？参考[`wiki`](https://en.wikipedia.org/wiki/Script_(Unicode))的说法，它是`Unicode`中一组字母、标点符号、变音符的集合，例如`Latin`、`Greek`等等。 可以在[这里](https://unicode.org/charts/)查阅所有的`script`，点击每个`script`会展示其内部的字符：
 
 ![script_char_example.png](/images/string-length/script_char_example.png)
+
+另外顺便提下还有一个[`Unicode Block`](https://en.wikipedia.org/wiki/Unicode_block)的概念，它和`unicode script`有一些差别，具体可以参考[这里](https://www.unicode.org/faq/blocks_ranges.html)。
 
 因为`script`是存在确定范围的，所以我们的问题又变成了**如何确定一个自然语言对应哪些`unicode script`？**
 
@@ -45,7 +44,7 @@ tags: [js, unicode]
    ![做不了.png](https://www.jiuwa.net/tuku/20180404/kANEOyoT.jpg)
 2. 语言很多，如果对语言不熟悉，那么映射可能不完整，例如遗漏一些`script`,导致一些特殊字符检测不出来
 
-问题 2 除了更细心一些没有特别好的办法。问题 1 可以在业务上约定不同自然语言中的相同字母长度都一样。
+问题 2 除了更细心一些没有特别好的办法。问题 1 可以在业务上约定使用相同字符集的自然语言长度都一样。
 
 # 具体实现
 
@@ -121,19 +120,20 @@ stringLength('abc字符规则テスト'); // 14
 
 在[这里](https://unicode.org/charts/PDF/UFF00.pdf)可以查看到全角/半角字符与标点的范围，
 
-![Halfwidth_and_ Fullwidth_Forms.png](/images/string-length/Halfwidth*and* Fullwidth_Forms.png)
+![Halfwidth_and_Fullwidth_Forms.png](/images/string-length/halfwidth_ fullwidth.png)
 
 发现一些需要注意的：
 
 1. 部分全宽`Latin`字母和`Latin Script`的范围是重合的，如`\uFF21`是全宽的`Ａ`，也被放到`Latin Script`里了
+    ![latin_script_regrexp](/images/string-length/latin_script_regrexp.png)
 2. 标点符合、数字是不属于任何`script`的
 3. 全角字符的范围比较连续就是`\uFF00`~`\uFFEF`，但半角字符范围很零碎，被分为了多段，需要细心分拣
 
-![full_width_half_width.png](/images/string-length/full_width_half_width.png)
+    ![full_width_half_width.png](/images/string-length/full_width_half_width.png)
 
 所以全角、半角需要额外检测，同时需要放到任何`script`检测之前。
 
-在示范代码中，我们将全角、半角的配置放到`LENGTH_MAP`初始化之中，这样在检测时会优先匹配它俩：
+在示范代码中，我们将全角、半角的配置当初特殊的`script`放到`LENGTH_MAP`初始化之中，这样在检测时会优先匹配它俩：
 
 ```js
 const LENGTH_MAP = {
@@ -195,7 +195,7 @@ for (char of 'ณี') console.log(char); // ณ  ี
 
 ### 正则替换
 
-这种方法属于正面刚，先利用正则表达式去掉所有`Combining character`，再计算剩下字符的长度。由于字符串意义没有变更，只是部分子符读音发生变化，所以影响不是很大。参考了[这篇博客](https://my.oschina.net/u/3375885/blog/2998185)
+这种方法属于正面肛，先利用正则表达式去掉所有`Combining character`，再计算剩下字符的长度。由于字符串意义没有变更，只是部分子符读音发生变化，所以影响不是很大。参考了[这篇博客](https://my.oschina.net/u/3375885/blog/2998185)
 
 ```js
 const regexSymbolWithCombiningMarks = /(\P{Mark})(\p{Mark}+)/gu;
@@ -219,13 +219,15 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
 
 ![hindi_example.png](/images/string-length/hindi_example.png)
 
-这种情形暂时没有想到好的办法，有知道解决办法的欢迎和我交流 🙃
+处理后是`त`和`र`两个。
+
+这种情形暂时没有想到好的办法，一种可能的方法是建立每种`script`所有组合字符的映射，然后预处理字符串时`replace`掉组合字符。有知道其他更好解决办法的欢迎和我交流 🙃
 
 后续 TODO： 完善`LANG_SCRIPT_LENGTH`映射，包括`script`列表的收集和更多自然语言的处理。
 
 最后的代码放在了[这里](https://github.com/hellogithub2014/string-length/blob/master/string-length.js)
 
-# 技术调研
+# 类似功能的库
 
 最后提供一些类似功能的库，他们都致力于直接检测字符串所属语言，不会考虑全角半角。
 
@@ -277,13 +279,6 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
      [ 'hungarian', 0.407948717948718 ],
      [ 'latin', 0.39205128205128204 ],
      [ 'french', 0.367948717948718 ],
-     [ 'portuguese', 0.3669230769230769 ],
-     [ 'estonian', 0.3507692307692307 ],
-     [ 'latvian', 0.2615384615384615 ],
-     [ 'spanish', 0.2597435897435898 ],
-     [ 'slovak', 0.25051282051282053 ],
-     [ 'dutch', 0.2482051282051282 ],
-     [ 'lithuanian', 0.2466666666666667 ],
      ... ]
    */
    ```
@@ -305,3 +300,7 @@ const normalized = str.replace(regexSymbolWithCombiningMarks, ($0, symbol, combi
    franc('Alle menneske er fødde til fridom'); // => 'nno'
    franc('我', { minLength: 1 }); // => 'cmn'
    ```
+
+# 总结
+
+本文分析了在混合多语种情况下的字符长度计算方法，建立自然语言与`Unicode script`的映射，转而判断字符是否处于特定`script`范围内，最后还考虑了全角、半角和组合字符的情况。
