@@ -70,7 +70,7 @@
 
 
 
-  <meta name="keywords" content="unicode,javascript,">
+  <meta name="keywords" content="javascript,unicode,">
 
 
 
@@ -82,20 +82,20 @@
 
 
 <meta name="description" content="ES5 中的字符操作es5 中提供了一些跟字符相关的操作，在某些需要精细化处理字符串的场所可能有帮助。 字符转义可以使用\u来转义各种十六进制数为相应字符： 1234&apos;\u0041&apos;; // A&apos;\u0061&apos;; // a&apos;\u4E25&apos;; // 严&apos;\u2603&apos;; // ☃ fromCharCode、charCodeAt、charAt、length String.fromCharcode -">
-<meta name="keywords" content="unicode,javascript">
+<meta name="keywords" content="javascript,unicode">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Unicode与Javascript">
 <meta property="og:url" content="https://hellogithub2014.github.io/2018/08/23/unicode-and-javascript/index.html">
 <meta property="og:site_name" content="十年一刻">
 <meta property="og:description" content="ES5 中的字符操作es5 中提供了一些跟字符相关的操作，在某些需要精细化处理字符串的场所可能有帮助。 字符转义可以使用\u来转义各种十六进制数为相应字符： 1234&apos;\u0041&apos;; // A&apos;\u0061&apos;; // a&apos;\u4E25&apos;; // 严&apos;\u2603&apos;; // ☃ fromCharCode、charCodeAt、charAt、length String.fromCharcode -">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://hellogithub2014.github.io/assets/img/Unicode/Unicode%20Panel.png">
-<meta property="og:image" content="https://hellogithub2014.github.io/assets/img/Unicode/u-flag-compatiable.png">
-<meta property="og:updated_time" content="2019-05-25T10:11:19.529Z">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/Unicode%20Panel.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/Unicode/u-flag-compatiable.png">
+<meta property="og:updated_time" content="2019-06-29T11:47:54.620Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Unicode与Javascript">
 <meta name="twitter:description" content="ES5 中的字符操作es5 中提供了一些跟字符相关的操作，在某些需要精细化处理字符串的场所可能有帮助。 字符转义可以使用\u来转义各种十六进制数为相应字符： 1234&apos;\u0041&apos;; // A&apos;\u0061&apos;; // a&apos;\u4E25&apos;; // 严&apos;\u2603&apos;; // ☃ fromCharCode、charCodeAt、charAt、length String.fromCharcode -">
-<meta name="twitter:image" content="https://hellogithub2014.github.io/assets/img/Unicode/Unicode%20Panel.png">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/Unicode/Unicode%20Panel.png">
 
 
 
@@ -414,7 +414,7 @@
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">U+<span class="number">0041</span> =&gt;  A</span><br><span class="line">U+<span class="number">0061</span> =&gt;   a</span><br><span class="line">U+<span class="number">2603</span> =&gt;   ☃</span><br></pre></td></tr></table></figure>
 <p><a href="https://codepoints.net/" target="_blank" rel="noopener">codepoints</a>上可以浏览各种各样的 Unicode 字符，我们 💩 先生的代码点是<code>U+1F4A9</code>~~~</p>
 <p>Code Point 的取值范围是<code>U+0000</code>~<code>U+10FFFF</code>，大约有 110 万个。 为了好组织，所有<code>Code Point</code>被分为了 17 个<code>Plane</code>，每个<code>Plane</code>中大约包含 65K 个<code>Code Point</code>。 见<a href="https://en.wikipedia.org/wiki/Unicode" target="_blank" rel="noopener">维基百科</a></p>
-<p><img src="https://hellogithub2014.github.io/assets/img/Unicode/Unicode%20Panel.png" alt=""></p>
+<p><img src="https://hellogithub2014.github.io/images/Unicode/Unicode%20Panel.png" alt=""></p>
 <p>其中第一个<code>Plane</code>（U+0000~ U+FFFF）被称为<code>BMP</code>（<code>Basic Multilingual Plane</code>）,包含了几乎所有的常用字符。</p>
 <p>剩下的其他<code>Plane</code>（U+10000~ U+10FFFF）被称为<code>supplementary planes（SMP）</code>或者  <code>astral planes</code>，对应的字符通常称为<code>SMP字符</code>。</p>
 <p>另： 汉字的 Unicode 码点范围<a href="http://www.qqxiuzi.cn/zh/hanzi-unicode-bianma.php" target="_blank" rel="noopener">可以参照这里</a></p>
@@ -508,7 +508,7 @@
 <p>幸运的是，不需要我们做什么 hack 操作，<code>u</code>修饰符已经默认附加在了 pattern 上：</p>
 <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">""</span> <span class="attr">class</span>=<span class="string">"form"</span>&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">pattern</span>=<span class="string">'😄&#123;2&#125;'</span> <span class="attr">value</span>=<span class="string">"😄😄"</span>&gt;</span>  <span class="comment">&lt;!-- green --&gt;</span></span><br><span class="line">	<span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"text"</span> <span class="attr">pattern</span>=<span class="string">"💩-💫"</span> <span class="attr">value</span>=<span class="string">"💫"</span>&gt;</span> <span class="comment">&lt;!-- green --&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <h2 id="兼容性"><a href="#兼容性" class="headerlink" title="兼容性"></a>兼容性</h2><p><code>u</code>修饰符的兼容性参考<a href="http://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags" target="_blank" rel="noopener">test-RegExp_y_and_u_flags</a></p>
-<p><img src="https://hellogithub2014.github.io/assets/img/Unicode/u-flag-compatiable.png" alt=""></p>
+<p><img src="https://hellogithub2014.github.io/images/Unicode/u-flag-compatiable.png" alt=""></p>
 <h2 id="Array-from"><a href="#Array-from" class="headerlink" title="Array.from"></a>Array.from</h2><p>可能有时候需要计算字符串中的『字数』(即肉眼见到的字符数)，例如界面提示用户输入了多少字。如上所述，这个时候不能简单的使用<code>length</code>属性，因为对于一个<code>SMP</code>字符它会返回 2.</p>
 <p>在 es5 中我们可以这么做：</p>
 <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> regexSMP = <span class="regexp">/[\uD800-\uDBFF][\uDC00-\uDFFF]/g</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将每个SMP字符转换成一个BMP字符，然后直接计算最终结果的length即可。</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countSymbols</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> string.replace(regexSMP, <span class="string">'_'</span>).length;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">countSymbols(<span class="string">'😄你好阿，test©'</span>); <span class="comment">// 10</span></span><br></pre></td></tr></table></figure>
@@ -544,9 +544,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/unicode/" rel="tag"># unicode</a>
-          
             <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/unicode/" rel="tag"># unicode</a>
           
         </div>
       
