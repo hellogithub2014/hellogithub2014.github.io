@@ -106,13 +106,13 @@ HTTP2的多路复用允许同时通过单一的 HTTP/2 连接发起多重的请�
 
 HTTP/1.1
 
-![]({{site.url}}/assets/img/general-interview-questions/http1.1.png)
+![]({{site.url}}/images/general-interview-questions/http1.1.png)
 
 HTTP/2
 
-![]({{site.url}}/assets/img/general-interview-questions/http2.png)
+![]({{site.url}}/images/general-interview-questions/http2.png)
 
-![]({{site.url}}/assets/img/general-interview-questions/compare-http1-http2.png)
+![]({{site.url}}/images/general-interview-questions/compare-http1-http2.png)
 
 # 请说出三种减少页面加载时间的方法。(加载时间指感知的时间或者实际加载时间)
 
@@ -189,5 +189,3 @@ Flash Of Unstyled Content
 5. 使用骨架屏优化用户体验（以pc端评论为例）
 6. cdn托管
 7. 静态资源放在多个域名下，规避浏览器的最大同时请求数目
-
-

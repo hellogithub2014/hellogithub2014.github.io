@@ -154,7 +154,7 @@ U+2603 =>   ☃
 
 Code Point 的取值范围是`U+0000`~`U+10FFFF`，大约有 110 万个。 为了好组织，所有`Code Point`被分为了 17 个`Plane`，每个`Plane`中大约包含 65K 个`Code Point`。 见[维基百科](https://en.wikipedia.org/wiki/Unicode)
 
-![](https://hellogithub2014.github.io/assets/img/Unicode/Unicode%20Panel.png)
+![](https://hellogithub2014.github.io/images/Unicode/Unicode%20Panel.png)
 
 其中第一个`Plane`（U+0000~ U+FFFF）被称为`BMP`（`Basic Multilingual Plane`）,包含了几乎所有的常用字符。
 
@@ -442,7 +442,7 @@ ES6 对正则表达式添加了**`u`**修饰符，含义为“Unicode 模式”�
 
 `u`修饰符的兼容性参考[test-RegExp_y_and_u_flags](http://kangax.github.io/compat-table/es6/#test-RegExp_y_and_u_flags)
 
-![](https://hellogithub2014.github.io/assets/img/Unicode/u-flag-compatiable.png)
+![](https://hellogithub2014.github.io/images/Unicode/u-flag-compatiable.png)
 
 ## Array.from
 

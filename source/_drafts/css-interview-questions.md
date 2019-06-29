@@ -60,7 +60,7 @@ span{
 }
 ```
 
-![]({{site.url}}/assets/img/css-interview-questions/float-inline-box.png)
+![]({{site.url}}/images/css-interview-questions/float-inline-box.png)
 
 **会和文档流中的block box重叠。用clear: both|left|right避免重叠**
 
@@ -69,7 +69,7 @@ span{
   <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Labore aliquam rem autem atque saepe distinctio dolor, nemo qui. Error, officiis.</p>
 ```
 
-![]({{site.url}}/assets/img/css-interview-questions/float-block-box.png)
+![]({{site.url}}/images/css-interview-questions/float-block-box.png)
 
 # 描述`z-index`和叠加上下文是如何形成的。
 
@@ -611,7 +611,7 @@ z-index 属性设置元素的堆叠顺序。拥有更高堆叠顺序的元素�
 
 **用一句话总结就是：就近原则。**
 
-![]({{site.url}}/assets/img/css-interview-questions/css-rules-priority.png)
+![]({{site.url}}/images/css-interview-questions/css-rules-priority.png)
 
 选择器的优先权：
 
@@ -1093,7 +1093,7 @@ main a {
 
 >The vertical-align CSS property specifies the vertical alignment of an inline or table-cell box.
 
-![]({{site.url}}/assets/img/css-interview-questions/vertical-align.png
+![]({{site.url}}/images/css-interview-questions/vertical-align.png
 )
 
 	```html
@@ -1349,4 +1349,3 @@ main div {
 * [CSS Grid Layout: Using Grid Areas](https://webdesign.tutsplus.com/tutorials/css-grid-layout-using-grid-areas--cms-27264)
 * [CSS Grid Layout: Going Responsive](https://webdesign.tutsplus.com/tutorials/css-grid-layout-going-responsive--cms-27270)
 * [Understanding the CSS Grid “Auto-Placement Algorithm”](https://webdesign.tutsplus.com/tutorials/understanding-the-css-grid-auto-placement-algorithm--cms-27563)
-

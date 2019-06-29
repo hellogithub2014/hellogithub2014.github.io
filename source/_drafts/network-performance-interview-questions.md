@@ -168,7 +168,7 @@ SSE和websocket不同的是，ws是全双工的，本质上是一个额外的tcp
 https://hellogithub2014.github.io/how-do-network-connect
 ```
 
-![]({{site.url}}/assets/img/network-performance-interview-questions/response-301.png)
+![]({{site.url}}/images/network-performance-interview-questions/response-301.png)
 
 **302 - 临时重定向**
 
@@ -177,4 +177,3 @@ https://hellogithub2014.github.io/how-do-network-connect
 **区别**
 
 302表示资源不是被永久移动，只是临时性的，已移动的资源对应的URL将来还有可能发生改变。
-
