@@ -92,7 +92,7 @@
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/script_char_example.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/list_of_languages_by_writing_system.png">
 <meta property="og:image" content="https://www.jiuwa.net/tuku/20180404/kANEOyoT.jpg">
-<meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/halfwidth_%20fullwidth.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/halfwidth_fullwidth.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/latin_script_regrexp.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/full_width_half_width.png">
 <meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/U_niesk%C5%82adovaje_Unicode.svg/220px-U_niesk%C5%82adovaje_Unicode.svg.png">
@@ -100,7 +100,7 @@
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/babeled_combining_marks_regexp.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/hindi_example.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/string-length/cld.png">
-<meta property="og:updated_time" content="2019-06-23T04:04:23.048Z">
+<meta property="og:updated_time" content="2019-06-29T15:47:22.387Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="混合多语种的字符长度计算">
 <meta name="twitter:description" content="业务中通常有很多输入框需要限定长度，如果输入的全部是英文字符那么计算长度非常简单，直接利用String.prototype.length就行。可是现实很骨感，经常还允许输入中文，甚至在国际化业务中涉及到的语种更多，比如日语韩语西班牙语等。同时PM还会要求不同语言字符的长度不同，例如一个汉字/韩文长度是 2、一个英文/日文字符长度是 1、全角字符长度是 2、半角字符是 1。这就要求我们能够判断一个字">
@@ -418,7 +418,7 @@
 </ol>
 <p>下面依次来看。</p>
 <h2 id="全角、半角"><a href="#全角、半角" class="headerlink" title="全角、半角"></a>全角、半角</h2><p>在<a href="https://unicode.org/charts/PDF/UFF00.pdf" target="_blank" rel="noopener">这里</a>可以查看到全角/半角字符与标点的范围，</p>
-<p><img src="/images/string-length/halfwidth_ fullwidth.png" alt="Halfwidth_and_Fullwidth_Forms.png"></p>
+<p><img src="/images/string-length/halfwidth_fullwidth.png" alt="Halfwidth_and_Fullwidth_Forms.png"></p>
 <p>发现一些需要注意的：</p>
 <ol>
 <li>部分全宽<code>Latin</code>字母和<code>Latin Script</code>的范围是重合的，如<code>\uFF21</code>是全宽的<code>Ａ</code>，也被放到<code>Latin Script</code>里了<br> <img src="/images/string-length/latin_script_regrexp.png" alt="latin_script_regrexp"></li>

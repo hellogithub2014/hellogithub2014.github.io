@@ -70,7 +70,7 @@
 
 
 
-  <meta name="keywords" content="Vue,javascript,">
+  <meta name="keywords" content="javascript,Vue,">
 
 
 
@@ -82,7 +82,7 @@
 
 
 <meta name="description" content="上篇文章说到了模板解析的第一步parse，现在来说第二步optimize，用于优化静态内容的渲染，主要是给静态节点打上一些标记。 Vue中对于生成的AST会做优化，静态内容是指和数据没有关系，不需要每次都刷新的内容，这一步主要就是找出 ast 中的静态内容，并加以标注。 这一步的代码比parse要少太多，应该压力会小很多 🙄，先看一下入口代码： 1234567891011121314151617">
-<meta name="keywords" content="Vue,javascript">
+<meta name="keywords" content="javascript,Vue">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Vue源码解析6-静态AST优化">
 <meta property="og:url" content="https://hellogithub2014.github.io/2018/11/01/vue-sourcecode-6-optimizer/index.html">
@@ -413,9 +413,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Vue/" rel="tag"># Vue</a>
-          
             <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+            <a href="/tags/Vue/" rel="tag"># Vue</a>
           
         </div>
       
