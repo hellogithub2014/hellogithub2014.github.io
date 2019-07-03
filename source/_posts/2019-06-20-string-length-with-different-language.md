@@ -120,7 +120,7 @@ stringLength('abc字符规则テスト'); // 14
 
 在[这里](https://unicode.org/charts/PDF/UFF00.pdf)可以查看到全角/半角字符与标点的范围，
 
-![Halfwidth_and_Fullwidth_Forms.png](/images/string-length/halfwidth_fullwidth.png)
+  ![Halfwidth_and_Fullwidth_Forms.png](/images/string-length/halfwidth_fullwidth.png)
 
 发现一些需要注意的：
 
