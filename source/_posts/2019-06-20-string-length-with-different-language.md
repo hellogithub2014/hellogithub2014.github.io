@@ -30,11 +30,14 @@ tags: [js, unicode]
 
 因为`script`是存在确定范围的，所以我们的问题又变成了**如何确定一个自然语言对应哪些`unicode script`？**
 
-经过一番搜索，发现[List_of_languages_by_writing_system](https://en.wikipedia.org/wiki/List_of_languages_by_writing_system)这个`wiki`比较符合我们的需求，只不过它是反过来的，列出了一个`script`被哪些自然语言使用了。 我们得逐个反向查找，例如：
+经过一番搜索，发现[List_of_languages_by_writing_system](https://en.wikipedia.org/wiki/List_of_languages_by_writing_system)这个`wiki`比较符合我们的需求，只不过它是反过来的，列出了一个[`writing system`](https://en.wikipedia.org/wiki/Writing_system)被哪些自然语言使用了，
+[world-map-of-alphabets-scripts](https://www.key-shortcut.com/en/writing-systems/world-map-of-alphabets-scripts/)可以作为辅助文档。`writing system`与`scripts`存在对应关系，所以我们的思路是先反向查找自然语言对应的`writing system`，然后再查找`writing system`对应的`scripts`。例如：
 
 ![list_of_languages_by_writing_system.png](/images/string-length/list_of_languages_by_writing_system.png)
 
-[List of writing scripts by adoption](https://en.wikipedia.org/wiki/List_of_writing_systems)里有个大表格，记录了常见`script`被哪些语言使用了。
+![writing-system-to-scripts](/images/string-length/writing-system-to-scripts.png)
+
+[List of writing scripts by adoption](https://en.wikipedia.org/wiki/List_of_writing_systems)里有个大表格，记录了常见`writing system`被哪些语言使用了。
 
 所以最终我们的思路就是：**设置一个映射，存储每种自然语言对应的`script`列表，针对字符串的每个字符，只要其位于自然语言的`script`范围内，就认为这个字符属于这个自然语言。**
 
