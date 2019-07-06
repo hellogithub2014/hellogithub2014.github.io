@@ -49,10 +49,10 @@ es5 中提供了一些跟字符相关的操作，在某些需要精细化处理�
 
 4.  `length`属性很熟悉了，就是计算长度呗
 
-```js
-'ABCDE'.length; // 5
-'万几皮'.length; // 3
-```
+    ```js
+    'ABCDE'.length; // 5
+    '万几皮'.length; // 3
+    ```
 
 # 遇到 Unicode 字符时遇到的问题
 
@@ -154,7 +154,7 @@ U+2603 =>   ☃
 
 Code Point 的取值范围是`U+0000`~`U+10FFFF`，大约有 110 万个。 为了好组织，所有`Code Point`被分为了 17 个`Plane`，每个`Plane`中大约包含 65K 个`Code Point`。 见[维基百科](https://en.wikipedia.org/wiki/Unicode)
 
-![](https://hellogithub2014.github.io/images/Unicode/Unicode%20Panel.png)
+![](https://hellogithub2014.github.io/images/Unicode/Unicode-Panel.png)
 
 其中第一个`Plane`（U+0000~ U+FFFF）被称为`BMP`（`Basic Multilingual Plane`）,包含了几乎所有的常用字符。
 
@@ -215,29 +215,28 @@ js 使用的其实是`UCS-2`编码，由于这种编码被整合进了`UTF-16`�
 
 # es5 中处理`SMP字符`
 
-1. **length**：💩 的`length`为 2 应该可以理解了，实际上它是 H、L 两个字符，可以看出`length`的结果并不是肉眼所看到的字符个数。
-2. **`charCodeAt`**： 如果猜测的没错，对于 💩，可以分别得出`charCodeAt(0)`和`charCodeAt(1)`，它们的结果正好就是 H 和 L：
+1.  **length**：💩 的`length`为 2 应该可以理解了，实际上它是 H、L 两个字符，可以看出`length`的结果并不是肉眼所看到的字符个数。
+2.  **`charCodeAt`**： 如果猜测的没错，对于 💩，可以分别得出`charCodeAt(0)`和`charCodeAt(1)`，它们的结果正好就是 H 和 L：
 
-   ```js
-   '💩'.charCodeAt(0).toString(16); // 0xD83D
-   '💩'.charCodeAt(1).toString(16); // 0xDCA9
-   ```
+    ```js
+    '💩'.charCodeAt(0).toString(16); // 0xD83D
+    '💩'.charCodeAt(1).toString(16); // 0xDCA9
+    ```
 
-3. **`fromCharcode`** - 只能处理位于 BMP 区间(`U+0000`~`U+FFFF`)的`BMP`字符,会直接截断`SMP字符`的高位字节:
+3.  **`fromCharcode`** - 只能处理位于 BMP 区间(`U+0000`~`U+FFFF`)的`BMP`字符,会直接截断`SMP字符`的高位字节:
 
-   ```js
-   String.fromCharCode(0x0041); // A
-   String.fromCharCode(0x1f4a9); // ''  U+F4A9, not U+1F4A9
-   ```
+    ```js
+    String.fromCharCode(0x0041); // A
+    String.fromCharCode(0x1f4a9); // ''  U+F4A9, not U+1F4A9
+    ```
 
-   解决的办法是根据上面计算 `H、L` 的公式先计算出 `H、L`,然后再传入`String.fromCharCode`：
+    解决的办法是根据上面计算 `H、L` 的公式先计算出 `H、L`,然后再传入`String.fromCharCode`：
 
-   ```js
-   String.fromCharCode(0xd83d, 0xdca9); // "💩"
-   ```
+    ```js
+    String.fromCharCode(0xd83d, 0xdca9); // "💩"
+    ```
 
-4. **数量匹配`SMP字符`**: 匹配失败的原因是 `SMP字符`被打散成了 H、L
-
+4.  **数量匹配`SMP字符`**: 匹配失败的原因是 `SMP字符`被打散成了 H、L
 
     ```js
     /💩{2}/   => /\uD83D\uDCA9{2}/  // 其实匹配的是 H+L*2
@@ -251,26 +250,26 @@ js 使用的其实是`UCS-2`编码，由于这种编码被整合进了`UTF-16`�
 
 5.  **范围匹配`SMP字符`**： 报错的原因也是`H、L`：
 
-        	```js
-        	/[💩-💫]/  =>   /[\uD83D\uDCA9-\uD83D\uDCAB]/
-        	```
+    ```js
+    /[💩-💫]/  =>   /[\uD83D\uDCA9-\uD83D\uDCAB]/
+    ```
 
     上面的`\uDCA9-\uD83D`左边的值比右边大，导致报错。一个很挫的解决方案是提供他们的 H、L 公共范围并精简表达式：
 
-        	```js
-        	/\uD83D[\uDCA9-\uDCAB]/.test('💩') // true
-        	/\uD83D[\uDCA9-\uDCAB]/.test('💫') // true
-        	```
+    ```js
+    /\uD83D[\uDCA9-\uDCAB]/.test('💩') // true
+    /\uD83D[\uDCA9-\uDCAB]/.test('💫') // true
+    ```
 
-        	这种方法的缺点也很明显，对于两个跨度很大的`SMP`字符，需要精心的分段，稍不留神就会出错：
+    这种方法的缺点也很明显，对于两个跨度很大的`SMP`字符，需要精心的分段，稍不留神就会出错：
 
-        	```js
-        	/[𐄑-💫]/
+    ```js
+    /[𐄑-💫]/
 
-        	=>
+    =>
 
-        	/\uD800[\uDD11-\uDFFF]|[\uD801-\uD83C][\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCAB]/.test('💪') // true
-        	```
+    /\uD800[\uDD11-\uDFFF]|[\uD801-\uD83C][\uDC00-\uDFFF]|\uD83D[\uDC00-\uDCAB]/.test('💪') // true
+    ```
 
 6.  **`reverse`函数**：遇到`SMP字符`会直接把 H、L 颠倒，而每个独立的 H、L 都是『乱码』，只有二者结合在一起才有意义。如果要解决问题，需要知道在碰到 H 的时候，下一个字符会是 L，不要把二者颠倒就行。
 
@@ -413,28 +412,32 @@ ES6 对正则表达式添加了**`u`**修饰符，含义为“Unicode 模式”�
 
 ```html
 <style>
-	:invalid {
-	  color: red;
-	}
-	:valid {
-	 color: green;
-	}
+  :invalid {
+    color: red;
+  }
+  :valid {
+    color: green;
+  }
 </style>
 ```
 
 ```html
 <form action="">
-    <input type="text" pattern="\d+" value="123"> <!-- 界面上显示绿色 -->
-    <input type="text" pattern="\d+" value="abc"> <!-- 界面上显示红色 -->
- </form>
+  <input type="text" pattern="\d+" value="123" />
+  <!-- 界面上显示绿色 -->
+  <input type="text" pattern="\d+" value="abc" />
+  <!-- 界面上显示红色 -->
+</form>
 ```
 
 幸运的是，不需要我们做什么 hack 操作，`u`修饰符已经默认附加在了 pattern 上：
 
 ```html
 <form action="" class="form">
-	<input type="text" pattern='😄{2}' value="😄😄">  <!-- green -->
-	<input type="text" pattern="💩-💫" value="💫"> <!-- green -->
+  <input type="text" pattern="😄{2}" value="😄😄" />
+  <!-- green -->
+  <input type="text" pattern="💩-💫" value="💫" />
+  <!-- green -->
 </form>
 ```
 
