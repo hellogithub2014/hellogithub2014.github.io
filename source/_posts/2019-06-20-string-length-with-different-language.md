@@ -182,7 +182,7 @@ for (char of 'ณี') console.log(char); // ณ  ี
 
 ### `normalize`
 
-这是`ES6`新增的字符串处理方法，用于将两个子字符合成为一个字符。 [`MDN`上的解释](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)不是那么好懂，推荐看[`阮大`的`ES6入门`](http://es6.ruanyifeng.com/#docs/string-methods#%E5%AE%9E%E4%BE%8B%E6%96%B9%E6%B3%95%EF%BC%9Anormalize)。具体用法这里不再细述，只说一下不足之处。
+这是`ES6`新增的字符串处理方法，用于将两个子字符合成为一个字符。 [`MDN`上的解释](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/normalize)不是那么好懂，推荐看[`阮大`的`ES6入门`](http://es6.ruanyifeng.com/#docs/string-methods)。具体用法这里不再细述，只说一下不足之处。
 
 1. 如果想要合成的目标字符并不在`Unicode`中，那么`normalize`还是会返回原样的`N`个子字符，而不是一个字符。例如上面的`ณี`就是一个例子，它并不存在于`Unicode`字符集中，只是展示时看起来是一个字符：
 
