@@ -22,7 +22,7 @@ tags: [js, unicode]
 1. 首先在[stackoverflow](https://stackoverflow.com/questions/6432926/how-can-i-relate-unicode-blocks-to-languages-scripts)上搜到一个相关的讨论，发现在`unicode`中并不存在自然语言与码点范围的直接映射关系
 2. 一个自然语言可能对应了很多`unicode script`，如日语会用到`CJK`中文、`Hiragana`平假名、`Katakana`片假名这 3 个；并且一个`unicode script`也可能被多种自然语言使用，如`Latin`会在英语、法语、德语、意大利语种使用。简而言之，**自然语言和`unicode script`是多对多的关系**
 
-`unicode script`是什么？参考[`wiki`](https://en.wikipedia.org/wiki/Script_(Unicode))的说法，它是`Unicode`中一组字母、标点符号、变音符的集合，例如`Latin`、`Greek`等等。 可以在[这里](https://unicode.org/charts/)查阅所有的`script`，点击每个`script`会展示其内部的字符：
+`unicode script`是什么？参考[`wiki`](<https://en.wikipedia.org/wiki/Script_(Unicode)>)的说法，它是`Unicode`中一组字母、标点符号、变音符的集合，例如`Latin`、`Greek`等等。 可以在[这里](https://unicode.org/charts/)查阅所有的`script`，点击每个`script`会展示其内部的字符：
 
 ![script_char_example.png](/images/string-length/script_char_example.png)
 
@@ -75,14 +75,14 @@ const LANG_SCRIPT_LENGTH = {
   },
 };
 
-const LENGTH_MAP = {}; // 记录每个script的PM规定长度
+const SCRIPT_LIST = []; // 记录每个script的PM规定长度
 
-// 初始化LENGTH_MAP
+// 初始化SCRIPT_LIST
 function init() {
   Object.values(LANG_SCRIPT_LENGTH).forEach(({ scripts = [], length = 1 }) => {
     scripts.forEach(script => {
       const regex = require(`unicode-12.1.0/Script/${script}/regex`);
-      LENGTH_MAP[script] = { regex, length };
+      SCRIPT_LIST.push({ regex, length });
     });
   });
 }
@@ -90,7 +90,7 @@ function init() {
 init();
 
 function getCharLength(char = '') {
-  const target = Object.values(LENGTH_MAP).find(({ regex }) => regex.test(char));
+  const target = SCRIPT_LIST.find(({ regex }) => regex.test(char));
   return target ? target.length : 1;
 }
 
@@ -123,39 +123,37 @@ stringLength('abc字符规则テスト'); // 14
 
 在[这里](https://unicode.org/charts/PDF/UFF00.pdf)可以查看到全角/半角字符与标点的范围，
 
-  ![Halfwidth_and_Fullwidth_Forms.png](/images/string-length/halfwidth_fullwidth.png)
+![Halfwidth_and_Fullwidth_Forms.png](/images/string-length/halfwidth_fullwidth.png)
 
 发现一些需要注意的：
 
 1. 部分全宽`Latin`字母和`Latin Script`的范围是重合的，如`\uFF21`是全宽的`Ａ`，也被放到`Latin Script`里了
-    ![latin_script_regrexp](/images/string-length/latin_script_regrexp.png)
+   ![latin_script_regrexp](/images/string-length/latin_script_regrexp.png)
 2. 标点符合、数字是不属于任何`script`的
 3. 全角字符的范围比较连续就是`\uFF00`~`\uFFEF`，但半角字符范围很零碎，被分为了多段，需要细心分拣
 
-    ![full_width_half_width.png](/images/string-length/full_width_half_width.png)
+   ![full_width_half_width.png](/images/string-length/full_width_half_width.png)
 
 所以全角、半角需要额外检测，同时需要放到任何`script`检测之前。
 
-在示范代码中，我们将全角、半角的配置当初特殊的`script`放到`LENGTH_MAP`初始化之中，这样在检测时会优先匹配它俩：
+在示范代码中，我们将全角、半角的配置当初特殊的`script`放到`SCRIPT_LIST`初始化之中，这样在检测时会优先匹配它俩：
 
 ```js
-const LENGTH_MAP = {
-  FullWidth: {
+const SCRIPT_LIST = [
+  {
     regex: /\u2502|[\u2590-\u2593]|\u25a0|\u25cb|[\u3001-\u3002\u300c-\u300d]|\u3099|\u309a[\u30a1-\u30ab]|\u30ad|\u30af|\u30b1|\u30b3|\u30b5|\u30b7|\u30b9|\u30bb|\u30bd|\u30bf|\u30c1|\u30c3|\u30c4|\u30c6|\u30c8|[\u30ca-\u30cf]|\u30d2|\u30d5|\u30d8|\u30db|\u30de|\u30df|[\u30e0-\u30ef\u30f2-\u30f3\u30fb-\u30fc\u3131-\u3164\uFF00-\uFF60\uFFe0-\uFFe6]/,
     length: 2, // 全角字符长度算作2
   },
-  HalfWidth: {
+  {
     regex: /[\u0020-\u007e\u00a2-\u00a3\u00a5-\u00a6]|\u00a9|\u00ac|\u00af|[\u2985-\u2986\uff61-\uffdc\uffe8-\uffee]/,
     length: 1, // 半角字符长度算作1
   },
-};
+];
 
 function init() {
   // 初始化正常的script配置
 }
 ```
-
-如果想使`LENGTH_MAP`的迭代顺序更稳定，可以考虑将其改为数组存储。
 
 ## 组合字符串
 
