@@ -71,7 +71,7 @@ new Vue({
 
 ![infinite-scroll-self](/images/vue-infinite-scroll/infinite-scroll.gif)
 
-另外可以将父元素设置为滚动，当自身滚动到父元素底部时，增加自身的高度，模拟拉取下一页数据的操作。 例如：
+另外可以将宿主元素的父元素设置为滚动，当宿主元素滚动到父元素底部时，增加宿主元素的高度，模拟拉取下一页数据的操作。 例如：
 
 ```html
 <div class="app">
@@ -239,10 +239,10 @@ var doBind = function() {
 整个看下来，核心就是利用各种参数控制`doCheck`的调用，包括时间间隔、`disabled`、距离阈值、`immediate-check`、组件事件。
 `doCheck`因为会非常频繁的调用，所以用`throttle`进行了截流，具体逻辑这里不再赘述。
 
-在`getScrollEventTarget`查找滚动父元素时，有一个细节就是会从自身开始查找，这也就是我们上面的`demo`中可以将指令宿主元素赋值给滚动元素自身的原因：
+在`getScrollEventTarget`查找滚动父元素时，有一个细节就是会从自身开始查找，这也就是我们上面的`demo`中可以将指令宿主元素自身设置为`overflow:auto`的原因：
 
 ```js
-// 从自身开始，寻找设置了滚动的父元素。 overflow-y 为scroll或auto
+// 从自身开始，寻找设置了滚动的元素。 overflow-y 为scroll或auto
 var getScrollEventTarget = function(element) {
   var currentNode = element;
   // bugfix, see http://w3help.org/zh-cn/causes/SD9013 and http://stackoverflow.com/questions/17016740/onscroll-function-is-not-working-for-chrome
@@ -260,7 +260,7 @@ var getScrollEventTarget = function(element) {
 
 ## doCheck
 
-这个函数用于判断是否已经滚动到底部，可以说是整个插件的核心逻辑。由于滚动的元素可以是自身，也可以是某个父元素，所以判断会分成两个分支。
+这个函数用于判断是否已经滚动到底部，可以说是整个插件的核心逻辑。由于设置`oveflow`的元素可以是宿主元素自身，也可以是宿主元素的某个父元素，所以判断会分成两个分支。
 
 ```js
 var doCheck = function(force) {
@@ -302,7 +302,7 @@ var doCheck = function(force) {
 
 这里我用两幅图来辅助理解上面的逻辑，相信会好懂很多。
 
-### 滚动元素是自身
+### 宿主元素自身设置`overflow`
 
 ![scroll-on-self](/images/vue-infinite-scroll/scroll-on-self.png)
 如下，我们的目标是判断元素是否已滚动到底部的距离阈值之内，很容易可以看出来，距离内容底部的距离公式为：
@@ -314,7 +314,7 @@ const currentDistance = scrollHeight - clientHeight - scrollTop;
 
 这也就是函数`if`分支的逻辑，当`currentDistance`小于`distance`时，我们就可以加载下一页数据了。
 
-### 父级元素设置滚动
+### 宿主元素的父级元素设置`overflow`
 
 ![scroll-on-parent](/images/vue-infinite-scroll/scroll-on-parent.png)
 
