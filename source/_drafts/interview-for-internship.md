@@ -175,6 +175,32 @@
 # 代码
 
 - bind 实现、注意new的处理
+  ```js
+  if (!Function.prototype.bind) {
+    Function.prototype.bind = function(oThis) {
+      if (typeof this !== 'function') {
+        // closest thing possible to the ECMAScript 5
+        // internal IsCallable function
+        throw new TypeError('Function.prototype.bind -' + 'what is trying to be bound is not callable');
+      }
+
+      var aArgs = Array.prototype.slice.call(arguments, 1),
+        fToBind = this,
+        fNOP = function() {},
+        fBound = function() {
+          return fToBind.apply(this instanceof fNOP ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
+
+      if (this.prototype) {
+        // Function.prototype doesn't have a prototype property
+        fNOP.prototype = this.prototype;
+      }
+      fBound.prototype = new fNOP();
+
+      return fBound;
+    };
+  }
+  ```
 - 数组去重（无序、有序）
 - 树遍历
 - [闭包、定时器、ES6、ES7综合](https://mp.weixin.qq.com/s/QdZpzI-8D9NCrkx1GFmLiQ)
