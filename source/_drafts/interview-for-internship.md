@@ -52,7 +52,7 @@
   - [ ] 微任务：Promise.then
   - [ ] 打印顺序
   ```js
-  console.log('global macro task');
+  console.log('global');
 
   process.nextTick(function() {
     console.log('nextTick1');
@@ -69,7 +69,7 @@
 
   Promise.resolve().then(() => console.log('then2'));
 
-  // 全局 macro task
+  // global
   // nextTick1
   // nextTick2
   // then1
