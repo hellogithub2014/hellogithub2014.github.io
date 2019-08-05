@@ -5,6 +5,28 @@ summary_img: /images/canyon.jpg
 tags: [QR]
 ---
 
+# 前言
+
+前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。
+
+**二维码本质上是对字符串的编码规则，最终转换成二进制串**。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。
+
+# 基础知识
+
+二维码一共有`40`个尺寸(也可以称为版本、`Version`)。`Version 1`是`21 x 21`的矩阵，`Version 2`是 `25 x 25`的矩阵。每增加一个`version`，长宽就增加 4，公式是：
+
+```js
+(V - 1) * 4 + 21;
+```
+
+最高版本是`40`，所以是`177 x 177`的正方形。 每个`1x1`都是一个小方块，黑色表示 1，白色表示 0：
+
+![qr-smallest-unit](https://upload-images.jianshu.io/upload_images/7154520-add155b96bb60412.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/599/format/webp)
+
+二维码图案分为很多子部分，如下：
+
+![qr-code-functionl-split](https://user-images.githubusercontent.com/13174560/48657450-e3db4b00-ea6b-11e8-925b-e279de3025a2.png)
+
 # 编码步骤
 
 ## 源数据编码
