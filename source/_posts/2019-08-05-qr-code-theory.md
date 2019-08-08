@@ -38,10 +38,11 @@ tags: [QR]
     ![alignment-patterns-count](http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/6.png)
     举例`version 8`的`(6,24,42)`是如何画校正图形的：
     ![alignment-patterns-example](http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/7.png)
-- 编码区，实际存储有意义数据的区域，包含3个子部分
+- 编码区，实际存储有意义数据的区域，包含 3 个子部分
+
   - 格式信息：所有`version`的二维码都有，存放二维码的容错级别+数据掩码+二者的纠错码
-  - 版本信息：表示二维码的`version`，[`version >=7`才会绘制这个区域](https://www.thonky.com/qr-code-tutorial/format-version-information)。（其实肉眼数格子也可以知道版本信息😆 ）
-  - 数据和纠错码：存储真正的数据，同时由于纠错码的存在，使得即使二维码污损了一部分也可以读取. 整个灰色区域都用来存放此部分数据。二维码支持4种级别的纠错：
+  - 版本信息：表示二维码的`version`，[`version >=7`才会绘制这个区域](https://www.thonky.com/qr-code-tutorial/format-version-information)。（其实肉眼数格子也可以知道版本信息 😆 ）
+  - 数据和纠错码：存储真正的数据，同时由于纠错码的存在，使得即使二维码污损了一部分也可以读取. 整个灰色区域都用来存放此部分数据。二维码支持 4 种级别的纠错：
 
     | Error Correction Level | Error Correction Capability |
     | ---------------------- | --------------------------- |
@@ -56,29 +57,44 @@ tags: [QR]
 
 # 编码步骤
 
-步骤是先对源数据进行编码，然后依据编码结果计算得到纠错码，最后再在结尾加上一些用于补齐的字节就ok了。
+步骤是先对源数据进行编码，然后依据编码结果计算得到纠错码，最后再在结尾加上一些用于补齐的字节就 ok 了。
 
 ## 源数据编码
 
-### 编码方式
+### 编码模式（模式指示符）
 
-类似于`utf8`编码，这部分也就是给定一个字符串，然后将其编码成一串二进制数。二维码支持4种类型编码方式：
+类似于`utf8`编码，这部分也就是给定一个字符串，然后将其编码成一串二进制数。支持的编码模式有：
 
-1. [数字编码(`Numeric Mode`)](https://zhuanlan.zhihu.com/p/25432628): 只支持数字0~9的编码
+1. [数字编码(`Numeric Mode`)](https://zhuanlan.zhihu.com/p/25432628): 只支持数字 0~9 的编码
 2. [字符编码(`Alphanumeric Mode`)](https://zhuanlan.zhihu.com/p/25432642)：支持包含数字、**大写**的`A-Z`(不包含小写)、以及`$ % * + – . / :`和空格
-  ![alphanumeric-mode](http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png)
+   ![alphanumeric-mode](http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png)
 3. [字节编码(`Byte Mode`)](https://zhuanlan.zhihu.com/p/25432647): 支持`0x00`~`0xFF`内所有的字符
 4. [日文编码(`Kanji Mode`)](https://zhuanlan.zhihu.com/p/25432667)： 只能支持`0x8140`~`0x9FFC`、`0xE040`~`0xEBBF`的字符，可以[在这里找到](http://www.rikai.com/library/kanjitables/kanji_codes.sjis.shtml)
+5. `ECI mode`: 主要用于特殊的字符集。并不是所有的扫描器都支持这种编码
+6. `Structured Append mode`: 用于混合编码，也就是说，这个二维码中包含了多种编码格式
+7. `FNC1 mode`: 这种编码方式主要是给一些特殊的工业或行业用的。比如 GS1 条形码之类的。
+
+每种模式都由 4 位二进制的模式指示符确定：
+
+| Mode Name         | Mode Indicator |
+| ----------------- | -------------- |
+| Numeric Mode      | `0001`         |
+| Alphanumeric Mode | `0010`         |
+| Byte Mode         | `0100`         |
+| Kanji Mode        | `1000`         |
+| ECI Mode          | `0111`         |
+
+例如字符串`123`，就可以使用`Numeric Mode`；而`HELLO WORLD`需要用`Alphanumeric Mode`；`Hello world`需要使用`Byte Mode`.
 
 ### 版本、纠错级别确定
 
-首先依据源字符串可以知道应该采用哪种编码方式，然后需要先确定纠错级别，[最后不同版本在此纠错级别+编码方式下的数据容量是不同的](https://www.thonky.com/qr-code-tutorial/character-capacities)。我们只需找到最小的能容纳所有数据的那个版本即可。举例来说：
+首先依据源字符串可以知道应该采用哪种编码方式，然后需要先确定纠错级别，[最后不同版本在此纠错级别+编码方式下的数据容量是不同的](https://www.thonky.com/qr-code-tutorial/character-capacities)。我们只需找到最小的能容纳所有数据的那个版本即可。
 
-字符串 `HELLO WORLD`包含11个字符，通过上面的介绍得知，它应该使用字符编码`Alphanumeric Mode`，如果设定纠错级别是`Q`,通过查表得知`1-Q`可以容纳16个字符，那么最低就可以使用版本1：
+举例来说：字符串 `HELLO WORLD`包含 11 个字符，通过上面的介绍得知，它应该使用字符编码`Alphanumeric Mode`，如果设定纠错级别是`Q`,通过查表得知`1-Q`可以容纳 16 个字符，那么最低就可以使用版本 1：
 
 ![character-capacities-table](character-capacities-table.png)
 
-如果是字符串`HELLO THERE WORLD`(17个字符)，那么最低版本就只能选2了。
+如果是字符串`HELLO THERE WORLD`(17 个字符)，那么最低版本就只能选 2 了。
 
 另外，可以推断，**二维码是存在数据容量上限的**，它应该是`40-L`的容量：
 
@@ -89,11 +105,43 @@ tags: [QR]
 | Byte          | 2953 characters                                                   |
 | Kanji         | 1817 characters                                                   |
 
-也就是说，单纯存储数字的话，可以存7089个；只存大写字母的话，可以存大约4k个。
+也就是说，单纯存储数字的话，可以存 7089 个；只存大写字母的话，可以存大约 4k 个。
 
-### 字符串长度编码
+### 字符计数指示符
+
+是一串二进制数字，表示源字符串的字符个数。字符计数指示符必须**放在模式指示符之后**。此外，字符计数指示符有特定的位长，具体取决于二维码的版本和编码模式：
+
+| 单位 bits         | Versions 1 ~ 9 | Versions 10 ~ 26 | Versions 27 ~ 40 |
+| ----------------- | -------------- | ---------------- | ---------------- |
+| Numeric mode      | 10             | 12               | 14               |
+| Alphanumeric mode | 9              | 11               | 13               |
+| Byte mode         | 8              | 16               | 16               |
+| Kanji mode        | 8              | 10               | 12               |
+
+具体步骤是：计算原始输入文本的字符数，将其转为二进制数字。根据版本和编码模式找到对应的位长，不够位长的在前面加 0 补齐。
+
+例如 `HELLO WORLD`, 版本号为 1，则字符计数指示符需要 9 bits.
+`HELLO WORLD`的字符数为 11，转为二进制`1011`，不够 9 位，需要补上 5 个 0，最终结果是`000001011`
+
+那么针对`HELLO WORLD`，我们目前获得的二进制串是`0010 000001011`，`0010`是模式指示符`Alphanumeric Mode`。
 
 ### 字符串编码
+
+这一步就是利用编码模式对源字符串进行编码，我们仍以`HELLO WORLD`为例，使用[`Alphanumeric Mode`](https://zhuanlan.zhihu.com/p/25432642)。
+
+1. 将字符以 2 为间隔分组，得到`(H,E)`、 `(L,L)`、`(O, )`、`(W,O)`、`(R,L)`、`(D)`
+2. 在[字母索引表](http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png)中找到对应的`value`，得到`(17,14)`、 `(21,21)`、`(24,36)`、`(32,24)`、`(27,21)`、`(13)`
+3. 对于每组数字，将第一个数字乘以 45 加上第二个数字（最大结果 2024），得到的结果再转为长度为 11 的二进制串，长度不足的前面补 0。例如`(17,14) => 17*45+14=779 => 1100001011 => 01100001011`。如果最后一组是单个字符，则用 6 位表示就行。最终得到结果：
+
+   ```js
+   01100001011 01111000110 10001011100 10110111000 10011010100 001101
+   ```
+
+追加到模式指示符和字符计数指示符之后，得到结果：
+
+```js
+0010 000001011 01100001011 01111000110 10001011100 10110111000 10011010100 001101
+```
 
 ### 结束符 0000
 
