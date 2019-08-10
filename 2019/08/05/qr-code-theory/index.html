@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="QR,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="前言前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。 二维码本质上是对字符串的编码规则，最终转换成二进制串。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。 基础知识二维码一共有40个尺寸(也可以">
+<meta name="keywords" content="QR">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二维码原理">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/08/05/qr-code-theory/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="前言前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。 二维码本质上是对字符串的编码规则，最终转换成二进制串。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。 基础知识二维码一共有40个尺寸(也可以">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7154520-add155b96bb60412.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/599/format/webp">
+<meta property="og:image" content="https://user-images.githubusercontent.com/13174560/48657450-e3db4b00-ea6b-11e8-925b-e279de3025a2.png">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7154520-38a3b2ecf9b8189a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/148/format/webp">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/31.jpg">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/qr-code-theory/character-capacities-table.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/qr-code-theory/total-number-of-data-codewords.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/qr-code-theory/error-correction-code-words-and-block-information.png">
+<meta property="og:image" content="https://image.3001.net/images/20190525/1558787612_5ce9361cb3205.png!small">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/separators2.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/6.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/7.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/function-patterns2.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/timing-m.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/format-reserved2.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/13.png">
+<meta property="og:image" content="https://image.3001.net/images/20190525/1558787639_5ce9363709673.png!small">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/11.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/8.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/version-area2.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/aa.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/m.jpg">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/bb.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/upward.png">
+<meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/downward.png">
+<meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/14.png">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp">
+<meta property="og:updated_time" content="2019-08-10T10:59:37.413Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二维码原理">
+<meta name="twitter:description" content="前言前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。 二维码本质上是对字符串的编码规则，最终转换成二进制串。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。 基础知识二维码一共有40个尺寸(也可以">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/7154520-add155b96bb60412.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/599/format/webp">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/08/05/qr-code-theory/">
+
+
+
+
+
+  <title>二维码原理 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/08/05/qr-code-theory/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">二维码原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-05T21:30:59+08:00">
+                2019-08-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/08/05/qr-code-theory/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/05/qr-code-theory/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。</p>
+<p><strong>二维码本质上是对字符串的编码规则，最终转换成二进制串</strong>。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。</p>
+<h1 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h1><p>二维码一共有<code>40</code>个尺寸(也可以称为版本、<code>Version</code>)。<code>Version 1</code>是<code>21 x 21</code>的矩阵，<code>Version 2</code>是 <code>25 x 25</code>的矩阵。每增加一个<code>version</code>，长宽就增加 4，公式是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(V - <span class="number">1</span>) * <span class="number">4</span> + <span class="number">21</span>;</span><br></pre></td></tr></table></figure>
+<p>最高版本是<code>40</code>，所以是<code>177 x 177</code>的正方形。 每个<code>1x1</code>都是一个小方块，黑色表示 1，白色表示 0。所以通过个人微信二维码的版本是多少呢？🙃</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/7154520-add155b96bb60412.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/599/format/webp" alt="qr-smallest-unit"></p>
+<p>二维码图案分为很多子部分，如下：</p>
+<p><img src="https://user-images.githubusercontent.com/13174560/48657450-e3db4b00-ea6b-11e8-925b-e279de3025a2.png" alt="qr-code-functionl-split"></p>
+<ul>
+<li>功能区域，不包含实质性的信息，只是一些辅助作用<ul>
+<li>位置探测区域：一共有 3 个，用于决定二维码的哪一边应该朝上,这样我们不管从什么方向扫码都不会混乱了。它是一个固定大小的回字<br><img src="https://upload-images.jianshu.io/upload_images/7154520-38a3b2ecf9b8189a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/148/format/webp" alt="position-detection"></li>
+<li>位置探测图形分隔符：将位置探测区域围起来的固定宽度 1 的白色“围栏”</li>
+<li>定位图形： 也叫<code>Timing Patterns</code>，是两根黑白相间的长条，每一根的头尾都是黑色。主要用来协助机器扫描的</li>
+<li>校正图形： 是比较小的回字，用于校正<br><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/31.jpg" alt="alignment-patterns"><br>不同的<code>version</code>拥有不同数量的校正图形，位置也是不一样，这个在后面会专门说。</li>
+</ul>
+</li>
+<li><p>编码区，实际存储有意义数据的区域，包含 3 个子部分</p>
+<ul>
+<li>格式信息：所有<code>version</code>的二维码都有，存放二维码的容错级别+数据掩码+二者的纠错码</li>
+<li>版本信息：表示二维码的<code>version</code>，<a href="https://www.thonky.com/qr-code-tutorial/format-version-information" target="_blank" rel="noopener"><code>version &gt;=7</code>才会绘制这个区域</a>。（其实肉眼数格子也可以知道版本信息 😆 ）</li>
+<li>数据和纠错码：存储真正的数据，同时由于纠错码的存在，使得即使二维码污损了一部分也可以读取. 整个灰色区域都用来存放此部分数据。二维码支持 4 种级别的纠错：</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>纠错级别</th>
+<th>恢复能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L</td>
+<td>Recovers 7% of data</td>
+</tr>
+<tr>
+<td>M</td>
+<td>Recovers 15% of data</td>
+</tr>
+<tr>
+<td>Q</td>
+<td>Recovers 25% of data</td>
+</tr>
+<tr>
+<td>H</td>
+<td>Recovers 30% of data</td>
+</tr>
+</tbody>
+</table>
+<p>纠错级别越高，恢复能力越强，代价是能存储的有效数据越少，因为纠错码的占比会越高。</p>
+<p>接下来主要介绍核心的数据和纠错码部分。</p>
+<h1 id="编码步骤"><a href="#编码步骤" class="headerlink" title="编码步骤"></a>编码步骤</h1><p>步骤是先对源数据进行编码，然后依据编码结果计算得到纠错码，最后再在结尾加上一些用于补齐的字节就 ok 了。</p>
+<h2 id="源数据编码"><a href="#源数据编码" class="headerlink" title="源数据编码"></a>源数据编码</h2><h3 id="编码模式（模式指示符）"><a href="#编码模式（模式指示符）" class="headerlink" title="编码模式（模式指示符）"></a>编码模式（模式指示符）</h3><p>类似于<code>utf8</code>编码，这部分也就是给定一个字符串，然后将其编码成一串二进制数。支持的编码模式有：</p>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/25432628" target="_blank" rel="noopener">数字编码(<code>Numeric Mode</code>)</a>: 只支持数字 0~9 的编码</li>
+<li><a href="https://zhuanlan.zhihu.com/p/25432642" target="_blank" rel="noopener">字符编码(<code>Alphanumeric Mode</code>)</a>：支持包含数字、<strong>大写</strong>的<code>A-Z</code>(不包含小写)、以及<code>$ % * + – . / :</code>和空格<br><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png" alt="alphanumeric-mode"></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25432647" target="_blank" rel="noopener">字节编码(<code>Byte Mode</code>)</a>: 支持<code>0x00</code>~<code>0xFF</code>内所有的字符</li>
+<li><a href="https://zhuanlan.zhihu.com/p/25432667" target="_blank" rel="noopener">日文编码(<code>Kanji Mode</code>)</a>： 只能支持<code>0x8140</code>~<code>0x9FFC</code>、<code>0xE040</code>~<code>0xEBBF</code>的字符，可以<a href="http://www.rikai.com/library/kanjitables/kanji_codes.sjis.shtml" target="_blank" rel="noopener">在这里找到</a></li>
+<li><code>ECI mode</code>: 主要用于特殊的字符集。并不是所有的扫描器都支持这种编码</li>
+<li><code>Structured Append mode</code>: 用于混合编码，也就是说，这个二维码中包含了多种编码格式</li>
+<li><code>FNC1 mode</code>: 这种编码方式主要是给一些特殊的工业或行业用的。比如 GS1 条形码之类的。</li>
+</ol>
+<p>每种模式都由 4 位二进制的模式指示符确定：</p>
+<table>
+<thead>
+<tr>
+<th>Mode Name</th>
+<th>Mode Indicator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numeric Mode</td>
+<td><code>0001</code></td>
+</tr>
+<tr>
+<td>Alphanumeric Mode</td>
+<td><code>0010</code></td>
+</tr>
+<tr>
+<td>Byte Mode</td>
+<td><code>0100</code></td>
+</tr>
+<tr>
+<td>Kanji Mode</td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td>ECI Mode</td>
+<td><code>0111</code></td>
+</tr>
+</tbody>
+</table>
+<p>例如字符串<code>123</code>，就可以使用<code>Numeric Mode</code>；而<code>HELLO WORLD</code>需要用<code>Alphanumeric Mode</code>；<code>Hello world</code>需要使用<code>Byte Mode</code>.</p>
+<h3 id="版本、纠错级别确定"><a href="#版本、纠错级别确定" class="headerlink" title="版本、纠错级别确定"></a>版本、纠错级别确定</h3><p>首先依据源字符串可以知道应该采用哪种编码方式，然后需要先确定纠错级别，<a href="https://www.thonky.com/qr-code-tutorial/character-capacities" target="_blank" rel="noopener">最后不同版本在此纠错级别+编码方式下的数据容量是不同的</a>。我们只需找到最小的能容纳所有数据的那个版本即可。</p>
+<p>举例来说：字符串 <code>HELLO WORLD</code>包含 11 个字符，通过上面的介绍得知，它应该使用字符编码<code>Alphanumeric Mode</code>，如果设定纠错级别是<code>Q</code>,通过查表得知<code>1-Q</code>可以容纳 16 个字符，那么最低就可以使用版本 1：</p>
+<p><img src="/images/qr-code-theory/character-capacities-table.png" alt="character-capacities-table"></p>
+<p>如果是字符串<code>HELLO THERE WORLD</code>(17 个字符)，那么最低版本就只能选 2 了。</p>
+<p>另外，可以推断，<strong>二维码是存在数据容量上限的</strong>，它应该是<code>40-L</code>的容量：</p>
+<table>
+<thead>
+<tr>
+<th>Encoding Mode</th>
+<th>Maximum number of characters a 40-L code can contain in that mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numeric</td>
+<td>7089 characters</td>
+</tr>
+<tr>
+<td>Alphanumeric</td>
+<td>4296 characters</td>
+</tr>
+<tr>
+<td>Byte</td>
+<td>2953 characters</td>
+</tr>
+<tr>
+<td>Kanji</td>
+<td>1817 characters</td>
+</tr>
+</tbody>
+</table>
+<p>也就是说，单纯存储数字的话，可以存 7089 个；只存大写字母的话，可以存大约 4k 个。</p>
+<h3 id="字符计数指示符"><a href="#字符计数指示符" class="headerlink" title="字符计数指示符"></a>字符计数指示符</h3><p>是一串二进制数字，表示源字符串的字符个数。字符计数指示符必须<strong>放在模式指示符之后</strong>。此外，字符计数指示符有特定的位长，具体取决于二维码的版本和编码模式：</p>
+<table>
+<thead>
+<tr>
+<th>单位 bits</th>
+<th>Versions 1 ~ 9</th>
+<th>Versions 10 ~ 26</th>
+<th>Versions 27 ~ 40</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Numeric mode</td>
+<td>10</td>
+<td>12</td>
+<td>14</td>
+</tr>
+<tr>
+<td>Alphanumeric mode</td>
+<td>9</td>
+<td>11</td>
+<td>13</td>
+</tr>
+<tr>
+<td>Byte mode</td>
+<td>8</td>
+<td>16</td>
+<td>16</td>
+</tr>
+<tr>
+<td>Kanji mode</td>
+<td>8</td>
+<td>10</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<p>具体步骤是：计算原始输入文本的字符数，将其转为二进制数字。根据版本和编码模式找到对应的位长，不够位长的在前面加 0 补齐。</p>
+<p>例如 <code>HELLO WORLD</code>, 版本号为 1，则字符计数指示符需要 9 bits.<br><code>HELLO WORLD</code>的字符数为 11，转为二进制<code>1011</code>，不够 9 位，需要补上 5 个 0，最终结果是<code>000001011</code></p>
+<p>那么针对<code>HELLO WORLD</code>，我们目前获得的二进制串是<code>0010 000001011</code>，<code>0010</code>是模式指示符<code>Alphanumeric Mode</code>。</p>
+<h3 id="字符串编码"><a href="#字符串编码" class="headerlink" title="字符串编码"></a>字符串编码</h3><p>这一步就是利用编码模式对源字符串进行编码，我们仍以<code>HELLO WORLD</code>为例，使用<a href="https://zhuanlan.zhihu.com/p/25432642" target="_blank" rel="noopener"><code>Alphanumeric Mode</code></a>。</p>
+<ol>
+<li>将字符以 2 为间隔分组，得到<code>(H,E)</code>、 <code>(L,L)</code>、<code>(O, )</code>、<code>(W,O)</code>、<code>(R,L)</code>、<code>(D)</code></li>
+<li>在<a href="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/21.png" target="_blank" rel="noopener">字母索引表</a>中找到对应的<code>value</code>，得到<code>(17,14)</code>、 <code>(21,21)</code>、<code>(24,36)</code>、<code>(32,24)</code>、<code>(27,21)</code>、<code>(13)</code></li>
+<li><p>对于每组数字，将第一个数字乘以 45 加上第二个数字（最大结果 2024），得到的结果再转为长度为 11 的二进制串，长度不足的前面补 0。例如<code>(17,14) =&gt; 17*45+14=779 =&gt; 1100001011 =&gt; 01100001011</code>。如果最后一组是单个字符，则用 6 位表示就行。最终得到结果：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">01100001011</span> <span class="number">01111000110</span> <span class="number">10001011100</span> <span class="number">10110111000</span> <span class="number">10011010100</span> <span class="number">001101</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>追加到模式指示符和字符计数指示符之后，得到结果：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0010</span> <span class="number">000001011</span> <span class="number">01100001011</span> <span class="number">01111000110</span> <span class="number">10001011100</span> <span class="number">10110111000</span> <span class="number">10011010100</span> <span class="number">001101</span></span><br></pre></td></tr></table></figure>
+<h3 id="后续的补齐"><a href="#后续的补齐" class="headerlink" title="后续的补齐"></a>后续的补齐</h3><p><a href="https://www.thonky.com/qr-code-tutorial/error-correction-table" target="_blank" rel="noopener">在给定版本和纠错级别后，源数据的编码结果是一个固定长度的二进制串</a>，如果在上一步的结果没有达到这个长度，需要进行一些补齐操作。</p>
+<p>例如<code>1-Q</code>下，源数据编码结果需要是<code>13</code>个字节，也就是<code>104</code>位:</p>
+<p><img src="/images/qr-code-theory/total-number-of-data-codewords.png" alt="total-number-of-data-codewords"></p>
+<p>而<code>HELLO WORLD</code>在上一步之后的二进制串是 74 位，所以需要补齐。</p>
+<ol>
+<li>末尾追加至多<code>4</code>个<code>0</code>的终止符<code>0000</code></li>
+<li>末尾补更多的<code>0</code>直到<code>8</code>的倍数,例如上面<code>74+4=78</code>，就需要再补 2 个 0： <code>00</code></li>
+<li>如果长度还没有达到目标，末尾重复添加固定的补齐码<code>11101100 00010001</code>直到满足长度。例如上面就需要添加<code>11101100 00010001 11101100</code></li>
+</ol>
+<p>以上就是源数据编码了，<code>HELLO WORLD</code>的编码结果由以下各部分组成：</p>
+<table>
+<thead>
+<tr>
+<th>模式指示符</th>
+<th>字符计数指示符</th>
+<th>字符串自身编码</th>
+<th>终止符</th>
+<th>补齐到 8 的倍数</th>
+<th>补齐码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0010</code></td>
+<td><code>000001011</code></td>
+<td><code>01100001011 01111000110 10001011100 10110111000 10011010100 001101</code></td>
+<td><code>0000</code></td>
+<td><code>00</code></td>
+<td><code>11101100 00010001 11101100</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="纠错码生成"><a href="#纠错码生成" class="headerlink" title="纠错码生成"></a>纠错码生成</h2><p>根据源数据编码结果可以计算得到纠错码，使用的是<a href="https://research.swtch.com/field" target="_blank" rel="noopener"><code>Reed-Solomon</code>纠错算法</a>。这个比较复杂我没怎么看，这里只以网上的例子作为示范。</p>
+<p>纠错码也和版本和纠错级别有关系,参考这个<a href="https://www.thonky.com/qr-code-tutorial/error-correction-table" target="_blank" rel="noopener">纠错表</a>。</p>
+<p>纠错表中包含<code>group 1</code>和<code>group 2</code>，每个<code>group</code>又包含至多 2 个<code>block</code>。源数据编码结果必须被分割成多达两个<code>group</code>，并且在每个<code>group</code>内也需要进一步分成<code>block</code>，在这个过程中源数据编码被顺序地分解。</p>
+<p>以<code>5-Q</code>为例：</p>
+<p><img src="/images/qr-code-theory/error-correction-code-words-and-block-information.png" alt="error-correction-code-words-and-block-information"></p>
+<p>可以知道的信息是：</p>
+<ul>
+<li>源数据编码结果的总长度是 62 个字节</li>
+<li>纠错码被分为<code>group 1</code>与<code>group 2</code>，两个<code>group</code>内都含有 2 个<code>block</code></li>
+<li>每个<code>block</code>包含 18 个字节的纠错码，所以纠错码的总长度是<code>18*4 = 72</code>个字节</li>
+<li><code>group 1</code>内的每个<code>block</code>，包含 15 个字节的源数据，以及 18 个字节的纠错码。也就是说源数据编码的前 15 个字节会放到<code>group 1</code>-&gt; <code>block 1</code>中，第 16~30 这 15 个字节会放到<code>group 1</code>-&gt; <code>block 2</code>中</li>
+<li><code>group 2</code>内的每个<code>block</code>，包含 16 个字节的源数据，以及 18 个字节的纠错码</li>
+</ul>
+<p>另外细心点可以看的出来：给定版本后，源数据编码总长度+纠错码总长度是固定的，例如版本 5 就是 134 个字节。</p>
+<p>至于每个<code>block</code>内部如何根据源数据编码计算得到纠错码，我也不看懂就不说了，只贴一下结果（这里的源数据编码不是<code>HELLO WORLD</code>的哈~，从哪来的我也母鸡），由于二进制串太长，统一转成了 10 进制：</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Block</th>
+<th>源数据编码</th>
+<th>此 <code>block</code> 的纠错码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td><code>67 85 70 134 87 38 85 194 119 50 6 18 6 103 38</code></td>
+<td><code>213 199 11 45 115 247 241 223 229 248 154 117 154 111 86 161 111 39</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td><code>246 246 66 7 118 134 242 7 38 86 22 198 199 146 6</code></td>
+<td><code>87 204 96 60 202 182 124 157 200 134 27 129 209 17 163 163 120 133</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td><code>182 230 247 119 50 7 118 134 87 38 82 6 134 151 50 7</code></td>
+<td><code>148 116 177 212 76 133 75 242 238 76 195 230 189 10 108 240 192 141</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td><code>70 247 118 86 194 6 151 50 16 236 17 236 17 236 17 236</code></td>
+<td><code>235 159 5 173 24 147 59 33 106 40 255 172 82 2 131 32 178 236</code></td>
+</tr>
+</tbody>
+</table>
+<p>到这一步还没有结束，最终的编码结果并不是这些串顺序相连，而是交替连接。如何交替呢，规则如下：</p>
+<blockquote>
+<p>不论数据码还是纠错码，把每个块的第一个字节先拿出来按顺度排列好，然后再取每个块的第二个字节，如此类推。</p>
+</blockquote>
+<p>具体操作如下，首先对于源数据编码，先摆放好：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>block 1-1</td>
+<td>67</td>
+<td>85</td>
+<td>70</td>
+<td>134</td>
+<td>87</td>
+<td>38</td>
+<td>85</td>
+<td>194</td>
+<td>119</td>
+<td>50</td>
+<td>6</td>
+<td>18</td>
+<td>6</td>
+<td>103</td>
+<td>38</td>
+<td></td>
+</tr>
+<tr>
+<td>block 1-2</td>
+<td>246</td>
+<td>246</td>
+<td>66</td>
+<td>7</td>
+<td>118</td>
+<td>134</td>
+<td>242</td>
+<td>7</td>
+<td>38</td>
+<td>86</td>
+<td>22</td>
+<td>198</td>
+<td>199</td>
+<td>146</td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td>block 2-1</td>
+<td>182</td>
+<td>230</td>
+<td>247</td>
+<td>119</td>
+<td>50</td>
+<td>7</td>
+<td>118</td>
+<td>134</td>
+<td>87</td>
+<td>38</td>
+<td>82</td>
+<td>6</td>
+<td>134</td>
+<td>151</td>
+<td>50</td>
+<td>7</td>
+</tr>
+<tr>
+<td>block 2-2</td>
+<td>70</td>
+<td>247</td>
+<td>118</td>
+<td>86</td>
+<td>194</td>
+<td>6</td>
+<td>151</td>
+<td>50</td>
+<td>16</td>
+<td>236</td>
+<td>17</td>
+<td>236</td>
+<td>17</td>
+<td>236</td>
+<td>17</td>
+<td>236</td>
+</tr>
+</tbody>
+</table>
+<p>先取第一列的<code>67， 246， 182， 70</code>,再取第二列的<code>67， 246， 182， 70， 85，246，230 ，247</code>,依次类推最终结果是<code>67， 246， 182， 70， 85，246，230 ，247 ……… ……… ，38，6，50，17，7，236</code>。</p>
+<p>对于纠错码也是一样的操作：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14</th>
+<th>15</th>
+<th>16</th>
+<th>17</th>
+<th>18</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>block 1-1</td>
+<td>213</td>
+<td>199</td>
+<td>11</td>
+<td>45</td>
+<td>115</td>
+<td>247</td>
+<td>241</td>
+<td>223</td>
+<td>229</td>
+<td>248</td>
+<td>154</td>
+<td>117</td>
+<td>154</td>
+<td>111</td>
+<td>86</td>
+<td>161</td>
+<td>111</td>
+<td>39</td>
+</tr>
+<tr>
+<td>block 1-2</td>
+<td>87</td>
+<td>204</td>
+<td>96</td>
+<td>60</td>
+<td>202</td>
+<td>182</td>
+<td>124</td>
+<td>157</td>
+<td>200</td>
+<td>134</td>
+<td>27</td>
+<td>129</td>
+<td>209</td>
+<td>17</td>
+<td>163</td>
+<td>163</td>
+<td>120</td>
+<td>133</td>
+</tr>
+<tr>
+<td>block 2-1</td>
+<td>148</td>
+<td>116</td>
+<td>177</td>
+<td>212</td>
+<td>76</td>
+<td>133</td>
+<td>75</td>
+<td>242</td>
+<td>238</td>
+<td>76</td>
+<td>195</td>
+<td>230</td>
+<td>189</td>
+<td>10</td>
+<td>108</td>
+<td>240</td>
+<td>192</td>
+<td>141</td>
+</tr>
+<tr>
+<td>block 2-2</td>
+<td>235</td>
+<td>159</td>
+<td>5</td>
+<td>173</td>
+<td>24</td>
+<td>147</td>
+<td>59</td>
+<td>33</td>
+<td>106</td>
+<td>40</td>
+<td>255</td>
+<td>172</td>
+<td>82</td>
+<td>2</td>
+<td>131</td>
+<td>32</td>
+<td>178</td>
+<td>236</td>
+</tr>
+</tbody>
+</table>
+<p>交替拿到的结果是：<code>213，87，148，235，199，204，116，159，…… …… 39，133，141，236</code></p>
+<p>把这两组交替结果放到一起，源数据的在前面：</p>
+<p><code>67， 246， 182， 70， 85，246，230 ，247 ……… ……… ，38，6，50，17，7，236, 213，87，148，235，199，204，116，159，…… …… 39，133，141，236</code></p>
+<h2 id="最终的数据"><a href="#最终的数据" class="headerlink" title="最终的数据"></a>最终的数据</h2><p>对于某些版本的二维码，上面的结果不足填充满整个数据区+纠错码区，需要再在末尾补上一些 0，具体补多少个可以参照这个表：</p>
+<p><img src="https://image.3001.net/images/20190525/1558787612_5ce9361cb3205.png!small" alt="https://image.3001.net/images/20190525/1558787612_5ce9361cb3205.png!small"></p>
+<p>版本 5 的二维码图案里，数据区+纠错码区一共有<code>1079</code>位，而我们上面的结果只有 134 个字节也就是<code>1072</code>位，所以需要再补上 7 个 0。</p>
+<p>以上就是最终的数据了！</p>
+<h2 id="绘制二维码"><a href="#绘制二维码" class="headerlink" title="绘制二维码"></a>绘制二维码</h2><p>终于到了这一步，好累 😫，所幸这一步比较轻松。</p>
+<h3 id="3-个位置探测方块"><a href="#3-个位置探测方块" class="headerlink" title="3 个位置探测方块"></a>3 个位置探测方块</h3><p>先把三个大“回”字画整起来！分别放在左上、右上和左下角，回字的大小是固定的，可以看最开始的介绍。</p>
+<p>然后他们外围的一圈白色位置探测分隔符也可以直接画上。</p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/separators2.png" alt="https://www.thonky.com/qr-code-tutorial/separators2.png"></p>
+<h3 id="N-个校正方块"><a href="#N-个校正方块" class="headerlink" title="N 个校正方块"></a>N 个校正方块</h3><p>校正方块是比较小的回字，它的大小也是固定的，只不过不同的版本都不同数量的校正方块：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/6.png" alt="alignment-patterns-count"></p>
+<p>举例<code>version 8</code>的<code>(6,24,42)</code>是如何画校正图形的：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/7.png" alt="alignment-patterns-example"></p>
+<h3 id="2-个定位条（Timing-Patterns）"><a href="#2-个定位条（Timing-Patterns）" class="headerlink" title="2 个定位条（Timing Patterns）"></a>2 个定位条（Timing Patterns）</h3><p>在确定位置探测方块后，这两根条就很好画了。</p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/function-patterns2.png" alt="https://www.thonky.com/qr-code-tutorial/function-patterns2.png"></p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/timing-m.png" alt="https://www.thonky.com/qr-code-tutorial/timing-m.png"></p>
+<p>头尾固定是黑色，中间黑白相间。</p>
+<h3 id="格式信息"><a href="#格式信息" class="headerlink" title="格式信息"></a>格式信息</h3><p><img src="https://www.thonky.com/qr-code-tutorial/format-reserved2.png" alt="https://www.thonky.com/qr-code-tutorial/format-reserved2.png"></p>
+<p>格式信息画在上面的蓝色部分，是固定 15 位的二进制串，具体组成部分为：</p>
+<ul>
+<li><p>2 位表示纠错级别，一共有 4 种纠错级别。<br><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/13.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/13.png"></p>
+</li>
+<li><p>3 位表示使用何种掩码图案，一共有 8 种掩码图案，具体要使用哪一个掩码在后面会具体介绍<br><img src="https://image.3001.net/images/20190525/1558787639_5ce9363709673.png!small" alt="https://image.3001.net/images/20190525/1558787639_5ce9363709673.png!small"></p>
+</li>
+<li><p>10 位纠错信息，使用 <a href="https://zh.wikipedia.org/wiki/BCH%E7%A0%81" target="_blank" rel="noopener">BCH 编码</a> 计算得出</p>
+</li>
+<li>上面的 15 位再和固定的<code>101010000010010</code>做异或操作，这样就保证不会因为选用了 <code>00</code> 的纠错级别和 <code>000</code> 的 掩码图案，从而造成全部为白色，这会增加扫描器的图像识别的困难。</li>
+</ul>
+<p>举个例子：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/11.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/11.png"></p>
+<p>15 位的具体分布如下：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/8.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/8.png"></p>
+<p><code>Dark Module</code>表示一个固定是黑色的块。</p>
+<h3 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h3><p>版本号大于等于 7 时，需要绘制这个部分，下面的蓝色部分。</p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/version-area2.png" alt="https://www.thonky.com/qr-code-tutorial/version-area2.png"></p>
+<p>版本信息一共有<code>18</code>位,其中包括</p>
+<ul>
+<li>6 位表示版本号，一共有 40 个版本号</li>
+<li>12 位表示纠错信息，也是使用 BCH 编码计算得出</li>
+</ul>
+<p>例如：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/aa.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/aa.png"></p>
+<p>这 18 位的具体分布如下：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/m.jpg" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/m.jpg"></p>
+<h3 id="数据区-纠错码区"><a href="#数据区-纠错码区" class="headerlink" title="数据区+纠错码区"></a>数据区+纠错码区</h3><p>终于到了这一步了，我太难了 😿😢😂</p>
+<p>从二维码的右下角开始，沿着红线填充我们数据编码的每一个<code>bit</code>，<code>1</code>表示黑色，<code>0</code>表示白色，遇到非数据区绕开或跳过。</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/bb.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/bb.png"></p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/upward.png" alt="https://www.thonky.com/qr-code-tutorial/upward.png"></p>
+<p><img src="https://www.thonky.com/qr-code-tutorial/downward.png" alt="https://www.thonky.com/qr-code-tutorial/downward.png"></p>
+<h3 id="掩码图"><a href="#掩码图" class="headerlink" title="掩码图"></a>掩码图</h3><p>以上还没有结束 😭，因为可能上面画出来后，黑白分布不均匀导致存在大片的白色或黑色，造成扫描识别的困难。</p>
+<p>为了解决这个问题，二维码提供了<code>8</code>种<code>Mask</code>掩码图案：</p>
+<p><img src="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/14.png" alt="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/14.png"></p>
+<p>我们需要拿着上面生成的图案和掩码图案做一次异或操作，这样黑白分布就会均匀很多！</p>
+<p>那具体选择哪一个掩码图案呢？也是有一个灰常复杂的计算方案，大体步骤是分别将原始图案和每一个掩码图案做异或，然后按照一套规则来计算均匀程度，最终选择最均匀的那个。</p>
+<p>对这个过程感兴趣的可以参考 <a href="https://www.thonky.com/qr-code-tutorial/data-masking" target="_blank" rel="noopener">这篇文章</a> 或 <a href="https://www.jianshu.com/p/38c4781c1f5d" target="_blank" rel="noopener">这篇文章</a>。</p>
+<p>💐💐💐，终于到这里二维码的绘制就结束了！！</p>
+<p>最后提供一个表示<code>HElLO WORLD</code>的二维码：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp" alt="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp"></p>
+<p>想要了解如何使用代码来生成二维码的同学，可以参考<a href="https://github.com/jeromeetienne/jquery-qrcode/blob/master/src/qrcode.js" target="_blank" rel="noopener">qrcode.js</a>, 也有很多其他开源的库，感兴趣可以自己去搜一下。</p>
+<p><a href="https://www.thonky.com/qrcode/?advopt=1" target="_blank" rel="noopener">这个二维码生成工具</a>可以直接输入一个字符串并输出一个二维码。</p>
+<h1 id="解码过程"><a href="#解码过程" class="headerlink" title="解码过程"></a>解码过程</h1><p>实际上编码过程反过来就是解码过程：</p>
+<ol>
+<li>拿到版本信息、格式信息，反向异或一次就可以得到原始信息</li>
+<li>原始信息里包含掩码图案信息，将二维码和源码图案再做一次异或，就能得到原始二维码图案</li>
+<li>去掉位置探测区域、校正区域等等所有功能图形，留下的部分就是 <code>源数据编码</code>+<code>纠错码</code>+<code>若干用于补齐的0</code></li>
+<li>根据版本+纠错级别，可以知道源数据编码和纠错码分别有多长，以及交替顺序是怎样的</li>
+<li>源数据编码的前 4 位表示编码模式，紧接着的 9 位表示原始字符串长度，根据版本+纠错级别也能知道随后的哪些表示源字符串的编码部分</li>
+<li>根据编码模式解码得到源字符串</li>
+</ol>
+<p>以上并没有提到到当二维码有污损时的解码过程，因为这时就涉及到纠错码的戏份了，还是留给代码去做这个累活吧 😆</p>
+<p><a href="https://www.freebuf.com/geek/204516.html" target="_blank" rel="noopener">这篇文章</a>的最后给了一个手动解码的示范，感兴趣的可以自己观摩一下。</p>
+<p>网上也有很多免费提供二维码解码服务的页面，<a href="https://www.sojson.com/deqr.html" target="_blank" rel="noopener">例如这个</a>。 去看看自己的个人微信二维码解密后是什么呢？🤔</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
+<li><a href="http://blog.sae.sina.com.cn/archives/1139" target="_blank" rel="noopener">http://blog.sae.sina.com.cn/archives/1139</a></li>
+<li><a href="https://bytekm.bytedance.net/kmf/articleDetail/2546" target="_blank" rel="noopener">https://bytekm.bytedance.net/kmf/articleDetail/2546</a></li>
+<li><a href="https://www.jianshu.com/p/38c4781c1f5d" target="_blank" rel="noopener">https://www.jianshu.com/p/38c4781c1f5d</a></li>
+<li><a href="https://www.freebuf.com/geek/204516.html" target="_blank" rel="noopener">https://www.freebuf.com/geek/204516.html</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25423714" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25423714</a></li>
+<li>英文 tutorial：<a href="https://www.thonky.com/qr-code-tutorial/" target="_blank" rel="noopener">https://www.thonky.com/qr-code-tutorial/</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/QR/" rel="tag"># QR</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/06/13/the-modularity-of-complicated-form/" rel="next" title="复杂表单的模块化处理">
+                <i class="fa fa-chevron-left"></i> 复杂表单的模块化处理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">63</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#基础知识"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#编码步骤"><span class="nav-number">3.</span> <span class="nav-text">编码步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#源数据编码"><span class="nav-number">3.1.</span> <span class="nav-text">源数据编码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#编码模式（模式指示符）"><span class="nav-number">3.1.1.</span> <span class="nav-text">编码模式（模式指示符）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#版本、纠错级别确定"><span class="nav-number">3.1.2.</span> <span class="nav-text">版本、纠错级别确定</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符计数指示符"><span class="nav-number">3.1.3.</span> <span class="nav-text">字符计数指示符</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#字符串编码"><span class="nav-number">3.1.4.</span> <span class="nav-text">字符串编码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#后续的补齐"><span class="nav-number">3.1.5.</span> <span class="nav-text">后续的补齐</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#纠错码生成"><span class="nav-number">3.2.</span> <span class="nav-text">纠错码生成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#最终的数据"><span class="nav-number">3.3.</span> <span class="nav-text">最终的数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#绘制二维码"><span class="nav-number">3.4.</span> <span class="nav-text">绘制二维码</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-个位置探测方块"><span class="nav-number">3.4.1.</span> <span class="nav-text">3 个位置探测方块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#N-个校正方块"><span class="nav-number">3.4.2.</span> <span class="nav-text">N 个校正方块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-个定位条（Timing-Patterns）"><span class="nav-number">3.4.3.</span> <span class="nav-text">2 个定位条（Timing Patterns）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#格式信息"><span class="nav-number">3.4.4.</span> <span class="nav-text">格式信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#版本信息"><span class="nav-number">3.4.5.</span> <span class="nav-text">版本信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据区-纠错码区"><span class="nav-number">3.4.6.</span> <span class="nav-text">数据区+纠错码区</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#掩码图"><span class="nav-number">3.4.7.</span> <span class="nav-text">掩码图</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#解码过程"><span class="nav-number">4.</span> <span class="nav-text">解码过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/08/05/qr-code-theory/';
+          this.page.identifier = '2019/08/05/qr-code-theory/';
+          this.page.title = '二维码原理';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
