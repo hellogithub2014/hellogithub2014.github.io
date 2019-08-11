@@ -337,7 +337,7 @@ tags: [QR]
 
 最后提供一个表示`HElLO WORLD`的二维码：
 
-![https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp](https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp)
+![hello-world](/images/qr-code-theory/hello-world.png)
 
 想要了解如何使用代码来生成二维码的同学，可以参考[qrcode.js](https://github.com/jeromeetienne/jquery-qrcode/blob/master/src/qrcode.js), 也有很多其他开源的库，感兴趣可以自己去搜一下。
 
