@@ -363,7 +363,6 @@ tags: [QR]
 # 参考资料
 
 - http://blog.sae.sina.com.cn/archives/1139
-- https://bytekm.bytedance.net/kmf/articleDetail/2546
 - https://www.jianshu.com/p/38c4781c1f5d
 - https://www.freebuf.com/geek/204516.html
 - https://zhuanlan.zhihu.com/p/25423714
