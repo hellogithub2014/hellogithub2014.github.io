@@ -115,8 +115,8 @@
 <meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/upward.png">
 <meta property="og:image" content="https://www.thonky.com/qr-code-tutorial/downward.png">
 <meta property="og:image" content="http://officialblog-wordpress.stor.sinaapp.com/uploads/2013/10/14.png">
-<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp">
-<meta property="og:updated_time" content="2019-08-10T10:59:37.413Z">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/qr-code-theory/hello-world.png">
+<meta property="og:updated_time" content="2019-09-21T04:04:03.536Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="二维码原理">
 <meta name="twitter:description" content="前言前阵子在项目里用到了二维码的生成，当时直接拿了第三方库来做，觉得很神奇，恰好这两天有一点时间，就学习了一波底层原理。学习的过程中参考了好几个博客，不同的博客在不同的细节上写的比较好，趁着还没忘就趁热打铁记录在博客里。 二维码本质上是对字符串的编码规则，最终转换成二进制串。不过在这个串里加了各种辅助信息以及纠错信息，最终绘制到页面上时就成了眼睛看到的样子。 基础知识二维码一共有40个尺寸(也可以">
@@ -933,7 +933,7 @@
 <p>对这个过程感兴趣的可以参考 <a href="https://www.thonky.com/qr-code-tutorial/data-masking" target="_blank" rel="noopener">这篇文章</a> 或 <a href="https://www.jianshu.com/p/38c4781c1f5d" target="_blank" rel="noopener">这篇文章</a>。</p>
 <p>💐💐💐，终于到这里二维码的绘制就结束了！！</p>
 <p>最后提供一个表示<code>HElLO WORLD</code>的二维码：</p>
-<p><img src="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp" alt="https://upload-images.jianshu.io/upload_images/7154520-42ff2ab4f5982f0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/278/format/webp"></p>
+<p><img src="/images/qr-code-theory/hello-world.png" alt="hello-world"></p>
 <p>想要了解如何使用代码来生成二维码的同学，可以参考<a href="https://github.com/jeromeetienne/jquery-qrcode/blob/master/src/qrcode.js" target="_blank" rel="noopener">qrcode.js</a>, 也有很多其他开源的库，感兴趣可以自己去搜一下。</p>
 <p><a href="https://www.thonky.com/qrcode/?advopt=1" target="_blank" rel="noopener">这个二维码生成工具</a>可以直接输入一个字符串并输出一个二维码。</p>
 <h1 id="解码过程"><a href="#解码过程" class="headerlink" title="解码过程"></a>解码过程</h1><p>实际上编码过程反过来就是解码过程：</p>
@@ -950,7 +950,6 @@
 <p>网上也有很多免费提供二维码解码服务的页面，<a href="https://www.sojson.com/deqr.html" target="_blank" rel="noopener">例如这个</a>。 去看看自己的个人微信二维码解密后是什么呢？🤔</p>
 <h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ul>
 <li><a href="http://blog.sae.sina.com.cn/archives/1139" target="_blank" rel="noopener">http://blog.sae.sina.com.cn/archives/1139</a></li>
-<li><a href="https://bytekm.bytedance.net/kmf/articleDetail/2546" target="_blank" rel="noopener">https://bytekm.bytedance.net/kmf/articleDetail/2546</a></li>
 <li><a href="https://www.jianshu.com/p/38c4781c1f5d" target="_blank" rel="noopener">https://www.jianshu.com/p/38c4781c1f5d</a></li>
 <li><a href="https://www.freebuf.com/geek/204516.html" target="_blank" rel="noopener">https://www.freebuf.com/geek/204516.html</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/25423714" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/25423714</a></li>
