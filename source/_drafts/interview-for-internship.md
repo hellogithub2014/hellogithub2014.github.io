@@ -153,8 +153,16 @@
   - [ ] ETag、If-Match、If-None-Match
   - [ ] etag > last-modified 优先级
 - 知道哪些响应码，301、302 差别
-- get、post 差别
 - keep alive
+- content-type：
+  - x-www-form-urlencoded(表单提交默认)
+  - multipart/form-data(文件上传)
+  - application/json
+  - application/octet-stream 文件下载
+  - text/plain
+  - 与accept区别：
+    - Accept代表发送端（客户端）希望接受的数据类型。
+    - Content-Type代表发送端（客户端|服务器）发送的实体数据的数据类型。
 - DNS： 哪一层协议、查找过程
 - tcp 3 次握手、4 次挥手
 - https
@@ -201,8 +209,12 @@
     };
   }
   ```
-- 数组去重（无序、有序）
 - 树遍历
+- 深拷贝 https://yanhaijing.com/javascript/2018/10/10/clone-deep/
+  - 基本功能
+  - 爆栈
+  - 引用保持
+  - 循环检测
 - [闭包、定时器、ES6、ES7综合](https://mp.weixin.qq.com/s/QdZpzI-8D9NCrkx1GFmLiQ)
   ```js
   for (var i = 0; i < 5; i++) {
@@ -226,8 +238,18 @@
 
 # Vue
 
-- 双向绑定
-- 模板中的变量如何映射到组件的： render函数执行时被包裹了`with this`，`this`指向的是`vm`，这样render函数内的所有变量都是在vm上查找的
 - $emit、$on、涉及子组件的情况（addEventListener、观察者模式）
+  - 原生dom事件：addEventListener
+  - 自定义组件内部$emit、$on：观察者模式
+  - `.native`修饰符：对子组件根元素传递了addEventListener，this绑定了父组件的vm
+  - 父子组件自定义事件：传到了子组件内部的自定义事件处理流程中，this绑定了父组件的vm
 - [数组继承](https://hellogithub2014.github.io/2018/05/19/vue-trick/)
+  - vue里的实现方式
+  - 可不可以实现一个自定义的MyArray子类，然后`array.__proto__ = Object.create(MyArray.prototype)`
 - [diff算法](https://hellogithub2014.github.io/2018/11/10/vue-sourcecode-12-patch-diff/)
+  - sameVnode判断依据：key、tag、isComment、input元素类型一致
+- :key的作用，在diff算法的什么时候起作用
+
+# 工程实践
+
+- 图片懒加载、预加载
