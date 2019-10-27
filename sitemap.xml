@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/</loc>
+    
+    <lastmod>2019-10-27T12:21:52.091Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://hellogithub2014.github.io/2019/08/05/qr-code-theory/</loc>
     
     <lastmod>2019-09-21T04:04:03.536Z</lastmod>
@@ -142,14 +149,14 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/</loc>
+    <loc>https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-15-custom-directive/</loc>
     
     <lastmod>2019-05-25T10:11:19.542Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-15-custom-directive/</loc>
+    <loc>https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/</loc>
     
     <lastmod>2019-05-25T10:11:19.542Z</lastmod>
     
@@ -177,13 +184,6 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-9-children-normalization/</loc>
-    
-    <lastmod>2019-05-25T10:11:19.539Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-8-render-to-vnode/</loc>
     
     <lastmod>2019-05-25T10:11:19.539Z</lastmod>
@@ -191,14 +191,21 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/11/03/vue-sourcecode-7-ast-to-render/</loc>
+    <loc>https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-9-children-normalization/</loc>
+    
+    <lastmod>2019-05-25T10:11:19.539Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-10-entry-of-patch/</loc>
     
     <lastmod>2019-05-25T10:11:19.538Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-10-entry-of-patch/</loc>
+    <loc>https://hellogithub2014.github.io/2018/11/03/vue-sourcecode-7-ast-to-render/</loc>
     
     <lastmod>2019-05-25T10:11:19.538Z</lastmod>
     
@@ -233,14 +240,14 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/10/16/vue-sourcecode-2-global-api/</loc>
+    <loc>https://hellogithub2014.github.io/2018/10/20/vue-sourcecode-3-init/</loc>
     
     <lastmod>2019-05-25T10:11:19.533Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/10/20/vue-sourcecode-3-init/</loc>
+    <loc>https://hellogithub2014.github.io/2018/10/16/vue-sourcecode-2-global-api/</loc>
     
     <lastmod>2019-05-25T10:11:19.533Z</lastmod>
     
@@ -289,14 +296,14 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/07/16/jest-quirks/</loc>
+    <loc>https://hellogithub2014.github.io/2018/05/19/vue-comp-communication/</loc>
     
     <lastmod>2019-05-25T10:11:19.523Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2018/05/19/vue-comp-communication/</loc>
+    <loc>https://hellogithub2014.github.io/2018/07/16/jest-quirks/</loc>
     
     <lastmod>2019-05-25T10:11:19.523Z</lastmod>
     
@@ -387,6 +394,13 @@
   </url>
   
   <url>
+    <loc>https://hellogithub2014.github.io/2017/12/11/uglify-js-quirk-at-linux/</loc>
+    
+    <lastmod>2019-05-25T10:11:19.509Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://hellogithub2014.github.io/2017/12/11/using-storage-event-for-communication-between-webapp/</loc>
     
     <lastmod>2019-05-25T10:11:19.509Z</lastmod>
@@ -401,21 +415,14 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/12/11/uglify-js-quirk-at-linux/</loc>
-    
-    <lastmod>2019-05-25T10:11:19.509Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://hellogithub2014.github.io/2017/12/03/css-grid-note/</loc>
+    <loc>https://hellogithub2014.github.io/2017/12/03/css-flex-note/</loc>
     
     <lastmod>2019-05-25T10:11:19.508Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/12/03/css-flex-note/</loc>
+    <loc>https://hellogithub2014.github.io/2017/12/03/css-grid-note/</loc>
     
     <lastmod>2019-05-25T10:11:19.508Z</lastmod>
     
@@ -429,14 +436,14 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/11/08/using-session-storage-for-user-experience/</loc>
+    <loc>https://hellogithub2014.github.io/2017/11/08/css-table-layout/</loc>
     
     <lastmod>2019-05-25T10:11:19.507Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/11/08/css-table-layout/</loc>
+    <loc>https://hellogithub2014.github.io/2017/11/08/using-session-storage-for-user-experience/</loc>
     
     <lastmod>2019-05-25T10:11:19.507Z</lastmod>
     
@@ -492,13 +499,6 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/</loc>
-    
-    <lastmod>2019-05-25T10:11:19.502Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://hellogithub2014.github.io/2017/10/16/browser-cache-summary/</loc>
     
     <lastmod>2019-05-25T10:11:19.502Z</lastmod>
@@ -506,14 +506,21 @@
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/10/09/recommend-resource-for-fe-fresh-man/</loc>
+    <loc>https://hellogithub2014.github.io/2017/10/15/how-to-write-a-common-paginator-plugin-with-jquery/</loc>
+    
+    <lastmod>2019-05-25T10:11:19.502Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://hellogithub2014.github.io/2017/10/10/how-to-use-fiddler/</loc>
     
     <lastmod>2019-05-25T10:11:19.501Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://hellogithub2014.github.io/2017/10/10/how-to-use-fiddler/</loc>
+    <loc>https://hellogithub2014.github.io/2017/10/09/recommend-resource-for-fe-fresh-man/</loc>
     
     <lastmod>2019-05-25T10:11:19.501Z</lastmod>
     

@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="javascript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="rrweb可以进行屏幕录制和回放，用它做一个用户自助反馈功能，可以大幅度降低 bug 反馈成本。 这里简要介绍它的核心内部设计，后续会研究它的源码以增加一些定制功能。 rrweb并不是真的在录制视频，而是将页面DOM序列化后记录下来，再利用反序列化还原成DOM来回放。 代码组成主要分为 3 个部分（参照官方 README）：  rrweb-snapshot: 包含 snapshot 和 rebui">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rrweb 底层设计简要总结">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="rrweb可以进行屏幕录制和回放，用它做一个用户自助反馈功能，可以大幅度降低 bug 反馈成本。 这里简要介绍它的核心内部设计，后续会研究它的源码以增加一些定制功能。 rrweb并不是真的在录制视频，而是将页面DOM序列化后记录下来，再利用反序列化还原成DOM来回放。 代码组成主要分为 3 个部分（参照官方 README）：  rrweb-snapshot: 包含 snapshot 和 rebui">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-10-27T12:21:52.091Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rrweb 底层设计简要总结">
+<meta name="twitter:description" content="rrweb可以进行屏幕录制和回放，用它做一个用户自助反馈功能，可以大幅度降低 bug 反馈成本。 这里简要介绍它的核心内部设计，后续会研究它的源码以增加一些定制功能。 rrweb并不是真的在录制视频，而是将页面DOM序列化后记录下来，再利用反序列化还原成DOM来回放。 代码组成主要分为 3 个部分（参照官方 README）：  rrweb-snapshot: 包含 snapshot 和 rebui">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/">
+
+
+
+
+
+  <title>rrweb 底层设计简要总结 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rrweb 底层设计简要总结</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-27T20:14:50+08:00">
+                2019-10-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/10/27/rrweb-inernal-design/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/10/27/rrweb-inernal-design/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><a href="https://github.com/rrweb-io/rrweb" target="_blank" rel="noopener">rrweb</a>可以进行屏幕录制和回放，用它做一个用户自助反馈功能，可以大幅度降低 <code>bug</code> 反馈成本。 这里简要介绍它的核心内部设计，后续会研究它的源码以增加一些定制功能。</p>
+<p><code>rrweb</code>并不是真的在录制视频，而是将页面<code>DOM</code>序列化后记录下来，再利用反序列化还原成<code>DOM</code>来回放。</p>
+<h2 id="代码组成"><a href="#代码组成" class="headerlink" title="代码组成"></a>代码组成</h2><p>主要分为 3 个部分（参照官方 <code>README</code>）：</p>
+<ul>
+<li><a href="https://github.com/rrweb-io/rrweb-snapshot" target="_blank" rel="noopener"><code>rrweb-snapshot</code></a>: 包含 snapshot 和 rebuild 功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。</li>
+<li><a href="https://github.com/rrweb-io/rrweb" target="_blank" rel="noopener"><code>rrweb</code></a>： 包含 record 和 replay 两个功能。record 用于记录 DOM 中的所有变更（mutation）；replay 则是将记录的变更按照对应的时间一一重放。</li>
+<li><a href="https://github.com/rrweb-io/rrweb-player" target="_blank" rel="noopener"><code>rrweb-player</code></a>：为 rrweb 提供一套 UI 控件，提供基于 GUI 的暂停、快进、拖拽至任意时间点播放等功能。</li>
+</ul>
+<p>对于一个自助反馈功能来说，需要<code>rrweb</code>+<code>rrweb-snapshot</code>来生成一组序列化的<code>snapshot</code>，并发送给回放后台；后台回放页面拿到<code>snapshot</code>后，利用<code>rrweb-snapshot</code>还原为<code>DOM</code>，结合<code>replay</code>功能后就可以在<code>rrweb-player</code>中”播放”了。</p>
+<h2 id="内部设计"><a href="#内部设计" class="headerlink" title="内部设计"></a>内部设计</h2><p>这个部分主要也是阅读了<code>rrweb</code>官网的 4 篇文章后，进行的一个简要总结，原始链接如下：</p>
+<ul>
+<li><a href="https://github.com/rrweb-io/rrweb/blob/master/docs/serialization.md" target="_blank" rel="noopener">serialization</a></li>
+<li><a href="https://github.com/rrweb-io/rrweb/blob/master/docs/observer.md" target="_blank" rel="noopener">incremental snapshot</a></li>
+<li><a href="https://github.com/rrweb-io/rrweb/blob/master/docs/replay.md" target="_blank" rel="noopener">replay</a></li>
+<li><a href="https://github.com/rrweb-io/rrweb/blob/master/docs/sandbox.md" target="_blank" rel="noopener">sandbox</a></li>
+</ul>
+<h3 id="序列化"><a href="#序列化" class="headerlink" title="序列化"></a>序列化</h3><p>并不需要将每时每刻的 DOM 都全量序列化，这样一来数据量很大，另外会有很多重复数据。rrweb 会在初始时进行一次全量序列化，然后将各种页面活动比如按钮点击转变为增量序列化。</p>
+<h4 id="全量序列化"><a href="#全量序列化" class="headerlink" title="全量序列化"></a>全量序列化</h4><p>将<code>DOM</code>树转为”虚拟 DOM“树形数据结构。例如：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">header</span>&gt;</span><span class="tag">&lt;/<span class="name">header</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>会被序列化为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"type"</span>: <span class="string">"Document"</span>,</span><br><span class="line">  <span class="string">"childNodes"</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">"type"</span>: <span class="string">"Element"</span>,</span><br><span class="line">      <span class="string">"tagName"</span>: <span class="string">"html"</span>,</span><br><span class="line">      <span class="string">"attributes"</span>: &#123;&#125;,</span><br><span class="line">      <span class="string">"childNodes"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"Element"</span>,</span><br><span class="line">          <span class="string">"tagName"</span>: <span class="string">"head"</span>,</span><br><span class="line">          <span class="string">"attributes"</span>: &#123;&#125;,</span><br><span class="line">          <span class="string">"childNodes"</span>: [],</span><br><span class="line">          <span class="string">"id"</span>: <span class="number">3</span> <span class="comment">// 唯一id</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="string">"type"</span>: <span class="string">"Element"</span>,</span><br><span class="line">          <span class="string">"tagName"</span>: <span class="string">"body"</span>,</span><br><span class="line">          <span class="string">"attributes"</span>: &#123;&#125;,</span><br><span class="line">          <span class="string">"childNodes"</span>: [</span><br><span class="line">            &#123;</span><br><span class="line">              <span class="string">"type"</span>: <span class="string">"Text"</span>,</span><br><span class="line">              <span class="string">"textContent"</span>: <span class="string">"\n    "</span>,</span><br><span class="line">              <span class="string">"id"</span>: <span class="number">5</span></span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">              <span class="string">"type"</span>: <span class="string">"Element"</span>,</span><br><span class="line">              <span class="string">"tagName"</span>: <span class="string">"header"</span>,</span><br><span class="line">              <span class="string">"attributes"</span>: &#123;&#125;,</span><br><span class="line">              <span class="string">"childNodes"</span>: [</span><br><span class="line">                &#123;</span><br><span class="line">                  <span class="string">"type"</span>: <span class="string">"Text"</span>,</span><br><span class="line">                  <span class="string">"textContent"</span>: <span class="string">"\n    "</span>,</span><br><span class="line">                  <span class="string">"id"</span>: <span class="number">7</span></span><br><span class="line">                &#125;</span><br><span class="line">              ],</span><br><span class="line">              <span class="string">"id"</span>: <span class="number">6</span></span><br><span class="line">            &#125;</span><br><span class="line">          ],</span><br><span class="line">          <span class="string">"id"</span>: <span class="number">4</span></span><br><span class="line">        &#125;</span><br><span class="line">      ],</span><br><span class="line">      <span class="string">"id"</span>: <span class="number">2</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">"id"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基于这样的树形结构后，假如要记录某个按钮的点击，对于这个操作就可以序列化为类似如下的结构：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type clickSnapshot = &#123;</span><br><span class="line">  source: <span class="string">'MouseInteraction'</span>,</span><br><span class="line">  type: <span class="string">'Click'</span>,</span><br><span class="line">  id: <span class="built_in">Number</span>, <span class="comment">// 按钮id</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="增量序列化"><a href="#增量序列化" class="headerlink" title="增量序列化"></a>增量序列化</h4><p>在完成一次全量快照之后，需要基于当前视图状态观察所有可能对视图造成改动的事件，目前在 rrweb 中已经观察了以下事件：</p>
+<ul>
+<li><code>DOM</code> 变动<ul>
+<li>节点创建、销毁</li>
+<li>节点属性变化</li>
+</ul>
+<ul>
+<li>文本变化</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>鼠标移动</li>
+<li>鼠标交互<ul>
+<li><code>mouse up</code>、<code>mouse down</code></li>
+<li><code>click</code>、<code>double click</code>、<code>context menu</code></li>
+<li><code>focus</code>、<code>blur</code></li>
+<li><code>touch start</code>、<code>touch move</code>、<code>touch end</code></li>
+</ul>
+</li>
+<li>页面或元素滚动</li>
+<li>视窗大小改变</li>
+<li><code>input</code>输入</li>
+</ul>
+<p><code>rrweb</code>基于<a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver" target="_blank" rel="noopener"><code>MutationObserver</code></a>来观察所有这些变更，<code>MutationObserver</code>的一个示范：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Select the node that will be observed for mutations</span></span><br><span class="line"><span class="keyword">const</span> targetNode = <span class="built_in">document</span>.getElementById(<span class="string">'some-id'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Options for the observer (which mutations to observe)</span></span><br><span class="line"><span class="keyword">const</span> config = &#123; <span class="attr">attributes</span>: <span class="literal">true</span>, <span class="attr">childList</span>: <span class="literal">true</span>, <span class="attr">subtree</span>: <span class="literal">true</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Callback function to execute when mutations are observed</span></span><br><span class="line"><span class="keyword">const</span> callback = <span class="function"><span class="keyword">function</span>(<span class="params">mutationsList, observer</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> mutation <span class="keyword">of</span> mutationsList) &#123;</span><br><span class="line">    <span class="keyword">if</span> (mutation.type === <span class="string">'childList'</span>) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'A child node has been added or removed.'</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mutation.type === <span class="string">'attributes'</span>) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'The '</span> + mutation.attributeName + <span class="string">' attribute was modified.'</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Create an observer instance linked to the callback function</span></span><br><span class="line"><span class="keyword">const</span> observer = <span class="keyword">new</span> MutationObserver(callback);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Start observing the target node for configured mutations</span></span><br><span class="line">observer.observe(targetNode, config);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Later, you can stop observing</span></span><br><span class="line">observer.disconnect();</span><br></pre></td></tr></table></figure>
+<h5 id="新增节点"><a href="#新增节点" class="headerlink" title="新增节点"></a>新增节点</h5><p>由于<code>MutationObserver</code>在触发时，<code>callback</code>收到的是一批操作记录，这个特性会影响<code>rrweb</code>的序列化过程，比如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">body</span><br><span class="line">  n1</span><br><span class="line">    n2</span><br></pre></td></tr></table></figure>
+<ol>
+<li>创建节点 <code>n1</code> 并 <code>append</code> 在 <code>body</code> 中，再创建节点 <code>n2</code> 并 <code>append</code> 在 <code>n1</code> 中</li>
+<li>创建节点 <code>n1</code>、<code>n2</code>，将 <code>n2</code> <code>append</code> 在 <code>n1</code> 中，再将 <code>n1</code> <code>append</code> 在 <code>body</code> 中。</li>
+</ol>
+<p>这两种操作的最终结果是一致的，不过在增量序列化时，前者会产生两条记录，后者只有一条记录，<code>rrweb</code>需要区分开来。最终采取的方案是：</p>
+<p><strong>在新增节点时，所有 <code>mutation</code> 记录都需要先收集，再新增节点去重并序列化之后再做处理。</strong></p>
+<h5 id="节点属性变化"><a href="#节点属性变化" class="headerlink" title="节点属性变化"></a>节点属性变化</h5><p>对于节点属性的变化，比如<code>resize textarea</code>时宽高会发生多次变更，这会导致增量记录大大增加，经权衡只记录最终的值。</p>
+<h5 id="鼠标移动"><a href="#鼠标移动" class="headerlink" title="鼠标移动"></a>鼠标移动</h5><p>与节点属性变化的处理类似，记录鼠标轨迹也需要尽量减少增量记录。有两层节流：</p>
+<ul>
+<li>每 <code>20 ms</code> 最多记录一次鼠标坐标</li>
+<li>每 <code>500 ms</code> 最多发送一次鼠标坐标集，主要是做的一个分段</li>
+</ul>
+<h5 id="input输入变更"><a href="#input输入变更" class="headerlink" title="input输入变更"></a><code>input</code>输入变更</h5><ol>
+<li>界面交互引起的，主要靠监听 <code>input</code> 和 <code>change</code> 两个事件</li>
+<li><code>js</code>代码设置引起的，比如设置<code>input DOM</code>的<code>value</code>属性，这种主要是利用<code>Object.defineProperty</code>拦截<code>DOM</code>属性的<code>setter</code>,类似于<code>Vue</code>中的响应式数据</li>
+</ol>
+<h3 id="沙盒"><a href="#沙盒" class="headerlink" title="沙盒"></a>沙盒</h3><p>在拿”录屏“数据后的回放界面中，需要禁用被录制页面中的所有<code>js</code>，同时还有很多其他交互，比如表单提交、<code>window.open</code>打开新窗口、内联脚本等等。 所以<code>rrweb</code>在回放系统中会将所有重建后的<code>DOM</code>放到一个<code>iframe</code>中，并设置相关<a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/iframe" target="_blank" rel="noopener">sandbox 属性</a>来禁用。</p>
+<p><code>a</code>链接跳转也是需要禁止的，通过事件代理来<code>preventDefault</code>掉所有<code>a</code>链接的<code>click</code>事件。</p>
+<h3 id="回放播放器"><a href="#回放播放器" class="headerlink" title="回放播放器"></a>回放播放器</h3><p>每个变更记录都带有时间戳，所以是可以做一个”播放器“来按时间顺序”播放“变更记录的。<code>rrweb</code>利用<code>requestAnimationFrame</code>来模拟随时间变化的回放。</p>
+<p><strong>从任意时间点开始播放</strong>：当在播放器中拖动到指定进度后，将进度之前的变更记录一次性同步执行掉，进度之后的再按照<code>requestAnimationFrame</code>异步播放。</p>
+<p><strong>倍数</strong>：播放器还可以支持例如<code>2</code>倍、<code>4</code>倍数播放，这个也比较好做，相当于此前在一个<code>raf</code>回调中执行一个变更记录，现在是执行<code>2</code>个、<code>4</code>个变更记录。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/javascript/" rel="tag"># javascript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/05/qr-code-theory/" rel="next" title="二维码原理">
+                <i class="fa fa-chevron-left"></i> 二维码原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">80</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">63</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#代码组成"><span class="nav-number">1.</span> <span class="nav-text">代码组成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内部设计"><span class="nav-number">2.</span> <span class="nav-text">内部设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#序列化"><span class="nav-number">2.1.</span> <span class="nav-text">序列化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#全量序列化"><span class="nav-number">2.1.1.</span> <span class="nav-text">全量序列化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#增量序列化"><span class="nav-number">2.1.2.</span> <span class="nav-text">增量序列化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#新增节点"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">新增节点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#节点属性变化"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">节点属性变化</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#鼠标移动"><span class="nav-number">2.1.2.3.</span> <span class="nav-text">鼠标移动</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#input输入变更"><span class="nav-number">2.1.2.4.</span> <span class="nav-text">input输入变更</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#沙盒"><span class="nav-number">2.2.</span> <span class="nav-text">沙盒</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#回放播放器"><span class="nav-number">2.3.</span> <span class="nav-text">回放播放器</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/';
+          this.page.identifier = '2019/10/27/rrweb-inernal-design/';
+          this.page.title = 'rrweb 底层设计简要总结';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

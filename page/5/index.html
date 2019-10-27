@@ -284,6 +284,150 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/17/vue-sourcecode-14-directives-overview/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/11/17/vue-sourcecode-14-directives-overview/" itemprop="url">Vue源码解析14-指令处理概述</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-17T14:20:00+08:00">
+                2018-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2018/11/17/vue-sourcecode-14-directives-overview/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/17/vue-sourcecode-14-directives-overview/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <!--自定义封面摘要图片  start-->
+        
+          <div class="out-img-topic">
+            <img src="/images/indonesia.jpg" class="img-topic">
+          </div>
+        
+        <!--自定义封面摘要图片  end-->
+        
+          
+          接下来的几篇文章焦点放到Vue的指令处理上，我们知道Vue内置了一些指令，比如常用的v-for、v-if等。这篇文章会先从整体上讲述对指令的处理，不会涉及具体指令的细节。
+parse阶段依然是从parse阶段开始，在src/compiler/parser/index.js中，会调用各个指令的proc
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2018/11/17/vue-sourcecode-14-directives-overview/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/15/vue-sourcecode-13-events/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -853,155 +997,6 @@ patch 入口在生成
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2018/11/04/vue-sourcecode-9-children-normalization/">
-
-    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Liu Bin">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="十年一刻">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/04/vue-sourcecode-9-children-normalization/" itemprop="url">Vue源码解析9-children归一化</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-04T18:20:00+08:00">
-                2018-11-04
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2018/11/04/vue-sourcecode-9-children-normalization/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2018/11/04/vue-sourcecode-9-children-normalization/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        <!--自定义封面摘要图片  start-->
-        
-          <div class="out-img-topic">
-            <img src="/images/sweden.jpg" class="img-topic">
-          </div>
-        
-        <!--自定义封面摘要图片  end-->
-        
-          
-          归一化操作其实就是将多维的数组，合并转换成一个一维的数组。在 Vue 中归一化分为三个级别，
-
-0：不需要进行归一化
-1：只需要简单的归一化处理，将数组打平一层
-2：完全归一化，将一个 N 层的 children 完全打平为一维数组
-
-归一化的代码位于src/core/vdom/create-ele
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/11/04/vue-sourcecode-9-children-normalization/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1054,7 +1049,7 @@ patch 入口在生成
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-count">80</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
