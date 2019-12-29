@@ -39,7 +39,7 @@ function sort1(arr, locale) {
 }
 ```
 
-![origin-sort.png](origin-sort.png)
+![origin-sort.png](/images/lang-sort/origin-sort.png)
 
 当然仅仅修复英文的排序还是比较简单的，只需针对大小写做一些特殊判断。
 
@@ -69,13 +69,13 @@ function sort2(arr) {
 }
 ```
 
-![case-sensitive-sort](case-sensitive-sort.png)
+![case-sensitive-sort](/images/lang-sort/case-sensitive-sort.png)
 
 实际上这段排序可以满足我们业务的英语、德语、日语、韩语、马拉西亚、泰语、印度尼西亚、阿拉伯语的排序标准。
 
 但是所有含有音调符的语言，排序全部会失败, 因为那些字母的码点比`A-Za-z`都要大：
 
-![case-sensitive-error-pt](case-sensitive-error-pt.png)
+![case-sensitive-error-pt](/images/lang-sort/case-sensitive-error-pt.png)
 
 ### 修复音调字符
 
@@ -103,11 +103,14 @@ normalized[1].codePointAt(0).toString(16); // 0x0300  这就是分解出来的�
 function sort3(arr, locale) {
   arr.sort((char1, char2) => {
     // NFD 标准等价分解: 即在标准等价的前提下，返回合成字符分解的多个简单字符。
-    // \u0300-\u036f\ufe20-\ufe2f\u20d0-\u20ff 常见音调符
-    const regexp = /([A-Za-z])([\u0300-\u036f\ufe20-\ufe2f\u20d0-\u20ff])?/gu;
-    const r1 = regexp.exec(char1.normalize("NFD")) || [char1, char1]; // exec匹配失败返回null
-    regexp.lastIndex = 0; // 重置匹配起点
-    const r2 = regexp.exec(char2.normalize("NFD")) || [char2, char2];
+    const r1 = /(\P{Mark})(\p{Mark}+)?/gu.exec(char1.normalize("NFD")) || [
+      char1,
+      char1
+    ]; // exec匹配失败返回null
+    const r2 = /(\P{Mark})(\p{Mark}+)?/gu.exec(char2.normalize("NFD")) || [
+      char2,
+      char2
+    ];
 
     const base1 = r1[1];
     const base2 = r2[1];
@@ -162,7 +165,7 @@ function simpleAccentCompare(accent1, accent2) {
 
 在`sort2`方法的基础上，可以解决葡萄牙、俄国、西班牙语、菲律宾这些语种的排序。
 
-![case-sensitive-correct-pt](case-sensitive-correct-pt.png)
+![case-sensitive-correct-pt](/images/lang-sort/case-sensitive-correct-pt.png)
 
 `\p{Mark}`是`es6`新增的正则表达式特性: [`Unicode属性类`](https://es6.ruanyifeng.com/#docs/regex)。
 
@@ -170,7 +173,7 @@ function simpleAccentCompare(accent1, accent2) {
 
 但在法语的标准中，遇到了一些比音调符更奇怪的字符。。。
 
-![accent-sort-error-fr](accent-sort-error-fr.png)
+![accent-sort-error-fr](/images/lang-sort/accent-sort-error-fr.png)
 
 经过搜索，他们是捆绑字符[`Ligature characters`](<https://en.wikipedia.org/wiki/Orthographic_ligature#Ligatures_in_Unicode_(Latin_alphabets)>).
 
@@ -178,7 +181,7 @@ function simpleAccentCompare(accent1, accent2) {
 
 捆绑字符将两个或多个字母连在一块，看起来就像是书写时将他们连在一起了。捆绑字符的形式多种多样，而且经过测试`normalize`也无法处理这种字符。。。
 
-不过业务中通常不会出现这么多捆绑字符，比如翻译人员给的完整排序标准中只有 `4` 个，翻译文案绝大多数情况下只会使用基本的`A-Za-z`。作为变通我们可以建立一个映射表将捆绑字符分解，与这篇文章的思路是相同的。 比如
+不过业务中通常不会出现这么多捆绑字符，比如翻译人员给的完整排序标准中只有 `4` 个，翻译文案绝大多数情况下只会使用基本的`A-Za-z`。作为变通我们可以建立一个映射表将捆绑字符分解，与[这篇文章](https://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/2014/docs/designDoc/UDF/unicode/NormOperations/splitLigatures.html)的思路是相同的。 比如
 
 ```js
 var LIGATURE_MAP = {
@@ -313,24 +316,79 @@ function sort4(arr, locale) {
 
 这样就修复了捆绑字符的问题：
 
-![ligature-correct-fr](ligature-correct-fr.png)
+![ligature-correct-fr](/images/lang-sort/ligature-correct-fr.png)
 
-正当以为坑都踩完了，`Unicode`告诉我`too young too simple, sometimes naive`。。。还有更大的坑等着我
+正当以为坑都踩完了，`Unicode`告诉我`too young too simple, sometimes naive`，给我一记重拳。。。还有更大的坑等着我
 
-![stroke-letter-error-pl](stroke-letter-error-pl.png)
+![stroke-letter-error-pl](/images/lang-sort/stroke-letter-error-pl.png)
+
+### `stroke letter`
+
+这种字符中间带一个横杠的，也不知道该怎么称呼，就叫`stroke letter`吧,在`Unicode`中还挺多的,[给一些例子](https://unicode-search.net/unicode-namesearch.pl?term=BAR)
+
+`stroke letter`无法用`normalize`分解，数量众多也不大好建立映射表，看起来是没有办法的。
+
+无意中看到[`lodash.deblurr`方法](https://lodash.com/docs/4.17.15#deburr)，函数注释中说可以处理所有在 [Latin-1 Supplement](<https://en.wikipedia.org/wiki/Latin-1_Supplement_(Unicode_block)#Character_table>) and [Latin Extended-A letters](https://en.wikipedia.org/wiki/Latin_Extended-A)这里两个`script`的字符，去掉所有[`combining diacritical marks`](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks)， 其中就包含很多`stroke letter`. 它是怎么做的呢？
+
+查看源码可以得知核心的一句是：
+
+```js
+function deburr(string) {
+  string = toString(string);
+  return (
+    string && string.replace(reLatin, deburrLetter).replace(reComboMark, "")
+  );
+}
+```
+
+`string.replace(reLatin, deburrLetter)`是讲所有变音符、`stroke letter`暴力替换为`素颜`形式，比如`Ł --> L`。它在内部维护了一个很大的映射表，基于它来做暴力替换，所以它也只处理了两个`script`的字符。实在是力不从心。。。
+
+![lodash-deblurr-mapping](/images/lang-sort/lodash-deblurr-mapping.png)
+
+到这里要反思是不是思路不对？目前都是从字符本身着手的，所以需要处理各种各样奇怪的`Unicode`字符，边界情况非常的多。
 
 ### localeCompare
 
-#### localeCompare 在 node 和浏览器的差异
+换个思路，在业务场景中更多的是**先定下来整个页面的语种，然后再基于这个语种来对文案进行排序**。也就是说如果页面是日文的，即使文案本身是韩文，也将韩文按照日文的排序标准来排序。 有没有一些能在给定语种的情况下排序的开源库或者函数呢？
 
-# 参考资料
+在`stackoverflow`上搜索果然有相关问题,[比如这个](https://stackoverflow.com/questions/12624532/locale-based-sort-in-javascript-sort-accented-letters-and-other-variants-in-a-p)。其中提到了[`localeCompare`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare)和[`Intl.Collator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Collator)，看了下`MDN`二者其实差不多，传的参数也是一样的。以下就只讨论`localeCompare`。
 
-- [`es6 normalize`](https://es6.ruanyifeng.com/#docs/string-methods)
-- lodash.deburr 方法
-- [捆绑字符](https://lexsrv3.nlm.nih.gov/LexSysGroup/Projects/lvg/2014/docs/designDoc/UDF/unicode/NormOperations/splitLigatures.html)
-- [`unicode charts`](https://unicode.org/charts/)
-- [组合变音标记](https://en.wikipedia.org/wiki/Combining_Diacritical_Marks)
-- [`Mark,Nonspaceing Category`](http://www.fileformat.info/info/unicode/category/Mn/list.htm)
-- [`es6 localeCompare`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare)
-- [`Intl.Collator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Collator)
-- [`language code`](http://www.lingoes.net/zh/translator/langcode.htm)
+函数声明是：
+
+```js
+referenceStr.localeCompare(compareString[, locales[, options]])
+```
+
+- `locales`参数表明按照什么语种来排序，可以传递数组
+- `options`提供细节控制，比如
+  - `sensitivity` 是否忽略大小写，是否忽略音调符等等
+  - `caseFirst` 大写优先还是小写优先
+  - `numeric` 数字是否参与比较
+
+稍微棘手的是`locales`改怎么传，文档中给了一些[`参考链接`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl#Locale_identification_and_negotiation)以及[`language-subtag-registry`](http://www.iana.org/assignments/language-subtag-registry/language-subtag-registry)，不过这两还是不大清晰易懂，经过努力又找到另一个文档[`language code`](http://www.lingoes.net/zh/translator/langcode.htm)。
+
+我们试试它的效果如何：
+
+```js
+function sort5(arr, locale) {
+  arr.sort((str1, str2) =>
+    str1.localeCompare(str2, locale, {
+      caseFirst: "upper", // 大写优先
+      numeric: true, // 比较数字
+      ignorePunctuation: true // 忽略标点符号
+    })
+  );
+
+  return arr;
+}
+```
+
+令人感到惊喜的是`stroke letter`、捆绑字符、音调符都很好的处理了，只有一小部分的细节与翻译人员定的标准不一致，基本都是多个音调符的顺序不一致。可能是`locale`设置的不对，也可能是标准本身定的就不是很准确。不一致的部分可以和 PM 沟通看看是否可以接收，因为业务中很有可能是不会出现那些音调符的。
+
+真香！
+
+后续 TODO: 研究 V8 中的`localeCompare`源码。
+
+# 总结
+
+本文探索了手写一个多语言排序函数具体会遇到哪些坑，并在最后使用`localeCompare`满足了业务需求。本文所有涉及代码和排序在[这里](https://github.com/hellogithub2014/hellogithub2014.github.io/tree/save/source/_assets/lang-sort/lang-sort.html)，右键查看源码即可。
