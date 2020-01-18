@@ -175,18 +175,18 @@ export default {
 
 `tree`组件通常支持多选操作：
 
-![multi-select](multi-select.png)
+![multi-select](/images/tree-component/multi-select.png)
 
 并且会进行数值合并的情况
 
-![merge-selected-node](merge-selected-node.png)
+![merge-selected-node](/images/tree-component/merge-selected-node.png)
 
 如何支持这种特性呢？这里介绍一种思路：
 
 1. 在`tree`组件中增加专门的`checkedKeys`数组，用于**记录所有选中的叶子节点**。
 2. 按照每个节点的叶子节点规模进行倒序得到`sortedTreeNodes`数组,例如下面的情况`sortedTreeNodes`就是`[a,b,d,c,e,f,g,h,i,j,k]`
 
-  ![sorted-tree-nodes](sorted-tree-nodes.jpeg)
+  ![sorted-tree-nodes](/images/tree-component/sorted-tree-nodes.jpeg)
 
 3. 依次判断`sortedTreeNodes`中元素，
    1. 如果是叶子节点，直接加入结果集，并从`checkedKeys`删除
@@ -196,7 +196,7 @@ export default {
 
 为什么要先倒序呢？因为不倒序的话可能得到的结果不对，例如下面这种情况：
 
-![sort-example.jpeg](sort-example.jpeg)
+![sort-example.jpeg](/images/tree-component/sort-example.jpeg)
 
 如果先从`b`节点判断的，那么最终的结果集就是`[b]`，而不是`[a]`.
 
@@ -221,7 +221,7 @@ computed: {
 
 某些业务中，还会要求拿到每个层级部分选中的节点，`throughed value`就是一个二维数组，存储每个层级全选/部分选中的节点。例如：
 
-![throughed value](throughed-value.jpeg)
+![throughed value](/images/tree-component/throughed-value.jpeg)
 
 注意节点`c`下属只有`g`被选中，所以`c`是部分选中状态。 那么`throughed value`就会是：
 
@@ -239,6 +239,8 @@ computed: {
 
    1. 下属叶子节点全选，则将树干节点加入结果集，下属叶子节点全部从`checkedKeys`删除
    2. 下属叶子节点部分选中，将树干节点加入结果集，但并不操作叶子节点
+
+要注意到，**不管是选中项还是`throughed value`的计算，都依赖对原始数据结构的多次遍历操作，同时还涉及对整个树的排序操作，因此在树规模较大时，不可避免的有性能上问题。一种解决方案是把这些遍历操作转化为节点自身的各种属性，例如判断每个节点自身是否选中，不要看下属叶子的选中情况，而是直接判断自身的`checked`属性。**
 
 ## 展开项
 
@@ -324,11 +326,13 @@ handleToggleExpand(id) {
 }
 ```
 
+![accordion-example.gif](/images/tree-component/accordion-example.gif)
+
 # 懒加载
 
 对于规模很大的树，一次性将所有节点数据全部拉取并渲染，是有些问题的。一来用户体验差，耗时很长，二来浪费流量，大多数情况下用户只会使用其中很小一部分。 懒加载就是在初始时只加载小部分最主要的数据，剩下的数据看用户点开哪个节点，点击时再去拉取一定的数据。 举例来说：
 
-![lazy-load-example.gif](lazy-load-example.gif)
+![lazy-load-example.gif](/images/tree-component/lazy-load-example.gif)
 
 要实现这个功能有几个关键点：
 
@@ -373,9 +377,127 @@ this.loadChildren(treeNode).then((subtree) => {
 ```
 
 # 搜索
+
+树节点变多时，通常会提供搜索功能，搜索分两种：前端本地搜索和远程搜索。前者比较简单，后者结合懒加载会有一些坑需要注意。
+
 ## 本地搜索
+
+本地搜索的关键是组件需要知道搜索关键词`keyword`，同时允许业务方自定义匹配函数`filterMethod`。组件内部观察`keyword`的变化，只展示命中的节点。
+
+```js
+watch: {
+  keyword(val) {
+    const hits = [];
+    const misses = [];
+    // 迭代每个节点，判断节点应该显示还是隐藏。
+    // treeNodesMap是每个节点的id与节点引用之间的映射： {[id: string]: Object}
+    Object.values(this.treeNodesMap).forEach((node) => {
+      if (this.filterMethod(val, node)) {
+        hits.push(node.id);
+      } else {
+        misses.push(node.id);
+      }
+    });
+
+    // 隐藏所有不匹配的节点
+    misses.forEach((id) => {
+      this.treeNodesMapForSearch[id] = {
+        ...this.treeNodesMap[id],
+        visible: false,
+      };
+    });
+
+    // 。。。
+  }
+}
+```
+
 ## 懒加载下的搜索
+
+这种场景下的最大困难是前端不知道完整的树是什么样子，前端只有一个局部子树。举两个可能的坑，若某个时刻的情况如下：
+
+![lazyload-remote-search.png](/images/tree-component/lazyload-remote-search.jpeg)
+
+即前端只加载了`a、b、c`3个节点，剩下的节点并未拉取。
+
+1. 情形1️⃣：搜索某个关键词返后端回的节点是`g、h、i`，如果用户将这3个节点全部选中了，返回给上层的选中值不应该是`g、h、i`，而应该是他们的上层节点`d`，但前端并不知道`d`的存在。
+
+2. 情形2：如果先勾选了`b`节点，然后搜索某个关键词返回的节点是`g`，此时即使选中`g`也不应该返回给上层组件，因为`g`的组件节点`b`已经被选中了。
+
+解决方案是：**后端返回命中节点到根节点的完整通路子树，前端将这个子树直接当做`tree`组件的新`source`**。例如如果命中了`h、i、j`,那么返回的子树就是：
+
+![lazyload-remote-search-solution.jpeg](/images/tree-component/lazyload-remote-search-solution.jpeg)
+
+只有这样前端才能知道完整的信息。
+
 # 吸顶效果
+
+![sticky-scroll.gif](/images/tree-component/sticky-scroll-example.gif)
+
+借助`position:sticky`可以方便实现滚动吸顶，这里只示范第一层级节点的滚动吸顶，其他低层级节点类似，区别在于`z-index`和`top`值的设定。
+
+![sticky-scrolll-detail-2.png](/images/tree-component/sticky-scrolll-detail-2.jpeg)
+
+![sticky-scrolll-detail.png](/images/tree-component/sticky-scrolll-detail.png)
+
 # 自定义渲染
-## `hover`
-## 面包屑
+
+在很多场景下需要自定义每个节点的渲染，除了默认的`label`外还会有业务上的特殊定制。例如每个节点hover上去后出现节点的一些明细信息。
+
+自定义渲染的关键在于给业务方暴露`slot`，同时基础组件内部提供一个最常见的默认实现。
+
+// `tree-node`组件，提供原始`slot`
+
+```html
+<slot :item="node" name="node"/>
+```
+
+// `tree`组件，进行一次转发
+
+```html
+<tree-node v-for="node in source" :key="node.id" :node="node">
+  <template slot="node" slot-scope="{ item }">
+    <!-- 这里提供一个默认实现 -->
+    <slot :item="item" name="node">{{ item.label }}</slot>
+  </template>
+</tree-node>
+```
+
+下面是一个常见的自定义渲染示范
+
+## `hover` & 展示节点面包屑
+
+// 业务组件
+
+```html
+<tree :source="source">
+  <template slot="node" slot-scope="{ item }">
+    <!-- 鼠标放到节点上弹出的hover -->
+    <vi-popover>
+      <slot :item="item" name="hover">
+        <!-- 节点名 -->
+        <div>{{ item.label }}</div>
+        <!-- 节点层级面包屑 -->
+        <div>
+          <span v-for="(breadcrumb, index) in item.breadcrumbs" :key="index">
+            <i v-if="index > 0" class="vi-icon-arrow-right" />
+            <span>{{ breadcrumb }}</span>
+          </span>
+        </div>
+      </slot>
+      <!-- 节点自身渲染 -->
+      <span slot="reference">
+        <span>{{ item.label }}</span>
+      </span>
+    </vi-popover>
+  </template>
+</tree>
+```
+
+效果如下：
+
+![custom-render-example.gif](/images/tree-component/custom-render-example.gif)
+
+# 总结
+
+本文主要介绍了一种`tree`组件的底层实现细节，并指出了底层数据结构的潜在性能问题和可能的解决方案。
