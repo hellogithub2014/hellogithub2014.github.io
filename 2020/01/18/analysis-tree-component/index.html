@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="vue,component,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="RT，本文主要是为了介绍一种tree组件的实现方式，包含市面上tree组件的常见功能。后面会再专门研究element-ui中的tree内部实现。 数据结构这是组件最核心的部分，直接关系到各种特性实现的复杂度。 Tree本身这是用于渲染Tree自身的，通常需要上层业务中传入树形节点数据，例如： 123456789101112131415161718192021222324252627282930co">
+<meta name="keywords" content="vue,component">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一种Tree组件的实现方式">
+<meta property="og:url" content="https://hellogithub2014.github.io/2020/01/18/analysis-tree-component/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="RT，本文主要是为了介绍一种tree组件的实现方式，包含市面上tree组件的常见功能。后面会再专门研究element-ui中的tree内部实现。 数据结构这是组件最核心的部分，直接关系到各种特性实现的复杂度。 Tree本身这是用于渲染Tree自身的，通常需要上层业务中传入树形节点数据，例如： 123456789101112131415161718192021222324252627282930co">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/multi-select.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/merge-selected-node.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/sorted-tree-nodes.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/sort-example.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/throughed-value.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/accordion-example.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/lazy-load-example.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/lazyload-remote-search.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/lazyload-remote-search-solution.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/sticky-scroll-example.gif">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/sticky-scrolll-detail-2.jpeg">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/sticky-scrolll-detail.png">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/tree-component/custom-render-example.gif">
+<meta property="og:updated_time" content="2020-01-18T12:28:26.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一种Tree组件的实现方式">
+<meta name="twitter:description" content="RT，本文主要是为了介绍一种tree组件的实现方式，包含市面上tree组件的常见功能。后面会再专门研究element-ui中的tree内部实现。 数据结构这是组件最核心的部分，直接关系到各种特性实现的复杂度。 Tree本身这是用于渲染Tree自身的，通常需要上层业务中传入树形节点数据，例如： 123456789101112131415161718192021222324252627282930co">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/tree-component/multi-select.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2020/01/18/analysis-tree-component/">
+
+
+
+
+
+  <title>一种Tree组件的实现方式 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2020/01/18/analysis-tree-component/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一种Tree组件的实现方式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-01-18T10:09:37+08:00">
+                2020-01-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/01/18/analysis-tree-component/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/01/18/analysis-tree-component/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>RT，本文主要是为了介绍一种<code>tree</code>组件的实现方式，包含市面上<code>tree</code>组件的常见功能。后面会再专门研究<code>element-ui</code>中的<code>tree</code>内部实现。</p>
+<h1 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h1><p>这是组件最核心的部分，直接关系到各种特性实现的复杂度。</p>
+<h2 id="Tree本身"><a href="#Tree本身" class="headerlink" title="Tree本身"></a><code>Tree</code>本身</h2><p>这是用于渲染<code>Tree</code>自身的，通常需要上层业务中传入树形节点数据，例如：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> source = [&#123;</span><br><span class="line">  id: <span class="string">'1'</span>,</span><br><span class="line">  label: <span class="string">'一级 1'</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">    id: <span class="string">'1-1'</span>,</span><br><span class="line">    label: <span class="string">'二级 1-1'</span>,</span><br><span class="line">    children: [&#123;</span><br><span class="line">      id: <span class="string">'1-1-1'</span>,</span><br><span class="line">      label: <span class="string">'三级 1-1-1'</span></span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;, &#123;</span><br><span class="line">  id: <span class="string">'2'</span>,</span><br><span class="line">  label: <span class="string">'一级 2'</span>,</span><br><span class="line">  children: [&#123;</span><br><span class="line">    id: <span class="string">'2-1'</span>,</span><br><span class="line">    label: <span class="string">'二级 2-1'</span>,</span><br><span class="line">    children: [&#123;</span><br><span class="line">      id: <span class="string">'2-1-1'</span>,</span><br><span class="line">      label: <span class="string">'三级 2-1-1'</span></span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;, &#123;</span><br><span class="line">    id: <span class="string">'2-2'</span>,</span><br><span class="line">    label: <span class="string">'二级 2-2'</span>,</span><br><span class="line">    children: [&#123;</span><br><span class="line">      id: <span class="string">'2-2-1'</span>,</span><br><span class="line">      label: <span class="string">'三级 2-2-1'</span></span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;]</span><br><span class="line">&#125;]</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Tree组件</span></span><br><span class="line">&lt;tree :source=<span class="string">"source"</span> /&gt;</span><br></pre></td></tr></table></figure>
+<p>树中的每个节点至少会包含<code>id</code>与<code>label</code>两个核心属性，前者是节点唯一标识，后者用于界面展示。那么怎么把它渲染出来呢？ 有2种常见的方法：</p>
+<h3 id="递归渲染"><a href="#递归渲染" class="headerlink" title="递归渲染"></a>递归渲染</h3><p>核心是将树节点单独封装成一个<code>tree-node</code>组件,同时<code>vue</code>允许组件内部直接引用自身。</p>
+<p><code>tree-node</code>组件:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;li&gt;</span><br><span class="line">    &lt;!-- 渲染节点自身 --&gt;</span><br><span class="line">    &#123;&#123; node.label &#125;&#125;</span><br><span class="line"></span><br><span class="line">    &lt;!-- 渲染子节点 --&gt;</span><br><span class="line">    &lt;ul</span><br><span class="line">      v-<span class="keyword">if</span>=<span class="string">"node.children"</span></span><br><span class="line">      style=<span class="string">"padding-left: 16px;"</span> <span class="comment">// 子节点层级缩进</span></span><br><span class="line">    &gt;</span><br><span class="line">      &lt;tree-node v-<span class="keyword">for</span>=<span class="string">"cnode in node.children"</span> :key=<span class="string">"cnode.id"</span> :node=<span class="string">"cnode"</span> /&gt;</span><br><span class="line">    &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">  &lt;/</span>li&gt;</span><br><span class="line">&lt;<span class="regexp">/template&gt;</span></span><br><span class="line"><span class="regexp">&lt;script&gt;</span></span><br><span class="line"><span class="regexp">export default &#123;</span></span><br><span class="line"><span class="regexp">  name: 'tree-node',</span></span><br><span class="line"><span class="regexp">  props: &#123;</span></span><br><span class="line"><span class="regexp">    node: &#123;</span></span><br><span class="line"><span class="regexp">      type: Object,</span></span><br><span class="line"><span class="regexp">      require: true,</span></span><br><span class="line"><span class="regexp">    &#125;</span></span><br><span class="line"><span class="regexp">  &#125;,</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp">&lt;/</span>script&gt;</span><br></pre></td></tr></table></figure>
+<p>这样<code>tree</code>组件自身只要负责把第一层节点渲染即可：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;ul&gt;</span><br><span class="line">    &lt;!-- 渲染第一层 --&gt;</span><br><span class="line">    &lt;tree-node v-<span class="keyword">for</span>=<span class="string">"node in source"</span> :key=<span class="string">"node.id"</span> :node=<span class="string">"node"</span> /&gt;</span><br><span class="line">  &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>template&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  name: <span class="string">'tree-node'</span>,</span><br><span class="line">  props: &#123;</span><br><span class="line">    source: &#123;</span><br><span class="line">      type: <span class="built_in">Array</span>,</span><br><span class="line">      <span class="keyword">default</span>: <span class="function"><span class="params">()</span>=&gt;</span>[],</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="打平后直接vfor迭代渲染"><a href="#打平后直接vfor迭代渲染" class="headerlink" title="打平后直接vfor迭代渲染"></a>打平后直接<code>vfor</code>迭代渲染</h3><p>如果节点不多，也可以将<code>source</code>打平为一维数组，这样<code>tree</code>组件可以直接<code>v-for</code>一把梭：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;ul&gt;</span><br><span class="line">    &lt;!-- 渲染打平的数组 --&gt;</span><br><span class="line">    &lt;tree-node v-<span class="keyword">for</span>=<span class="string">"node in flatted"</span> :key=<span class="string">"node.id"</span> :node=<span class="string">"node"</span> /&gt;</span><br><span class="line">  &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">&lt;/</span>template&gt;</span><br><span class="line">&lt;script&gt;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  name: <span class="string">'tree-node'</span>,</span><br><span class="line">  props: &#123;</span><br><span class="line">    source: &#123;</span><br><span class="line">      type: <span class="built_in">Array</span>,</span><br><span class="line">      <span class="keyword">default</span>: <span class="function"><span class="params">()</span>=&gt;</span>[],</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  computed: &#123;</span><br><span class="line">    flatted() &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.doFlat(<span class="keyword">this</span>.source);</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    <span class="comment">// 打平树状结构的列表</span></span><br><span class="line">    doFlat(tree = []) &#123;</span><br><span class="line">      <span class="keyword">const</span> flatterned = [];</span><br><span class="line">      <span class="keyword">const</span> len = list.length;</span><br><span class="line">      <span class="keyword">let</span> index = <span class="number">-1</span>;</span><br><span class="line">      <span class="keyword">if</span> (!len) &#123;</span><br><span class="line">        <span class="keyword">return</span> [];</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">while</span> (++index &lt; len) &#123;</span><br><span class="line">        <span class="keyword">const</span> node = list[index];</span><br><span class="line">        flatterned.push(node);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">const</span> &#123; children = [] &#125; = node;</span><br><span class="line">        <span class="keyword">if</span> (children.length) &#123;</span><br><span class="line">          <span class="comment">// 记录父级节点在flatterned的索引</span></span><br><span class="line">          children.forEach(<span class="function">(<span class="params">item</span>) =&gt;</span> &#123;</span><br><span class="line">            item.parentIndex = flatterned.length - <span class="number">1</span>;</span><br><span class="line">          &#125;);</span><br><span class="line">          <span class="keyword">this</span>.doFlat(children);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> flatterned;</span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<p>本质上打平操作是对树的先序遍历，内部也是使用递归访问了一遍完整的树，顺便记录了父节点位置。好处是可以很方便的知道节点的父节点所在位置，直接使用索引访问即可。弊端也比较明显相当于遍历了两遍树，第一遍是在打平时，第二遍是在渲染时。另外如果节点支持懒加载，这种方式也不大容易理解，新加载的节点在打平数组中与父节点可能相隔很远。</p>
+<p>此文的后面都基于第一种方式递归渲染来描述。</p>
+<h2 id="选中项"><a href="#选中项" class="headerlink" title="选中项"></a>选中项</h2><p><code>tree</code>组件通常支持多选操作：</p>
+<p><img src="/images/tree-component/multi-select.png" alt="multi-select"></p>
+<p>并且会进行数值合并的情况</p>
+<p><img src="/images/tree-component/merge-selected-node.png" alt="merge-selected-node"></p>
+<p>如何支持这种特性呢？这里介绍一种思路：</p>
+<ol>
+<li>在<code>tree</code>组件中增加专门的<code>checkedKeys</code>数组，用于<strong>记录所有选中的叶子节点</strong>。</li>
+<li><p>按照每个节点的叶子节点规模进行倒序得到<code>sortedTreeNodes</code>数组,例如下面的情况<code>sortedTreeNodes</code>就是<code>[a,b,d,c,e,f,g,h,i,j,k]</code></p>
+<p><img src="/images/tree-component/sorted-tree-nodes.jpeg" alt="sorted-tree-nodes"></p>
+</li>
+<li><p>依次判断<code>sortedTreeNodes</code>中元素，</p>
+<ol>
+<li>如果是叶子节点，直接加入结果集，并从<code>checkedKeys</code>删除</li>
+<li>如果是树干节点<ol>
+<li>下属叶子节点全选，则将树干节点加入结果集，下属叶子节点全部从<code>checkedKeys</code>删除</li>
+<li>下属叶子节点没有全选，直接跳过此树干节点</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<p>为什么要先倒序呢？因为不倒序的话可能得到的结果不对，例如下面这种情况：</p>
+<p><img src="/images/tree-component/sort-example.jpeg" alt="sort-example.jpeg"></p>
+<p>如果先从<code>b</code>节点判断的，那么最终的结果集就是<code>[b]</code>，而不是<code>[a]</code>.</p>
+<p>有了<code>checkedKeys</code>之后，每个<code>tree-node</code>也能方便知道自身是不是选中状态了：</p>
+<p><code>tree-node</code>组件:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">computed: &#123;</span><br><span class="line">  checked() &#123;</span><br><span class="line">    <span class="comment">// 自身是叶子节点</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.isLeaf) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.checkedKeys.includes(<span class="keyword">this</span>.id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 自身是树干节点，如果下属叶子节点全部是选中状态，那么自身也就是选中状态</span></span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.leafIds.every(<span class="function"><span class="params">leaf</span> =&gt;</span> <span class="keyword">this</span>.checkedKeys.includes(leaf));</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="throughed-value"><a href="#throughed-value" class="headerlink" title="throughed value"></a><code>throughed value</code></h2><p>某些业务中，还会要求拿到每个层级部分选中的节点，<code>throughed value</code>就是一个二维数组，存储每个层级全选/部分选中的节点。例如：</p>
+<p><img src="/images/tree-component/throughed-value.jpeg" alt="throughed value"></p>
+<p>注意节点<code>c</code>下属只有<code>g</code>被选中，所以<code>c</code>是部分选中状态。 那么<code>throughed value</code>就会是：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  [a], <span class="comment">// 部分选中</span></span><br><span class="line">  [b, c], <span class="comment">// c即使是部分选中，也放到第二层级当中</span></span><br><span class="line">  [g], <span class="comment">// d/e/f由于已经将父节点放到结果集，忽略掉。</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>如何计算<code>throughed value</code>呢？其实和上面选中项的计算很像，只需改动<code>3.2</code>即可：</p>
+<p>如果是树干节点:</p>
+<ol>
+<li>下属叶子节点全选，则将树干节点加入结果集，下属叶子节点全部从<code>checkedKeys</code>删除</li>
+<li>下属叶子节点部分选中，将树干节点加入结果集，但并不操作叶子节点</li>
+</ol>
+<p>要注意到，<strong>不管是选中项还是<code>throughed value</code>的计算，都依赖对原始数据结构的多次遍历操作，同时还涉及对整个树的排序操作，因此在树规模较大时，不可避免的有性能上问题。一种解决方案是把这些遍历操作转化为节点自身的各种属性，例如判断每个节点自身是否选中，不要看下属叶子的选中情况，而是直接判断自身的<code>checked</code>属性。</strong></p>
+<h2 id="展开项"><a href="#展开项" class="headerlink" title="展开项"></a>展开项</h2><p>用于控制树干节点是展开还是收起，可以在<code>tree</code>组件中添加一个<code>expandedKeys</code>数组，存放所有已展开树干节点的<code>id</code>。在折叠/展开节点时更新这个数组。 每个<code>tree-node</code>判断自己是否展开，只需看自己的<code>id</code>在不在其中即可。</p>
+<p>// <code>tree</code>组件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  provide() &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      $expandedKeys: <span class="function"><span class="params">()</span> =&gt;</span> <span class="keyword">this</span>.expandedKeys, <span class="comment">// 展开的节点</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  data() &#123;</span><br><span class="line">    expandedKeys: [],</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    handleToggleExpand(id) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="keyword">this</span>.expandedKeys.includes(id)) &#123;</span><br><span class="line">        <span class="keyword">this</span>.expandedKeys = <span class="keyword">this</span>.expandedKeys.concat(id); <span class="comment">// 展开节点</span></span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.expandedKeys = <span class="keyword">this</span>.expandedKeys.filter(<span class="function"><span class="params">key</span> =&gt;</span> key !== id); <span class="comment">// 折叠节点</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br><span class="line">&lt;<span class="regexp">/script&gt;</span></span><br></pre></td></tr></table></figure>
+<p>// <code>tree-node</code>组件</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;li&gt;</span><br><span class="line">    &lt;!-- 渲染子节点 --&gt;</span><br><span class="line">    &lt;ul</span><br><span class="line">      v-<span class="keyword">if</span>=<span class="string">"node.children"</span></span><br><span class="line">      v-show=<span class="string">"expand"</span> <span class="comment">// 节点折叠、展开</span></span><br><span class="line">    &gt;</span><br><span class="line">      &lt;tree-node v-<span class="keyword">for</span>=<span class="string">"cnode in node.children"</span> :key=<span class="string">"cnode.id"</span> :node=<span class="string">"cnode"</span> /&gt;</span><br><span class="line">    &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">  &lt;/</span>li&gt;</span><br><span class="line">&lt;<span class="regexp">/template&gt;</span></span><br><span class="line"><span class="regexp">&lt;script&gt;</span></span><br><span class="line"><span class="regexp">export default &#123;</span></span><br><span class="line"><span class="regexp">  inject: [</span></span><br><span class="line"><span class="regexp">    '$expandedKeys',</span></span><br><span class="line"><span class="regexp">  ],</span></span><br><span class="line"><span class="regexp">  computed: &#123;</span></span><br><span class="line"><span class="regexp">    /</span><span class="regexp">/ 当前节点是否展开</span></span><br><span class="line"><span class="regexp">    expand() &#123;</span></span><br><span class="line"><span class="regexp">      return this.$expandedKeys().includes(node.id);</span></span><br><span class="line"><span class="regexp">    &#125;,</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp">&lt;/</span>script&gt;</span><br></pre></td></tr></table></figure>
+<h1 id="手风琴模式"><a href="#手风琴模式" class="headerlink" title="手风琴模式"></a>手风琴模式</h1><p>有了<code>expandedKeys</code>，手风琴模式就很好实现了，关键点就是在展开当前节点时将所有兄弟节点全部从<code>expandedKeys</code>剔除即可：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">handleToggleExpand(id) &#123;</span><br><span class="line">  <span class="comment">// 展开节点</span></span><br><span class="line">  <span class="keyword">if</span> (!<span class="keyword">this</span>.expandedKeys.includes(id)) &#123;</span><br><span class="line">    <span class="comment">// 手风琴模式</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.accordion) &#123;</span><br><span class="line">      <span class="comment">// 所有兄弟节点id</span></span><br><span class="line">      <span class="keyword">const</span> siblings = <span class="built_in">Object</span>.values(<span class="keyword">this</span>.treeNodesMap)</span><br><span class="line">        .filter(</span><br><span class="line">          node =&gt; node.parentId === treeNode.parentId &amp;&amp; node.id !== id,</span><br><span class="line">        )</span><br><span class="line">        .map(<span class="function"><span class="params">node</span> =&gt;</span> node.id);</span><br><span class="line">      <span class="comment">// 剔除兄弟节点</span></span><br><span class="line">      <span class="keyword">this</span>.expandedKeys = <span class="keyword">this</span>.expandedKeys.filter(</span><br><span class="line">        key =&gt; !siblings.includes(key),</span><br><span class="line">      );</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/tree-component/accordion-example.gif" alt="accordion-example.gif"></p>
+<h1 id="懒加载"><a href="#懒加载" class="headerlink" title="懒加载"></a>懒加载</h1><p>对于规模很大的树，一次性将所有节点数据全部拉取并渲染，是有些问题的。一来用户体验差，耗时很长，二来浪费流量，大多数情况下用户只会使用其中很小一部分。 懒加载就是在初始时只加载小部分最主要的数据，剩下的数据看用户点开哪个节点，点击时再去拉取一定的数据。 举例来说：</p>
+<p><img src="/images/tree-component/lazy-load-example.gif" alt="lazy-load-example.gif"></p>
+<p>要实现这个功能有几个关键点：</p>
+<ol>
+<li>组件需要知道展开哪些节点时是要触发懒加载的</li>
+<li>组件需要知道如何获取懒加载数据</li>
+<li><strong>后端接口支持懒加载</strong>，至少支持两个参数: <code>root</code>与<code>depth</code>，前者用于定位子树的位置，后者用于拉取指定量级的数据</li>
+</ol>
+<p>第1点可以在节点上加一些特殊标识，如果节点上有<code>hasChildren</code>属性，同时在展开节点前发现当前树中没有任何它的子节点，那么就可以触发懒加载了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">isNeedLoadChildren(treeNode) &#123;</span><br><span class="line">  <span class="comment">// 是否加载了children</span></span><br><span class="line">  <span class="keyword">const</span> hasChildrenLoaded =</span><br><span class="line">    <span class="built_in">Object</span>.values(<span class="keyword">this</span>.treeNodesMap).filter(</span><br><span class="line">      node =&gt; node.parentId === treeNode.id,</span><br><span class="line">    ).length &gt; <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">return</span> treeNode.hasChildren &amp;&amp; !hasChildrenLoaded;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">handleToggleExpand(id) &#123;</span><br><span class="line">  <span class="keyword">const</span> treeNode = <span class="keyword">this</span>.treeNodesMap[id];</span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.lazy &amp;&amp; <span class="keyword">this</span>.isNeedLoadChildren(treeNode)) &#123;</span><br><span class="line">    treeNode.loading = <span class="literal">true</span>; <span class="comment">// 显示加载icon</span></span><br><span class="line">    <span class="comment">// 触发懒加载，加载子节点。。</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 处理expandedKeys。。。</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>第2点获取懒加载数据，需要由上层业务决定，基础组件可以接收一个<code>loadChildren</code>的<code>prop</code>，函数的参数是展开的节点，返回值是一个<code>Promise</code>,<code>Promise</code>完成时会拿到子树数据。这样<code>tree</code>组件就可以把子树数据融合进去了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">treeNode.loading = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">this</span>.loadChildren(treeNode).then(<span class="function">(<span class="params">subtree</span>) =&gt;</span> &#123;</span><br><span class="line">    treeNode.loading = <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">// 融合subtree到当前tree当中，略。。</span></span><br><span class="line">    <span class="keyword">this</span>.checkedKeys = <span class="keyword">this</span>.valueToChecked(<span class="keyword">this</span>.checkedKeys); <span class="comment">// 更新选中节点，如果treeNode是选中状态，那么subTree中的每个节点也是选中状态</span></span><br><span class="line">  &#125;,</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<h1 id="搜索"><a href="#搜索" class="headerlink" title="搜索"></a>搜索</h1><p>树节点变多时，通常会提供搜索功能，搜索分两种：前端本地搜索和远程搜索。前者比较简单，后者结合懒加载会有一些坑需要注意。</p>
+<h2 id="本地搜索"><a href="#本地搜索" class="headerlink" title="本地搜索"></a>本地搜索</h2><p>本地搜索的关键是组件需要知道搜索关键词<code>keyword</code>，同时允许业务方自定义匹配函数<code>filterMethod</code>。组件内部观察<code>keyword</code>的变化，只展示命中的节点。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">watch: &#123;</span><br><span class="line">  keyword(val) &#123;</span><br><span class="line">    <span class="keyword">const</span> hits = [];</span><br><span class="line">    <span class="keyword">const</span> misses = [];</span><br><span class="line">    <span class="comment">// 迭代每个节点，判断节点应该显示还是隐藏。</span></span><br><span class="line">    <span class="comment">// treeNodesMap是每个节点的id与节点引用之间的映射： &#123;[id: string]: Object&#125;</span></span><br><span class="line">    <span class="built_in">Object</span>.values(<span class="keyword">this</span>.treeNodesMap).forEach(<span class="function">(<span class="params">node</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (<span class="keyword">this</span>.filterMethod(val, node)) &#123;</span><br><span class="line">        hits.push(node.id);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        misses.push(node.id);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 隐藏所有不匹配的节点</span></span><br><span class="line">    misses.forEach(<span class="function">(<span class="params">id</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.treeNodesMapForSearch[id] = &#123;</span><br><span class="line">        ...this.treeNodesMap[id],</span><br><span class="line">        visible: <span class="literal">false</span>,</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 。。。</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="懒加载下的搜索"><a href="#懒加载下的搜索" class="headerlink" title="懒加载下的搜索"></a>懒加载下的搜索</h2><p>这种场景下的最大困难是前端不知道完整的树是什么样子，前端只有一个局部子树。举两个可能的坑，若某个时刻的情况如下：</p>
+<p><img src="/images/tree-component/lazyload-remote-search.jpeg" alt="lazyload-remote-search.png"></p>
+<p>即前端只加载了<code>a、b、c</code>3个节点，剩下的节点并未拉取。</p>
+<ol>
+<li><p>情形1️⃣：搜索某个关键词返后端回的节点是<code>g、h、i</code>，如果用户将这3个节点全部选中了，返回给上层的选中值不应该是<code>g、h、i</code>，而应该是他们的上层节点<code>d</code>，但前端并不知道<code>d</code>的存在。</p>
+</li>
+<li><p>情形2：如果先勾选了<code>b</code>节点，然后搜索某个关键词返回的节点是<code>g</code>，此时即使选中<code>g</code>也不应该返回给上层组件，因为<code>g</code>的组件节点<code>b</code>已经被选中了。</p>
+</li>
+</ol>
+<p>解决方案是：<strong>后端返回命中节点到根节点的完整通路子树，前端将这个子树直接当做<code>tree</code>组件的新<code>source</code></strong>。例如如果命中了<code>h、i、j</code>,那么返回的子树就是：</p>
+<p><img src="/images/tree-component/lazyload-remote-search-solution.jpeg" alt="lazyload-remote-search-solution.jpeg"></p>
+<p>只有这样前端才能知道完整的信息。</p>
+<h1 id="吸顶效果"><a href="#吸顶效果" class="headerlink" title="吸顶效果"></a>吸顶效果</h1><p><img src="/images/tree-component/sticky-scroll-example.gif" alt="sticky-scroll.gif"></p>
+<p>借助<code>position:sticky</code>可以方便实现滚动吸顶，这里只示范第一层级节点的滚动吸顶，其他低层级节点类似，区别在于<code>z-index</code>和<code>top</code>值的设定。</p>
+<p><img src="/images/tree-component/sticky-scrolll-detail-2.jpeg" alt="sticky-scrolll-detail-2.png"></p>
+<p><img src="/images/tree-component/sticky-scrolll-detail.png" alt="sticky-scrolll-detail.png"></p>
+<h1 id="自定义渲染"><a href="#自定义渲染" class="headerlink" title="自定义渲染"></a>自定义渲染</h1><p>在很多场景下需要自定义每个节点的渲染，除了默认的<code>label</code>外还会有业务上的特殊定制。例如每个节点hover上去后出现节点的一些明细信息。</p>
+<p>自定义渲染的关键在于给业务方暴露<code>slot</code>，同时基础组件内部提供一个最常见的默认实现。</p>
+<p>// <code>tree-node</code>组件，提供原始<code>slot</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">slot</span> <span class="attr">:item</span>=<span class="string">"node"</span> <span class="attr">name</span>=<span class="string">"node"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>// <code>tree</code>组件，进行一次转发</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">tree-node</span> <span class="attr">v-for</span>=<span class="string">"node in source"</span> <span class="attr">:key</span>=<span class="string">"node.id"</span> <span class="attr">:node</span>=<span class="string">"node"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">template</span> <span class="attr">slot</span>=<span class="string">"node"</span> <span class="attr">slot-scope</span>=<span class="string">"&#123; item &#125;"</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 这里提供一个默认实现 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">slot</span> <span class="attr">:item</span>=<span class="string">"item"</span> <span class="attr">name</span>=<span class="string">"node"</span>&gt;</span>&#123;&#123; item.label &#125;&#125;<span class="tag">&lt;/<span class="name">slot</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">template</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">tree-node</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>下面是一个常见的自定义渲染示范</p>
+<h2 id="hover-amp-展示节点面包屑"><a href="#hover-amp-展示节点面包屑" class="headerlink" title="hover &amp; 展示节点面包屑"></a><code>hover</code> &amp; 展示节点面包屑</h2><p>// 业务组件</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">tree</span> <span class="attr">:source</span>=<span class="string">"source"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">template</span> <span class="attr">slot</span>=<span class="string">"node"</span> <span class="attr">slot-scope</span>=<span class="string">"&#123; item &#125;"</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 鼠标放到节点上弹出的hover --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">vi-popover</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">slot</span> <span class="attr">:item</span>=<span class="string">"item"</span> <span class="attr">name</span>=<span class="string">"hover"</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 节点名 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span>&gt;</span>&#123;&#123; item.label &#125;&#125;<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- 节点层级面包屑 --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">span</span> <span class="attr">v-for</span>=<span class="string">"(breadcrumb, index) in item.breadcrumbs"</span> <span class="attr">:key</span>=<span class="string">"index"</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">i</span> <span class="attr">v-if</span>=<span class="string">"index &gt; 0"</span> <span class="attr">class</span>=<span class="string">"vi-icon-arrow-right"</span> /&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">span</span>&gt;</span>&#123;&#123; breadcrumb &#125;&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">slot</span>&gt;</span></span><br><span class="line">      <span class="comment">&lt;!-- 节点自身渲染 --&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">span</span> <span class="attr">slot</span>=<span class="string">"reference"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">span</span>&gt;</span>&#123;&#123; item.label &#125;&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">vi-popover</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">template</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">tree</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>效果如下：</p>
+<p><img src="/images/tree-component/custom-render-example.gif" alt="custom-render-example.gif"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>本文主要介绍了一种<code>tree</code>组件的底层实现细节，并指出了底层数据结构的潜在性能问题和可能的解决方案。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vue/" rel="tag"># vue</a>
+          
+            <a href="/tags/component/" rel="tag"># component</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/12/25/linguistic-sorting/" rel="next" title="多语言排序">
+                <i class="fa fa-chevron-left"></i> 多语言排序
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">83</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">65</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#数据结构"><span class="nav-number">1.</span> <span class="nav-text">数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Tree本身"><span class="nav-number">1.1.</span> <span class="nav-text">Tree本身</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#递归渲染"><span class="nav-number">1.1.1.</span> <span class="nav-text">递归渲染</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#打平后直接vfor迭代渲染"><span class="nav-number">1.1.2.</span> <span class="nav-text">打平后直接vfor迭代渲染</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选中项"><span class="nav-number">1.2.</span> <span class="nav-text">选中项</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#throughed-value"><span class="nav-number">1.3.</span> <span class="nav-text">throughed value</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#展开项"><span class="nav-number">1.4.</span> <span class="nav-text">展开项</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#手风琴模式"><span class="nav-number">2.</span> <span class="nav-text">手风琴模式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#懒加载"><span class="nav-number">3.</span> <span class="nav-text">懒加载</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#搜索"><span class="nav-number">4.</span> <span class="nav-text">搜索</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#本地搜索"><span class="nav-number">4.1.</span> <span class="nav-text">本地搜索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#懒加载下的搜索"><span class="nav-number">4.2.</span> <span class="nav-text">懒加载下的搜索</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#吸顶效果"><span class="nav-number">5.</span> <span class="nav-text">吸顶效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自定义渲染"><span class="nav-number">6.</span> <span class="nav-text">自定义渲染</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#hover-amp-展示节点面包屑"><span class="nav-number">6.1.</span> <span class="nav-text">hover &amp; 展示节点面包屑</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#总结"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2020/01/18/analysis-tree-component/';
+          this.page.identifier = '2020/01/18/analysis-tree-component/';
+          this.page.title = '一种Tree组件的实现方式';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

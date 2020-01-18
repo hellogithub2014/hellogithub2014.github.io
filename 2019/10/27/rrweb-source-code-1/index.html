@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+  <meta name="google-site-verification" content="MpEos65SsDadcqkPQvdQGXTTDcUJqQhcC2OpPRp4quU">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JavaScript,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="之前的文章有简单介绍rrweb的底层设计，这篇文章开始会记录rrweb的源码。rrweb的源码由 3 个仓库组成：  rrweb-snapshot: 包含 snapshot 和 rebuild 功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。 rrweb： 包含 record 和 replay">
+<meta name="keywords" content="JavaScript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rrweb源码解析1">
+<meta property="og:url" content="https://hellogithub2014.github.io/2019/10/27/rrweb-source-code-1/index.html">
+<meta property="og:site_name" content="十年一刻">
+<meta property="og:description" content="之前的文章有简单介绍rrweb的底层设计，这篇文章开始会记录rrweb的源码。rrweb的源码由 3 个仓库组成：  rrweb-snapshot: 包含 snapshot 和 rebuild 功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。 rrweb： 包含 record 和 replay">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://hellogithub2014.github.io/images/rrweb/mouse.png">
+<meta property="og:updated_time" content="2020-01-18T02:10:33.911Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rrweb源码解析1">
+<meta name="twitter:description" content="之前的文章有简单介绍rrweb的底层设计，这篇文章开始会记录rrweb的源码。rrweb的源码由 3 个仓库组成：  rrweb-snapshot: 包含 snapshot 和 rebuild 功能。snapshot 用于将 DOM 及其状态转化为可序列化的数据结构；rebuild 则是将 snapshot 记录的数据结构重建为对应的 DOM。 rrweb： 包含 record 和 replay">
+<meta name="twitter:image" content="https://hellogithub2014.github.io/images/rrweb/mouse.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: 'Z5V8KL0XIZ',
+      apiKey: '88610a56e4ab954825661f14975c6a43',
+      indexName: 'hexo-blog',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://hellogithub2014.github.io/2019/10/27/rrweb-source-code-1/">
+
+
+
+
+
+  <title>rrweb源码解析1 | 十年一刻</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?41d97f95198aa53fcbe7f25b20a44ee3";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+  
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">十年一刻</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://hellogithub2014.github.io/2019/10/27/rrweb-source-code-1/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Liu Bin">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="十年一刻">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">rrweb源码解析1</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-27T21:38:13+08:00">
+                2019-10-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/10/27/rrweb-source-code-1/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/10/27/rrweb-source-code-1/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv">本文总阅读量
+            <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>次
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前的文章有简单介绍<a href="https://hellogithub2014.github.io/2019/10/27/rrweb-inernal-design/#more"><code>rrweb</code>的底层设计</a>，这篇文章开始会记录<code>rrweb</code>的源码。<code>rrweb</code>的源码由 3 个仓库组成：</p>
+<ol>
+<li><a href="https://github.com/rrweb-io/rrweb-snapshot" target="_blank" rel="noopener"><code>rrweb-snapshot</code></a>: 包含 <code>snapshot</code> 和 <code>rebuild</code> 功能。<code>snapshot</code> 用于将 <code>DOM</code> 及其状态转化为可序列化的数据结构；<code>rebuild</code> 则是将 <code>snapshot</code> 记录的数据结构重建为对应的 <code>DOM</code>。</li>
+<li><a href="https://github.com/rrweb-io/rrweb" target="_blank" rel="noopener"><code>rrweb</code></a>： 包含 <code>record</code> 和 <code>replay</code> 两个功能。<code>record</code> 用于记录 <code>DOM</code> 中的所有变更（<code>mutation</code>）；<code>replay</code> 则是将记录的变更按照对应的时间一一重放。</li>
+<li><a href="https://github.com/rrweb-io/rrweb-player" target="_blank" rel="noopener"><code>rrweb-player</code></a>：为 <code>rrweb</code> 提供一套 <code>UI</code> 控件，提供基于 <code>GUI</code> 的暂停、快进、拖拽至任意时间点播放等功能。</li>
+</ol>
+<p>本文是第一篇，记录学习第 2 个仓库<code>rrweb</code>的笔记。</p>
+<h1 id="record"><a href="#record" class="headerlink" title="record"></a><code>record</code></h1><p>用于记录 <code>DOM</code> 中的所有变更（<code>mutation</code>），包括初始时的一次全量<code>DOM</code>序列化，以及后续的增量变更。它最核心的是<code>record</code>函数，内部的主要代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">record</span>(<span class="params">options: recordOptions = &#123;&#125;</span>): <span class="title">listenerHandler</span> | <span class="title">undefined</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> &#123;</span><br><span class="line">    emit,</span><br><span class="line">    checkoutEveryNms,</span><br><span class="line">    checkoutEveryNth,</span><br><span class="line">    blockClass = <span class="string">'rr-block'</span>,</span><br><span class="line">    ignoreClass = <span class="string">'rr-ignore'</span>, <span class="comment">// 如果元素包含这个类，不会被记录</span></span><br><span class="line">    inlineStylesheet = <span class="literal">true</span>,</span><br><span class="line">    maskAllInputs = <span class="literal">false</span>,</span><br><span class="line">    hooks,</span><br><span class="line">  &#125; = options;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 全量DOM序列化</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">takeFullSnapshot</span>(<span class="params">isCheckout = false</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> handlers: listenerHandler[] = [];</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> init = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      takeFullSnapshot();</span><br><span class="line"></span><br><span class="line">      handlers.push(</span><br><span class="line">        <span class="comment">// 记录增量变更</span></span><br><span class="line">        initObservers(</span><br><span class="line">          &#123;</span><br><span class="line">            mutationCb: <span class="function"><span class="params">m</span> =&gt;</span> <span class="comment">/* 利用MutaionObserver记录DOM变更，如节点增加/删除、属性变更、文本变更 */</span>,</span><br><span class="line">            mousemoveCb: <span class="function">(<span class="params">positions, source</span>) =&gt;</span> <span class="comment">/* 记录鼠标移动 */</span>,</span><br><span class="line">            mouseInteractionCb: <span class="function"><span class="params">d</span> =&gt;</span> <span class="comment">/* 记录鼠标交互，如点击、双击 */</span>,</span><br><span class="line">            scrollCb: <span class="function"><span class="params">p</span> =&gt;</span> <span class="comment">/* 记录页面滚动 */</span>,</span><br><span class="line">            viewportResizeCb: <span class="function"><span class="params">d</span> =&gt;</span> <span class="comment">/* 记录视口尺寸变更 */</span>,</span><br><span class="line">            inputCb: <span class="function"><span class="params">v</span> =&gt;</span> <span class="comment">/* 记录input元素的各种值变动，会考虑各种type的input */</span>,</span><br><span class="line">            blockClass, <span class="comment">// 默认是'rr-block'</span></span><br><span class="line">            ignoreClass,  <span class="comment">// 默认是'rr-ignore'</span></span><br><span class="line">            maskAllInputs, <span class="comment">// 默认false</span></span><br><span class="line">            inlineStylesheet, <span class="comment">// 默认true</span></span><br><span class="line">          &#125;,</span><br><span class="line">          hooks,</span><br><span class="line">        ),</span><br><span class="line">      );</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    init();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 执行返回的函数，会停止记录页面变更</span></span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      handlers.forEach(<span class="function"><span class="params">h</span> =&gt;</span> h());</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>record</code>函数内部，<code>takeFullSnapshot</code>用于记录全量<code>DOM</code>,而<code>initObservers</code>则会监听页面各种事件来记录增量变更。函数最后返回另一个函数，用于停止记录页面变更。</p>
+<h2 id="takeFullSnapshot"><a href="#takeFullSnapshot" class="headerlink" title="takeFullSnapshot"></a><code>takeFullSnapshot</code></h2><p>内部利用<code>rrweb-snapshot</code>来序列化<code>DOM</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">takeFullSnapshot</span>(<span class="params">isCheckout = false</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// wrappedEmit: 触发emit事件并携带event参数，业务组件可以监听emit事件并在回调函数中拿到event对象参数</span></span><br><span class="line">    wrappedEmit(</span><br><span class="line">      wrapEvent(&#123;</span><br><span class="line">        type: EventType.Meta, <span class="comment">// 4</span></span><br><span class="line">        data: &#123;</span><br><span class="line">          href: <span class="built_in">window</span>.location.href,</span><br><span class="line">          width: getWindowWidth(),</span><br><span class="line">          height: getWindowHeight(),</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;),</span><br><span class="line">      isCheckout,</span><br><span class="line">    );</span><br><span class="line">    <span class="comment">// `rrweb-snapshot`来序列化`DOM`，</span></span><br><span class="line">    <span class="comment">// node： 序列化树根节点</span></span><br><span class="line">    <span class="comment">// idNodeMap记录每个序列化后node的唯一id</span></span><br><span class="line">    <span class="keyword">const</span> [node, idNodeMap] = snapshot(</span><br><span class="line">      <span class="built_in">document</span>,</span><br><span class="line">      blockClass,</span><br><span class="line">      inlineStylesheet,</span><br><span class="line">      maskAllInputs,</span><br><span class="line">    );</span><br><span class="line">    mirror.map = idNodeMap;</span><br><span class="line">    wrappedEmit(</span><br><span class="line">      wrapEvent(&#123;</span><br><span class="line">        type: EventType.FullSnapshot, <span class="comment">// 2</span></span><br><span class="line">        data: &#123;</span><br><span class="line">          node, <span class="comment">// 全量DOM序列化树</span></span><br><span class="line">          initialOffset: &#123;</span><br><span class="line">            left: <span class="built_in">document</span>.documentElement!.scrollLeft,</span><br><span class="line">            top: <span class="built_in">document</span>.documentElement!.scrollTop,</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;),</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>核心还是利用<code>rrweb-snapshot</code>来做序列化的工作，这个库的源码在之后时间够的话再研究。</p>
+<h2 id="initObservers"><a href="#initObservers" class="headerlink" title="initObservers"></a><code>initObservers</code></h2><p>设置各种事件监听，每种事件触发时都会对应一个增量记录。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">initObservers</span>(<span class="params">o: observerParam, hooks: hooksParam = &#123;&#125;</span>): <span class="title">listenerHandler</span> </span>&#123;</span><br><span class="line">  mergeHooks(o, hooks); <span class="comment">// 融合自定义hooks与内置hooks</span></span><br><span class="line">  <span class="comment">// 利用MutaionObserver记录DOM变更，如节点增加/删除、属性变更、文本变更</span></span><br><span class="line">  <span class="keyword">const</span> mutationObserver = initMutationObserver(o.mutationCb, o.blockClass, o.inlineStylesheet, o.maskAllInputs);</span><br><span class="line">  <span class="comment">// 记录鼠标移动</span></span><br><span class="line">  <span class="keyword">const</span> mousemoveHandler = initMoveObserver(o.mousemoveCb);</span><br><span class="line">  <span class="comment">// 记录鼠标交互，如点击、双击</span></span><br><span class="line">  <span class="keyword">const</span> mouseInteractionHandler = initMouseInteractionObserver(o.mouseInteractionCb, o.blockClass);</span><br><span class="line">  <span class="comment">// 记录页面滚动</span></span><br><span class="line">  <span class="keyword">const</span> scrollHandler = initScrollObserver(o.scrollCb, o.blockClass);</span><br><span class="line">  <span class="comment">// 记录视口尺寸变更</span></span><br><span class="line">  <span class="keyword">const</span> viewportResizeHandler = initViewportResizeObserver(o.viewportResizeCb);</span><br><span class="line">  <span class="comment">// 记录input元素的各种值变动，会考虑各种type的input</span></span><br><span class="line">  <span class="keyword">const</span> inputHandler = initInputObserver(o.inputCb, o.blockClass, o.ignoreClass, o.maskAllInputs);</span><br><span class="line">  <span class="comment">// 执行此函数，取消监听</span></span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    mutationObserver.disconnect();</span><br><span class="line">    mousemoveHandler();</span><br><span class="line">    mouseInteractionHandler();</span><br><span class="line">    scrollHandler();</span><br><span class="line">    viewportResizeHandler();</span><br><span class="line">    inputHandler();</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>initMutationObserver</code>监听各种<code>DOM</code> 变动，需要处理<code>MutationObserver</code>的批量异步回调机制和增量变更之间的冲突。代码细节太多没看，详情参考<a href="https://github.com/rrweb-io/rrweb/blob/master/docs/observer.zh_CN.md" target="_blank" rel="noopener">官网文章</a>。</p>
+<p>除了<code>MutationObserver</code>比较复杂，剩下几个监听代码都比较简单，这里稍微总结下：</p>
+<ul>
+<li><code>initMoveObserver</code>：监听鼠标移动、移动端触摸屏移动。包含两层节流，第一层<code>50ms</code>记录一次移动，第二层每<code>500ms</code>固定记录一次并触发增量变更</li>
+<li><code>initMouseInteractionObserver</code>：监听鼠标交互，单击、双击等</li>
+<li><code>initScrollObserver</code>：监听滚动事件，节流<code>100ms</code></li>
+<li><code>initViewportResizeObserver</code>：监听<code>window</code>的视口尺寸变化，节流<code>200ms</code></li>
+<li><code>initInputObserver</code>：监听<code>input</code>元素的变动，涉及各种<code>input type</code>的特殊处理<ul>
+<li>不记录<code>password</code>输入框</li>
+<li>如果设置了文本加密，则将所有输入文本替换为<code>*</code></li>
+<li>如果选中的是<code>radio</code>框，将所有相同<code>name</code>的其他<code>radio</code>取消选中</li>
+<li>监听<code>input</code>和<code>change</code>事件</li>
+<li>拦截<code>input</code>、<code>select</code>、<code>textArea</code>元素的<code>setter</code>，以监听在<code>js</code>代码里设置这些<code>DOM</code>的值</li>
+</ul>
+</li>
+</ul>
+<p>其中拦截<code>setter</code>的代码利用了<code>Object.defineProperty</code>，可以单独把实现细节拿出来说一说。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 这些元素的特定属性可以在JavaScript代码中直接设置，而不会触发DOM事件</span></span><br><span class="line"><span class="keyword">const</span> hookProperties: <span class="built_in">Array</span>&lt;[HTMLElement, string]&gt; = [</span><br><span class="line">  [HTMLInputElement.prototype, <span class="string">'value'</span>], <span class="comment">// 拦截input的value属性设置</span></span><br><span class="line">  [HTMLInputElement.prototype, <span class="string">'checked'</span>], <span class="comment">// 拦截input的checked属性设置</span></span><br><span class="line">  [HTMLSelectElement.prototype, <span class="string">'value'</span>], <span class="comment">// 拦截select的value属性设置</span></span><br><span class="line">  [HTMLTextAreaElement.prototype, <span class="string">'value'</span>], <span class="comment">// 拦截textArea的value属性设置</span></span><br><span class="line">];</span><br><span class="line"></span><br><span class="line">hookProperties.map(<span class="function"><span class="params">p</span> =&gt;</span></span><br><span class="line">  hookSetter&lt;HTMLElement&gt;(p[<span class="number">0</span>], p[<span class="number">1</span>],</span><br><span class="line">  &#123; <span class="comment">// 新setter，记录增量变更</span></span><br><span class="line">    set() &#123;</span><br><span class="line">      eventHandler(&#123; <span class="attr">target</span>: <span class="keyword">this</span> &#125; <span class="keyword">as</span> Event); <span class="comment">// mock to a normal event</span></span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 拦截setter</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hookSetter</span>&lt;<span class="title">T</span>&gt;(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">  target: T, <span class="regexp">//</span> 目标dom元素</span></span></span><br><span class="line"><span class="function"><span class="params">  key: string | number | symbol, <span class="regexp">//</span> setter对应的属性key</span></span></span><br><span class="line"><span class="function"><span class="params">  d: PropertyDescriptor, <span class="regexp">//</span></span></span></span><br><span class="line"><span class="function"><span class="params">  isRevoked?: boolean,</span></span></span><br><span class="line"><span class="function"><span class="params"></span>): <span class="title">hookResetter</span> </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> original = <span class="built_in">Object</span>.getOwnPropertyDescriptor(target, key);</span><br><span class="line">  <span class="built_in">Object</span>.defineProperty(</span><br><span class="line">    target,</span><br><span class="line">    key,</span><br><span class="line">    isRevoked</span><br><span class="line">      ? d</span><br><span class="line">      : &#123;</span><br><span class="line">          set(value) &#123;</span><br><span class="line">            <span class="comment">// put hooked setter into event loop to avoid of set latency</span></span><br><span class="line">            setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">              d.set!.call(<span class="keyword">this</span>, value); <span class="comment">// 调用新setter</span></span><br><span class="line">            &#125;, <span class="number">0</span>);</span><br><span class="line">            <span class="comment">// 调用原始setter</span></span><br><span class="line">            <span class="keyword">if</span> (original &amp;&amp; original.set) &#123;</span><br><span class="line">              original.set.call(<span class="keyword">this</span>, value);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">  );</span><br><span class="line">  <span class="comment">// 调用返回函数以恢复为原始setter</span></span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="params">()</span> =&gt;</span> hookSetter(target, key, original || &#123;&#125;, <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上就是<code>record</code>函数的核心逻辑了，稍微小结一下：分为全量<code>DOM</code>序列化和增量变更记录两大部分；全量序列化利用的是<code>rrweb-snapshot</code>库；增量变量是通过监听各种页面事件来做到的，监听的事件有：</p>
+<ul>
+<li><p><code>DOM</code> 变动</p>
+<ul>
+<li>节点创建、销毁</li>
+<li>节点属性变化</li>
+<li>文本变化</li>
+</ul>
+</li>
+<li><p>鼠标移动</p>
+</li>
+<li>鼠标交互<ul>
+<li><code>mouse up</code>、<code>mouse down</code></li>
+<li><code>click</code>、<code>double click</code>、<code>context menu</code></li>
+<li><code>focus</code>、<code>blur</code></li>
+<li><code>touch start</code>、<code>touch move</code>、<code>touch end</code></li>
+</ul>
+</li>
+<li>页面或元素滚动</li>
+<li>视窗大小改变</li>
+<li><code>input</code>输入</li>
+</ul>
+<p>给一个使用<code>record</code>的简单例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> * <span class="keyword">as</span> rrweb <span class="keyword">from</span> <span class="string">'rrweb'</span>;</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  data() &#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      destroyHanlder: <span class="literal">null</span>,</span><br><span class="line">      events: [],</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;,</span><br><span class="line">  methods: &#123;</span><br><span class="line">    record() &#123;</span><br><span class="line">      <span class="keyword">this</span>.destroyHanlder = rrweb.record(&#123;</span><br><span class="line">        emit: <span class="function"><span class="params">event</span> =&gt;</span> &#123;</span><br><span class="line">          <span class="keyword">this</span>.events.push(event); <span class="comment">// 收集数据</span></span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;);</span><br><span class="line">    &#125;,</span><br><span class="line">    upload() &#123;</span><br><span class="line">      <span class="comment">// 发送events到后端服务器</span></span><br><span class="line">      fetch(<span class="string">'xxx'</span>, &#123;</span><br><span class="line">        body: &#123;</span><br><span class="line">          events: <span class="keyword">this</span>.events,</span><br><span class="line">        &#125;,</span><br><span class="line">        method: <span class="string">'POST'</span>,</span><br><span class="line">      &#125;).then(<span class="keyword">this</span>.destroyHanlder); <span class="comment">// // 停止录制</span></span><br><span class="line">    &#125;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="replay"><a href="#replay" class="headerlink" title="replay"></a><code>replay</code></h1><p>回放核心逻辑,将记录的变更按照对应的时间一一重放。包含两个<code>Class</code>：<code>Replayer</code>实现回放控制、<code>Timer</code>实现时间戳控制，保证在正确的时间点回放正确的变更。</p>
+<h2 id="Replayer"><a href="#Replayer" class="headerlink" title="Replayer"></a><code>Replayer</code></h2><p>先看看它的构造函数核心逻辑：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Replayer</span> </span>&#123;</span><br><span class="line">  <span class="comment">// events就是在record阶段收集到的所有数据</span></span><br><span class="line">  <span class="keyword">constructor</span>(events: eventWithTime[], config?: Partial&lt;playerConfig&gt;) &#123;</span><br><span class="line">    <span class="keyword">this</span>.events = events;</span><br><span class="line">    <span class="keyword">const</span> defaultConfig: playerConfig = &#123;</span><br><span class="line">      speed: <span class="number">1</span>, <span class="comment">// 倍数</span></span><br><span class="line">      root: <span class="built_in">document</span>.body, <span class="comment">// 回放沙盒放置放置在回放页面的哪里</span></span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">this</span>.config = <span class="built_in">Object</span>.assign(&#123;&#125;, defaultConfig, config);</span><br><span class="line">    <span class="keyword">this</span>.timer = <span class="keyword">new</span> Timer(<span class="keyword">this</span>.config);</span><br><span class="line">    <span class="keyword">this</span>.setupDom(); <span class="comment">// 设置回放的核心DOM元素： wrapper、鼠标模拟元素、iframe沙盒</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>除了一些核心数据的初始化之外，就是<code>setuoDom</code>方法了。</p>
+<h3 id="setupDom"><a href="#setupDom" class="headerlink" title="setupDom"></a>setupDom</h3><p>用于构建回放页面的关键<code>DOM</code>元素，最核心的是两个：<code>iframe</code>沙盒、鼠标模拟元素。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 设置回放的核心DOM元素： warpper、鼠标模拟元素、iframe沙盒</span></span><br><span class="line">private setupDom() &#123;</span><br><span class="line">  <span class="keyword">this</span>.wrapper = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</span><br><span class="line">  <span class="keyword">this</span>.wrapper.classList.add(<span class="string">'replayer-wrapper'</span>);</span><br><span class="line">  <span class="keyword">this</span>.config.root.appendChild(<span class="keyword">this</span>.wrapper);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.mouse = <span class="built_in">document</span>.createElement(<span class="string">'div'</span>);</span><br><span class="line">  <span class="keyword">this</span>.mouse.classList.add(<span class="string">'replayer-mouse'</span>);</span><br><span class="line">  <span class="keyword">this</span>.wrapper.appendChild(<span class="keyword">this</span>.mouse);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.iframe = <span class="built_in">document</span>.createElement(<span class="string">'iframe'</span>);</span><br><span class="line">  <span class="comment">// allow-same-origin: 如果没有使用该关键字，嵌入的浏览上下文将被视为来自一个独立的源，这将使 same-origin policy 同源检查失败</span></span><br><span class="line">  <span class="comment">// https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/iframe</span></span><br><span class="line">  <span class="keyword">this</span>.iframe.setAttribute(<span class="string">'sandbox'</span>, <span class="string">'allow-same-origin'</span>);</span><br><span class="line">  <span class="keyword">this</span>.iframe.setAttribute(<span class="string">'scrolling'</span>, <span class="string">'no'</span>); <span class="comment">// 控制是否要在框架内显示滚动条</span></span><br><span class="line">  <span class="comment">// pointer-events:指定在什么情况下( 如果有 ) 某个特定的图形元素可以成为鼠标事件的 target。</span></span><br><span class="line">  <span class="comment">// https://developer.mozilla.org/zh-CN/docs/Web/CSS/pointer-events</span></span><br><span class="line">  <span class="keyword">this</span>.iframe.setAttribute(<span class="string">'style'</span>, <span class="string">'pointer-events: none'</span>);</span><br><span class="line">  <span class="keyword">this</span>.wrapper.appendChild(<span class="keyword">this</span>.iframe);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时回放页面的结构如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root</span><br><span class="line">  wrapper</span><br><span class="line">    mouse</span><br><span class="line">    iframe</span><br></pre></td></tr></table></figure>
+<p>不难猜出<code>mouse</code>应该是利用<code>position: absoute</code>定位到 wrapper 内部，在回放时会动态设置它的<code>top/right/bottom/left</code>属性模拟鼠标移动。在<code>src/replay/styles/style.css</code>文件中可以找到它的样式：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.replayer-mouse</span> &#123;</span><br><span class="line">  <span class="attribute">position</span>: absolute;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">20px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">20px</span>;</span><br><span class="line">  <span class="attribute">transition</span>: <span class="number">0.05s</span> linear;</span><br><span class="line">  <span class="attribute">background-size</span>: contain;</span><br><span class="line">  <span class="attribute">background-position</span>: center center;</span><br><span class="line">  <span class="attribute">background-repeat</span>: no-repeat;</span><br><span class="line">  <span class="attribute">background-image</span>: <span class="built_in">url</span>(<span class="string">'data:image/svg+xml;base64,PHN2ZyBoZWlnaHQ9JzMwMHB4JyB3aWR0aD0nMzAwcHgnICBmaWxsPSIjMDAwMDAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGRhdGEtbmFtZT0iTGF5ZXIgMSIgdmlld0JveD0iMCAwIDUwIDUwIiB4PSIwcHgiIHk9IjBweCI+PHRpdGxlPkRlc2lnbl90bnA8L3RpdGxlPjxwYXRoIGQ9Ik00OC43MSw0Mi45MUwzNC4wOCwyOC4yOSw0NC4zMywxOEExLDEsMCwwLDAsNDQsMTYuMzlMMi4zNSwxLjA2QTEsMSwwLDAsMCwxLjA2LDIuMzVMMTYuMzksNDRhMSwxLDAsMCwwLDEuNjUuMzZMMjguMjksMzQuMDgsNDIuOTEsNDguNzFhMSwxLDAsMCwwLDEuNDEsMGw0LjM4LTQuMzhBMSwxLDAsMCwwLDQ4LjcxLDQyLjkxWm0tNS4wOSwzLjY3TDI5LDMyYTEsMSwwLDAsMC0xLjQxLDBsLTkuODUsOS44NUwzLjY5LDMuNjlsMzguMTIsMTRMMzIsMjcuNThBMSwxLDAsMCwwLDMyLDI5TDQ2LjU5LDQzLjYyWiI+PC9wYXRoPjwvc3ZnPg=='</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.replayer-mouse</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">content</span>: <span class="string">''</span>;</span><br><span class="line">  <span class="attribute">display</span>: inline-block;</span><br><span class="line">  <span class="attribute">width</span>: <span class="number">20px</span>;</span><br><span class="line">  <span class="attribute">height</span>: <span class="number">20px</span>;</span><br><span class="line">  <span class="attribute">border-radius</span>: <span class="number">10px</span>;</span><br><span class="line">  <span class="attribute">background</span>: <span class="built_in">rgb</span>(73, 80, 246);</span><br><span class="line">  <span class="attribute">transform</span>: <span class="built_in">translate</span>(-10px, -10px);</span><br><span class="line">  <span class="attribute">opacity</span>: <span class="number">0.3</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-class">.replayer-mouse</span><span class="selector-class">.active</span><span class="selector-pseudo">::after</span> &#123;</span><br><span class="line">  <span class="attribute">animation</span>: click <span class="number">0.2s</span> ease-in-out <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最终模拟出来的样式是这样的：</p>
+<p><img src="/images/rrweb/mouse.png" alt="mouse"></p>
+<p>在初始化<code>Replayer</code>之后，需要由外部<code>player-ui</code>手动调用<code>play</code>、<code>pause</code>、<code>resume</code>来模拟回放，依次看看实现。</p>
+<h3 id="play"><a href="#play" class="headerlink" title="play"></a>play</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">  * This API was designed to be used as play at any time offset.</span></span><br><span class="line"><span class="comment">  * Since we minimized the data collected from recorder, we do not</span></span><br><span class="line"><span class="comment">  * have the ability of undo an event.</span></span><br><span class="line"><span class="comment">  * So the implementation of play at any time offset will always iterate</span></span><br><span class="line"><span class="comment">  * all of the events, cast event before the offset synchronously</span></span><br><span class="line"><span class="comment">  * and cast event after the offset asynchronously with timer.</span></span><br><span class="line"><span class="comment">  * @param timeOffset number 表示一个时长，目的是指定时间开始播放，比如指定第5s开始播放</span></span><br><span class="line"><span class="comment">  */</span></span><br><span class="line">public play(timeOffset = <span class="number">0</span>) &#123;</span><br><span class="line">  <span class="keyword">this</span>.timer.clear();</span><br><span class="line">  <span class="keyword">this</span>.baselineTime = <span class="keyword">this</span>.events[<span class="number">0</span>].timestamp + timeOffset; <span class="comment">// 重置基准时间戳为：初始事件时间戳+用户指定的时长</span></span><br><span class="line">  <span class="keyword">const</span> actions = <span class="keyword">new</span> <span class="built_in">Array</span>&lt;actionWithDelay&gt;();</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> event <span class="keyword">of</span> <span class="keyword">this</span>.events) &#123;</span><br><span class="line">    <span class="keyword">const</span> isSync = event.timestamp &lt; <span class="keyword">this</span>.baselineTime;</span><br><span class="line">    <span class="keyword">const</span> castFn = <span class="keyword">this</span>.getCastFn(event, isSync);</span><br><span class="line">    <span class="keyword">if</span> (isSync) &#123;</span><br><span class="line">      castFn(); <span class="comment">// 在baselineTime之前的event先同步执行掉</span></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      actions.push(&#123; <span class="attr">doAction</span>: castFn, <span class="attr">delay</span>: <span class="keyword">this</span>.getDelay(event) &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">this</span>.timer.addActions(actions);</span><br><span class="line">  <span class="keyword">this</span>.timer.start(); <span class="comment">// 由timer保证在正确的时间点执行正确的actions</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意这里是如何实现<strong>指定时间点播放</strong>的：</p>
+<ol>
+<li>传入的<code>timeOffset</code>决定了<code>baselineTime</code>，<code>baselineTime</code>表示从<code>record</code>阶段的哪个时间戳开始回放</li>
+<li><code>isSync</code>为<code>true</code>表示此<code>event</code>位于起始播放时间戳之前，不会被放到<code>timer</code>的<code>actoins</code>数组中，会被直接执行掉。而<code>Timer</code>是在每一帧异步取出一些<code>action</code>执行。所以我们会看到<code>baselineTime</code>之前的<code>action</code>一闪而过，后续的<code>action</code>会一帧一帧的“播放”。</li>
+</ol>
+<p>传给<code>timer</code>的每个<code>action</code>都带有一个<code>delay</code>属性，表示在播放到何时执行此<code>action</code>，大体来说：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">delay = event.timestamp - <span class="keyword">this</span>.baselineTime;</span><br></pre></td></tr></table></figure>
+<p>即由绝对时间戳转换为相对时间。</p>
+<p>由于在录制时生成的<code>event</code>具有多种<code>type</code>，不同<code>type</code>表示不同动作，有的表示全量<code>DOM</code>序列化，有的表示增量<code>mutation</code>。所以在 <code>getCastFn</code>通过闭包进行了一次包装，这样<code>timer</code>就可以不管实现细节，直接无脑执行<code>castFn</code>就行。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">private getCastFn(event: eventWithTime, isSync = <span class="literal">false</span>) &#123;</span><br><span class="line">  <span class="keyword">let</span> castFn: <span class="literal">undefined</span> | <span class="function">(<span class="params">(</span>) =&gt;</span> <span class="keyword">void</span>);</span><br><span class="line">  <span class="keyword">switch</span> (event.type) &#123;</span><br><span class="line">    <span class="comment">// 其他EventType这里略去...</span></span><br><span class="line">    <span class="keyword">case</span> EventType.FullSnapshot: <span class="comment">// 全量记录</span></span><br><span class="line">      castFn = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.rebuildFullSnapshot(event); <span class="comment">// 重建完整DOM到沙盒iframe</span></span><br><span class="line">      &#125;;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> EventType.IncrementalSnapshot: <span class="comment">// 增量记录</span></span><br><span class="line">      castFn = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// 增量mutation回放。。。</span></span><br><span class="line">      &#125;;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> wrappedCastFn = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (castFn) &#123;</span><br><span class="line">      castFn();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">return</span> wrappedCastFn;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="重建完整-DOM-到沙盒-iframe"><a href="#重建完整-DOM-到沙盒-iframe" class="headerlink" title="重建完整 DOM 到沙盒 iframe"></a>重建完整 <code>DOM</code> 到沙盒 <code>iframe</code></h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">private rebuildFullSnapshot(</span><br><span class="line">  event: fullSnapshotEvent &amp; &#123; <span class="attr">timestamp</span>: number &#125;,</span><br><span class="line">) &#123;</span><br><span class="line">  <span class="keyword">this</span>.missingNodeRetryMap = &#123;&#125;;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">    * 构建页面完整DOM</span></span><br><span class="line"><span class="comment">    * rebuild will build the DOM according to the taken snapshot. There are several things will be done during rebuild:</span></span><br><span class="line"><span class="comment">    * 1. Add data-rrid attribute if the Node is an Element.</span></span><br><span class="line"><span class="comment">    * 2. Create some extra DOM node like text node to place inline CSS and some states.</span></span><br><span class="line"><span class="comment">    * 3. Add data-extra-child-index attribute if Node has some extra child DOM.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">  mirror.map = rebuild(event.data.node, <span class="keyword">this</span>.iframe.contentDocument!)[<span class="number">1</span>];</span><br><span class="line">  <span class="comment">// 利用&lt;style&gt;插入css到iframe的head</span></span><br><span class="line">  <span class="keyword">const</span> styleEl = <span class="built_in">document</span>.createElement(<span class="string">'style'</span>);</span><br><span class="line">  <span class="keyword">const</span> &#123; documentElement, head &#125; = <span class="keyword">this</span>.iframe.contentDocument!;</span><br><span class="line">  documentElement!.insertBefore(styleEl, head);</span><br><span class="line">  <span class="keyword">const</span> injectStylesRules = getInjectStyleRules(<span class="keyword">this</span>.config.blockClass) <span class="comment">// 设置iframe的样式</span></span><br><span class="line">      .concat(<span class="keyword">this</span>.config.insertStyleRules); <span class="comment">// 用户传入的其他内联样式</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> idx = <span class="number">0</span>; idx &lt; injectStylesRules.length; idx++) &#123;</span><br><span class="line">    (styleEl.sheet! <span class="keyword">as</span> CSSStyleSheet).insertRule(injectStylesRules[idx], idx);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// pause when loading style sheet, resume when loaded all timeout exceed</span></span><br><span class="line">  <span class="keyword">this</span>.waitForStylesheetLoad(); <span class="comment">// 内部细节有些多，暂时没有研究，后续如果有需要再看</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最核心的<code>rebuild</code>方法位于<code>rrweb-snapshot</code>包，这个后续的文章会专门分析。将全量<code>DOM</code>以及样式插入到<code>iframe</code>后，后续就是挨个异步增量变更了。</p>
+<h4 id="异步执行增量变更"><a href="#异步执行增量变更" class="headerlink" title="异步执行增量变更"></a>异步执行增量变更</h4><p>这块的代码细节很多，只会讲主要脉络，太细节的我也没怎么看 🤣</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.applyIncremental(event, isSync);</span><br><span class="line"><span class="comment">// nextUserInteractionEvent下一个由用户交互触发的增量变更</span></span><br><span class="line"><span class="keyword">if</span> (event === <span class="keyword">this</span>.nextUserInteractionEvent) &#123;</span><br><span class="line">  <span class="keyword">this</span>.nextUserInteractionEvent = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">this</span>.restoreSpeed();  <span class="comment">// 恢复倍数</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// skipInactive： 跳过不活跃的？</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">this</span>.config.skipInactive &amp;&amp; !<span class="keyword">this</span>.nextUserInteractionEvent) &#123;</span><br><span class="line">  <span class="comment">// 查找下一个用户交互事件</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> _event <span class="keyword">of</span> <span class="keyword">this</span>.events) &#123;</span><br><span class="line">    <span class="keyword">if</span> (_event.timestamp! <span class="xml"><span class="tag">&lt;<span class="name">=</span> <span class="attr">event.timestamp</span>!) &#123;</span></span></span><br><span class="line"><span class="xml">      continue;</span></span><br><span class="line"><span class="xml">    &#125;</span></span><br><span class="line"><span class="xml">    // 是否属于用户交互产生的事件: MouseMove、MouseInteraction、Scroll、ViewportResize、Input</span></span><br><span class="line"><span class="xml">    if (this.isUserInteraction(_event)) &#123;</span></span><br><span class="line"><span class="xml">      // 如果_event在当前这一帧之后才会执行，才是合格的</span></span><br><span class="line"><span class="xml">      if (</span></span><br><span class="line"><span class="xml">        _event.delay! - event.delay! &gt;</span></span><br><span class="line"><span class="xml">        SKIP_TIME_THRESHOLD * this.config.speed // config.speed倍数</span></span><br><span class="line"><span class="xml">      ) &#123;</span></span><br><span class="line"><span class="xml">        this.nextUserInteractionEvent = _event;</span></span><br><span class="line"><span class="xml">      &#125;</span></span><br><span class="line"><span class="xml">      break;</span></span><br><span class="line"><span class="xml">    &#125;</span></span><br><span class="line"><span class="xml">  &#125;</span></span><br><span class="line"><span class="xml">  // 设置倍数</span></span><br><span class="line"><span class="xml">  if (this.nextUserInteractionEvent) &#123;</span></span><br><span class="line"><span class="xml">    this.noramlSpeed = this.config.speed;</span></span><br><span class="line"><span class="xml">    const skipTime =</span></span><br><span class="line"><span class="xml">      this.nextUserInteractionEvent.delay! - event.delay!;</span></span><br><span class="line"><span class="xml">    const payload = &#123;</span></span><br><span class="line"><span class="xml">      speed: Math.min(Math.round(skipTime / SKIP_TIME_INTERVAL), 360),</span></span><br><span class="line"><span class="xml">    &#125;;</span></span><br><span class="line"><span class="xml">    this.setConfig(payload);</span></span><br><span class="line"><span class="xml">  &#125;</span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>除了一堆跟播放器相关的细节外，剩下的就是<code>applyIncremental</code>方法了，它用于应用一个增量变更到当前沙盒状态中。在录制过程中处理的种种细节在这里都会一一小心处理，所以这个函数内部会有一个很大的<code>switch-case</code>：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">applyIncremental(e: incrementalSnapshotEvent &amp; &#123; <span class="attr">timestamp</span>: number &#125;,<span class="attr">isSync</span>: boolean) &#123;</span><br><span class="line">  <span class="keyword">const</span> &#123; <span class="attr">data</span>: d &#125; = e;</span><br><span class="line">  <span class="keyword">switch</span> ( d.source )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.Mutation:</span><br><span class="line">      <span class="comment">// 模拟节点DOM变化：节点创建/销毁、节点属性变化、文本变化</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.MouseMove:</span><br><span class="line">      <span class="comment">// 还原鼠标移动</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.MouseInteraction: &#123;</span><br><span class="line">      <span class="comment">// 还原鼠标交互</span></span><br><span class="line">      <span class="keyword">switch</span> ( d.type ) &#123;</span><br><span class="line">        <span class="keyword">case</span> MouseInteractions.Blur:</span><br><span class="line">          <span class="comment">// 失焦</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MouseInteractions.Focus:</span><br><span class="line">          <span class="comment">// 聚焦</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MouseInteractions.Click:</span><br><span class="line">        <span class="keyword">case</span> MouseInteractions.TouchStart:</span><br><span class="line">        <span class="keyword">case</span> MouseInteractions.TouchEnd:</span><br><span class="line">          <span class="comment">// 点击</span></span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.Scroll: &#123;</span><br><span class="line">      <span class="comment">// 模拟滚动</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.ViewportResize:</span><br><span class="line">      <span class="comment">// 模拟视口尺寸变化</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IncrementalSource.Input: &#123;</span><br><span class="line">      <span class="comment">// 模拟input元素值变化</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>阅读细节时可以参照<a href="https://github.com/rrweb-io/rrweb/blob/master/docs/replay.md" target="_blank" rel="noopener">这篇文章</a>来看。</p>
+<p>看完了<code>play</code>方法后，<code>pause</code>和<code>resume</code>方法就很轻松了，尤其是<code>resume</code>方法除了一些初始操作外剩下都一样，这里就不啰嗦了。</p>
+<h2 id="Timer"><a href="#Timer" class="headerlink" title="Timer"></a><code>Timer</code></h2><p><code>Replayer</code>会传递一些列带有时间戳的<code>actions</code>，<code>Timer</code>会将他们按时间排序，然后在每一帧刷新时取出符合条件的<code>action</code>来执行。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">public start() &#123;</span><br><span class="line">  <span class="keyword">this</span>.actions.sort(<span class="function">(<span class="params">a1, a2</span>) =&gt;</span> a1.delay - a2.delay); <span class="comment">// 升序排列</span></span><br><span class="line">  <span class="keyword">this</span>.timeOffset = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">let</span> lastTimestamp = performance.now();</span><br><span class="line">  <span class="keyword">const</span> &#123; actions, config &#125; = <span class="keyword">this</span>;</span><br><span class="line">  <span class="keyword">const</span> self = <span class="keyword">this</span>;</span><br><span class="line">  <span class="comment">// time是requestAnimationFrame在执行回调时传入的时间戳</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">check</span>(<span class="params">time: number</span>) </span>&#123;</span><br><span class="line">    self.timeOffset += (time - lastTimestamp) * config.speed; <span class="comment">// 计时器走过的时长，比如10s</span></span><br><span class="line">    lastTimestamp = time;</span><br><span class="line">    <span class="comment">// 将所有在timeOffset之前的action全部执行掉</span></span><br><span class="line">    <span class="keyword">while</span> (actions.length) &#123;</span><br><span class="line">      <span class="keyword">const</span> action = actions[<span class="number">0</span>];</span><br><span class="line">      <span class="keyword">if</span> (self.timeOffset &gt;= action.delay) &#123;</span><br><span class="line">        actions.shift();</span><br><span class="line">        action.doAction();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 如果还有action，则在下一帧继续重复</span></span><br><span class="line">    <span class="keyword">if</span> (actions.length &gt; <span class="number">0</span> || self.config.liveMode) &#123;</span><br><span class="line">      self.raf = requestAnimationFrame(check);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">this</span>.raf = requestAnimationFrame(check);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里注意一下是如何实现<strong>倍数回放</strong>的：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">self.timeOffset += (time - lastTimestamp) * config.speed; <span class="comment">// 计时器走过的时长，比如10s</span></span><br></pre></td></tr></table></figure>
+<p><code>config.speed</code>就是配置的倍数，默认是<code>1</code>。如果配置为<code>2</code>，那么在原先相同时间内就会走过 2 倍的时长，即<code>self.timeOffset</code>的大小是原先的<code>2</code>倍。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (self.timeOffset &gt;= action.delay) &#123;</span><br><span class="line">  actions.shift();</span><br><span class="line">  action.doAction();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在这里会判断每个<code>action</code>是否小于<code>self.timeOffset</code>，也就是说这个<code>action</code>是不是当前进度条之前的<code>action</code>了，通过这种简单巧妙的方法就实现了倍数播放。</p>
+<p>最后对<code>replay</code>做个小结就是：</p>
+<ul>
+<li>使用<code>iframe</code>当沙盒，独立的<code>div</code>元素模拟鼠标</li>
+<li>使用<code>rrweb-snapshot</code>重建全量记录的 DOM，并放置到<code>iframe</code>中</li>
+<li>借助<code>Timer</code>实现异步播放逻辑，执行每个增量<code>event</code></li>
+<li>提供了核心<code>play</code>、<code>pause</code>、<code>resume</code>方法，提供给外部的<code>player-ui</code>使用</li>
+<li>支持指定时间点开始播放、倍数播放，播放器<code>ui</code>传入配置即可</li>
+<li>继承了<code>emitter</code>，关键事件会通知上层</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/27/rrweb-inernal-design/" rel="next" title="rrweb 底层设计简要总结">
+                <i class="fa fa-chevron-left"></i> rrweb 底层设计简要总结
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/25/linguistic-sorting/" rel="prev" title="多语言排序">
+                多语言排序 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- Go to www.addthis.com/dashboard to customize your tools -->
+<div class="addthis_inline_share_toolbox">
+  <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-5c2f329e843996fd" async="async"></script>
+</div>
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1544633647623&di=9344c3068a2e155434bd39899d7cd25d&imgtype=0&src=http%3A%2F%2Fpic65.nipic.com%2Ffile%2F20150428%2F12641788_080744824000_2.jpg" alt="Liu Bin">
+            
+              <p class="site-author-name" itemprop="name">Liu Bin</p>
+              <p class="site-description motion-element" itemprop="description">码畜</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">83</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">65</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#record"><span class="nav-number">1.</span> <span class="nav-text">record</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#takeFullSnapshot"><span class="nav-number">1.1.</span> <span class="nav-text">takeFullSnapshot</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#initObservers"><span class="nav-number">1.2.</span> <span class="nav-text">initObservers</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#replay"><span class="nav-number">2.</span> <span class="nav-text">replay</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Replayer"><span class="nav-number">2.1.</span> <span class="nav-text">Replayer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#setupDom"><span class="nav-number">2.1.1.</span> <span class="nav-text">setupDom</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#play"><span class="nav-number">2.1.2.</span> <span class="nav-text">play</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#重建完整-DOM-到沙盒-iframe"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">重建完整 DOM 到沙盒 iframe</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异步执行增量变更"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">异步执行增量变更</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Timer"><span class="nav-number">2.2.</span> <span class="nav-text">Timer</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Liu Bin</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      本站访客数
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      人次
+    </span>
+  
+
+  
+    <span class="site-pv">
+      本站总访问量
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      次
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://orangeeeee.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://hellogithub2014.github.io/2019/10/27/rrweb-source-code-1/';
+          this.page.identifier = '2019/10/27/rrweb-source-code-1/';
+          this.page.title = 'rrweb源码解析1';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://orangeeeee.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=5.1.4"></script>
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
