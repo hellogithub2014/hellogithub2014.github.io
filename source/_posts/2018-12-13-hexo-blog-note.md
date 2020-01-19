@@ -192,7 +192,10 @@ algolia:
 修改方法：将`next`主题文件夹中的`layout/_third-party/analytics/busuanzi-counter.swig`最上方的`script`改为：
 
 ```html
-<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script
+  async
+  src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"
+></script>
 ```
 
 效果：
@@ -209,7 +212,7 @@ algolia:
 
 两个参考文档
 
-- [Google Webmaster tools](https://theme-next.iissnan.com/third-party-services.html#others)
+- [Google Webmaster tools](https://theme-next.iissnan.com/third-party-services.html#google-webmaster-tools)
 - [SEO 优化](https://www.jianshu.com/p/4ef35521fee9)
 
 只配置了[`google`的搜索引擎优化](https://search.google.com)，过几天再看[效果](https://search.google.com/search-console?resource_id=https%3A%2F%2Fhellogithub2014.github.io%2F)。
