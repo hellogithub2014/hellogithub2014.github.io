@@ -98,7 +98,7 @@
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/shortname-config.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/site_base_config.png">
 <meta property="og:image" content="https://hellogithub2014.github.io/images/hexo-blog-note/generated_remote_repo.png">
-<meta property="og:updated_time" content="2019-05-25T10:11:19.547Z">
+<meta property="og:updated_time" content="2020-01-19T14:05:25.370Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="hexo搭建笔记">
 <meta name="twitter:description" content="记录在搭建hexo博客时一些注意的点，大部分基础的步骤参考了其他博客。 前置工具 拥有 github 账户、安装了 git、node、npm 全局安装hexo  1npm install -g hexo-cli 建立 github 仓库 在github上建立一个远程仓库，注意仓库名格式有要求： 用户名.github.io, 即如果github用户名为username，那么你需要建一个名为usern">
@@ -454,14 +454,14 @@
 <p><img src="/images/hexo-blog-note/search.png" alt="search"></p>
 <h2 id="站点-UV、PV-统计"><a href="#站点-UV、PV-统计" class="headerlink" title="站点 UV、PV 统计"></a>站点 UV、PV 统计</h2><p>使用的<a href="https://theme-next.iissnan.com/third-party-services.html#analytics-busuanzi" target="_blank" rel="noopener"><code>不蒜子</code>统计</a>，不过发现<code>next</code>主题加载的关键<code>js</code>文件 404 了。搜索了下发现域名过期了，作者在<a href="http://ibruce.info/2015/04/04/busuanzi/" target="_blank" rel="noopener">这里</a>提供了新的域名。</p>
 <p>修改方法：将<code>next</code>主题文件夹中的<code>layout/_third-party/analytics/busuanzi-counter.swig</code>最上方的<code>script</code>改为：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">async</span> <span class="attr">src</span>=<span class="string">"//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span></span></span><br><span class="line"><span class="tag">  <span class="attr">async</span></span></span><br><span class="line"><span class="tag">  <span class="attr">src</span>=<span class="string">"//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"</span></span></span><br><span class="line"><span class="tag">&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 <p>效果：</p>
 <p><img src="/images/hexo-blog-note/uv_pv.png" alt="uv_pv"></p>
 <h2 id="分享功能"><a href="#分享功能" class="headerlink" title="分享功能"></a>分享功能</h2><p>使用<a href="https://www.addthis.com" target="_blank" rel="noopener">AddThis</a>，<a href="https://theme-next.iissnan.com/third-party-services.html#share-addthis" target="_blank" rel="noopener">配置文档</a>，效果：</p>
 <p><img src="/images/hexo-blog-note/add_this_share.png" alt="add_this_share"></p>
 <h2 id="SEO"><a href="#SEO" class="headerlink" title="SEO"></a>SEO</h2><p>两个参考文档</p>
 <ul>
-<li><a href="https://theme-next.iissnan.com/third-party-services.html#others" target="_blank" rel="noopener">Google Webmaster tools</a></li>
+<li><a href="https://theme-next.iissnan.com/third-party-services.html#google-webmaster-tools" target="_blank" rel="noopener">Google Webmaster tools</a></li>
 <li><a href="https://www.jianshu.com/p/4ef35521fee9" target="_blank" rel="noopener">SEO 优化</a></li>
 </ul>
 <p>只配置了<a href="https://search.google.com" target="_blank" rel="noopener"><code>google</code>的搜索引擎优化</a>，过几天再看<a href="https://search.google.com/search-console?resource_id=https%3A%2F%2Fhellogithub2014.github.io%2F" target="_blank" rel="noopener">效果</a>。</p>
